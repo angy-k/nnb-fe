@@ -1,0 +1,617 @@
+[class^='button-'] {
+    width: 172px;
+    height: 53px;
+    top: 4px;
+    gap: 0px;
+    border-radius: 30.5px;
+    border: 1px solid #ffffff;
+    opacity: 0px;
+    .text {
+        font-family: Open Sans;
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 24.51px;
+        text-align: left;
+    }
+    :hover {
+        background-color: #FFFFFF;
+        color: var(--darkBlue);
+    }
+}
+
+.button-dark {
+    width: 136px;
+    height: 73px;
+    gap: 0px;
+    border-radius: 36.5px 0px 0px 0px;
+    border: 1px solid #FFFFFF;
+    opacity: 0px;
+    background: var(--darkBlue);
+    box-shadow: 0px 0px 15px 0px var(--lightBlue);
+    .text {
+        color: #FFFFFF;
+    }
+    
+}
+
+.button-light {
+    width: 136px;
+    height: 73px;
+    gap: 0px;
+    border-radius: 36.5px;
+    border: 1px solid #56C4CF;
+    opacity: 0px;
+    background: var(--lightBlue);
+    .text {
+        color: #FFFFFF;
+    }
+
+    :hover {
+        background-color: var(--darkBlue);
+    }
+}
+
+.button-outlined-light {
+    border: 1px solid #ffffff;
+    opacity: 0px;
+    .text {
+        color: #ffffff;
+    }
+
+    :hover {
+        background-color: #FFFFFF;
+        color: var(--darkBlue);
+    }
+}
+.button-outlined-white {
+    border: 1px solid #ffffff;
+    background-color: #FFFFFF;
+    opacity: 0px;
+    .text {
+        color: var(--darkBlue);
+    }
+
+    :hover {
+        background-color: #FFFFFF;
+        color: var(--darkBlue);
+    }
+}
+
+.button-outlined-dark {
+    border: 1px solid var(--black);
+    .text {
+        color: var(--black);
+    }
+}
+
+.icon-button {
+    width: 204px;
+    height: 204px;
+    gap: 0px;
+    opacity: 0px;
+
+    &__orange {
+        background: var(--orange);
+    }
+    &__light {
+        background: var(--lightBlue);
+    }
+    &__yellow {
+        background: var(--yellow);
+    }
+}
+
+.title-description-button {
+    background: transparent;
+    width: 465px;
+    height: 204px;
+    gap: 0px;
+    border-radius: 102px 0px 0px 0px;
+    border: 1px  solid #ffffff;
+    opacity: 0px;
+
+    &__orange:hover {
+        background: var(--orange);
+        color: var(--darkBlue);
+    }
+    &__light:hover {
+        background: var(--lightBlue);
+        color: var(--darkBlue);
+    }
+    &__yellow:hover {
+        background: var(--yellow);
+        color: var(--darkBlue);
+    }
+
+    &__title {
+        font-family: Open Sans;
+        font-size: 64px;
+        font-weight: 700;
+        line-height: 87.16px;
+        text-align: center;
+        color: #FFFFFF;
+
+    }
+    &__description {
+        font-family: Open Sans;
+        font-size: 27px;
+        font-weight: 400;
+        line-height: 36.77px;
+        text-align: center;
+        color: #FFFFFF;
+    }
+}
+
+.card-component {
+    display: flex;
+    flex-direction: column;
+
+    &-author {
+        font-family: Open Sans;
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 24.51px;
+        text-align: left;
+        color: var(--black);
+    }
+    &-title-blog {
+        font-family: Open Sans;
+        font-size: 36px;
+        font-weight: 700;
+        line-height: 49.03px;
+        text-align: left;
+        color: var(--black)
+    }
+    &-creation-date {
+        font-family: Open Sans;
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 24.51px;
+        text-align: left;
+        color: #808080;
+    }
+}
+
+.our-team-title {
+    font-family: MADE GoodTime Script;
+    font-size: 64px;
+    font-weight: 400;
+    line-height: 87.04px;
+    text-align: left;
+    color: var(--darkBlue);
+}
+.section-divider {
+    border: 1px solid #1B1B1B;
+}
+
+.our-team-container {
+    .card-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: auto auto;
+        gap: 20px;
+    }
+    
+    .card-item {
+        background-color: transparent;
+        /* padding: 20px; */
+        /* border-radius: 8px; */
+        text-align: center;
+    }
+    
+    /* Style to lower the second and fourth items in each row */
+    .card-container .card-item:nth-child(2),
+    .card-container .card-item:nth-child(4),
+    .card-container .card-item:nth-child(6),
+    .card-container .card-item:nth-child(8) {
+        margin-top: 20px;
+    }
+
+    .team-card-gradient {
+        background: radial-gradient(44.51% 44.51% at 50% 50%, rgba(86, 196, 207, 0.4) 0%, rgba(240, 240, 240, 0.4) 100%);
+    }
+
+    /* this is example for circle gradient which is positioned 3/4 from top and 0 from left of the div */
+    /* .my-div {
+        width: 100%;
+        height: 400px; /* Adjust the height as needed */
+        /* background: radial-gradient(circle at 0 75%, #FF5733, #C70039); */
+    /* }  */
+    
+}
+
+.blogs-container {
+    .blog-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: auto auto;
+        gap: 28px;
+    }
+    
+    .blog-card {
+        /* flex: 1 1 calc(33.333% - 28px); */
+        background-color: transparent; 
+        /* padding: 20px; */
+        text-align: center;
+        /* box-sizing: border-box;  */
+    }
+}
+.blog-title {
+    font-family: MADE GoodTime Script;
+    font-size: 64px;
+    font-weight: 400;
+    line-height: 87.04px;
+    text-align: left;
+    color: var(--darkBlue);
+}
+
+.vertical-reverse {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.contact-section-title {
+    font-family: MADE GoodTime Script;
+    font-size: 64px;
+    font-weight: 400;
+    line-height: 64px;
+    text-align: left;
+    color: var(--darkBlue);
+}
+
+.contact-form {
+    .office-data {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .office-contact-section-title {
+        font-family: Open Sans;
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 20.43px;
+        text-align: left;
+        color: #000000;
+    }
+    .office-contact-section-content {
+        font-family: Open Sans;
+        font-size: 15px;
+        font-weight: 400;
+        line-height: 20.43px;
+        text-align: left;
+        color: #000000;
+    }
+}
+.viber-community-dark {
+    display: flex;
+    flex-direction: row;
+    background: var(--darkBlue);
+    border-radius: 30px;
+    
+    .viber-community-text {
+        font-family: Open Sans;
+        font-size: 36px;
+        font-weight: 700;
+        line-height: 49.02px;
+        text-align: left;
+        color: #ffffff;
+    }
+}
+
+.viber-community-light {
+    display: flex;
+    flex-direction: row;
+    background: #ffffff;
+    border-radius: 30px;
+    
+    .viber-community-text {
+        font-family: Open Sans;
+        font-size: 36px;
+        font-weight: 700;
+        line-height: 49.02px;
+        text-align: left;
+        color: var(--darkBlue);
+    }
+}
+
+.faq-container {
+    border: 1px solid #FFFFFF;
+    border-radius: 30px;
+    background: var(--lightBlue);
+    .accordion {
+        border: 1px solid var(--darkBlue);
+        border-radius: 30px;
+        .title {
+            font-family: Open Sans;
+            font-size: 36px;
+            font-weight: 400;
+            line-height: 49.02px;
+            text-align: left;
+            color: var(--darkBlue);
+        }
+        .content {
+            font-family: Open Sans;
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 24.51px;
+            text-align: left;
+            color: var(--darkBlue)
+        }
+    }
+}
+
+.table-container {
+    .table-title {
+        font-family: MADE GoodTime Script;
+        font-size: 64px;
+        font-weight: 400;
+        line-height: 87.04px;
+        text-align: left;
+        color: var(--darkBlue);
+    }
+    .table-header-value {
+        font-family: Open Sans;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 24.51px;
+        text-align: left;
+        color: var(--black);
+    }
+    .table-row-style-light {
+        border-radius: 102px;
+        background: var(--lightBlue);
+    }
+    .table-row-style-dark {
+        border-radius: 102px;
+        background: var(--darkBlue);
+    }
+    .table-cell-value {
+        font-family: Open Sans;
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 24.51px;
+        text-align: left;
+        color: var(--black)
+    }
+}
+
+.immpressions-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+
+    .immpressions-scroll-content {
+        display: inline-block;
+        animation: scroll-left 15s linear infinite;
+      }
+    .immpression-card {
+        display: flex;
+        flex-direction: column-reverse;
+        background: #ffffff;
+    }
+    .immpression-card:nth-child(2n) {
+        background: var(--lightBlue);
+    }
+
+    /* Define the animation */
+    @keyframes scroll-left {
+        0% {
+            transform: translateX(100%); /* Start outside the right edge */
+        }
+        100% {
+            transform: translateX(-100%); /* Move outside the left edge */
+        }
+    }
+    /* Pause the animation when this class is added */
+    .paused {
+        animation-play-state: paused;
+    }
+}
+
+.newsletter-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    .newsletter-container {
+        display: inline-flex;
+        align-items: center;
+        overflow: hidden;
+        background-color: transparent;
+        position: relative;
+    }
+    .newsletter-icon {
+        position: absolute;
+        bottom: -20;
+        left: 0;
+    }
+    .newsletter-subcontainer {
+        background: transparent;
+        position: absolute;
+        z-index: 1;
+    }
+    .newsletter-div {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 36.5px;
+        overflow: hidden;
+        .newsletter-email-field {
+            background-color: #ffffff;
+            border-radius: 66.5px;
+            border: none;
+            flex: 1;
+        }
+        .newsletter-button {
+            background: var(--lightBlue);
+            border: 1px solid var(--lightBlue);
+            border-radius: 36.5px;
+            cursor: pointer;
+            .text {
+                font-family: Open Sans;
+                font-size: 18px;
+                font-weight: 400;
+                line-height: 24.51px;
+                text-align: left;
+                color: #ffffff;
+            }
+        }
+    }
+}
+
+.header-container {
+    background: transparent;
+    display: flex;
+    justify-content: center;
+
+    .header-subcontainer {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        .header-items-list {
+            text-align: left;
+            justify-content: center;
+            .header-item {
+                cursor: pointer;
+                text-decoration: none;
+                color: #ffffff;
+            }
+            .header-item:hover {
+                color: #ffffff;
+            }
+        }
+    }
+}
+.footer-list-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.footer-list-item:nth-child(-n+4) {
+    grid-column: 1;
+}
+
+.footer-list-item:nth-child(n+5) {
+    grid-column: 2;
+}
+
+.footer-list-item {
+    background-color: #f2f2f2;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.calendar-title {
+    font-family: Open Sans;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 35.4px;
+    text-align: left;
+    color: #1b1b1b; /*var(--black);*/
+}
+.calendar-buttons {
+    border-radius: 24px;
+    border: 1px solid #1b1b1b;
+    opacity: 0px;
+    gap: 0;
+    .buttons-divider {
+        background: #1b1b1b;
+    }
+    .button-one {
+        border-radius: 24px 0px 0px 24px;
+        .text:hover {
+            color: #ffffff;
+        }
+    }
+    .button-two {
+        border-radius: 0px 24px 24px 0px;
+    }
+}
+
+.section-main-word-background-image-div {
+    width: 100%;
+    height: 1523px;
+    background-image: url('/handsome-confident-smiling-man-with-hands-crossed-chest.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    .section-main-word-wrapper {
+        display: grid;
+        align-items: center;
+        justify-content: right;
+        height: 100%;
+        position: relative; 
+        width: 100%; 
+    }
+    .section-main-word {
+        max-width: 710px;
+        box-shadow: 0px 0px 80px 0px #00000059;
+        background: #FFFFFF73;
+        border-radius: 30px;
+        padding: 80px 50px;
+        position: absolute;
+        left: 68%; 
+        width: 40%;
+        max-height: 100%;
+        transform: translateX(-50%);
+        backdrop-filter: blur(5px); /* Apply blur effect */
+        
+        .section-main-subcomponent {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .section-main-word-title {
+            font-family: MADE GoodTime Script;
+            font-size: 64px;
+            font-weight: 400;
+            line-height: 87.27px;
+            text-align: left;
+            /* color: var(--darkBlue) */
+
+        }
+        .section-main-word-subtitle {
+            font-family: Open Sans;
+            font-size: 26px;
+            font-weight: 400;
+            line-height: 35.39px;
+            text-align: left;
+            /* color: var(--darkBlue) */
+        }
+        .section-main-word-content {
+            font-family: Open Sans;
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 24.51px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+    }
+}
+
+.organizer-section-quote {
+    display: flex;
+    flex-direction: column;
+    padding: 50px 0;
+}
+.organizer-section-main-quote {
+    font-family: MADE GoodTime Script;
+    font-size: 64px;
+    font-weight: 400;
+    line-height: 87.04px;
+    text-align: center;
+
+}
+.organizer-section-sub-quote {
+    font-family: Open Sans;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 33.48px;
+    text-align: center;
+}
