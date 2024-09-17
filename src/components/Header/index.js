@@ -14,47 +14,48 @@ const Header = () => {
         {
             id: 1,
             name: "O nama",
-            link: ""
+            link: "/o-nama"
         },
         {
             id: 2,
             name: "Događaji",
-            link: ""
+            link: "/dogadjaji"
         },
         {
             id: 3,
             name: "Projekti",
-            link: ""
+            link: "/projekti"
         },
         {
             id: 4,
             name: "Blog",
-            link: ""
+            link: "/blog"
         },
         {
             id: 5,
             name: "Galerija",
-            link: ""
+            link: "/galerija"
         },
         {
             id: 6,
             name: "Kalendar",
-            link: ""
+            link: "/kalendar"
         },
         {
             id: 7,
             name: "Prijatelji",
-            link: ""
+            link: "/prijatelji"
         },
         {
             id: 8,
             name: "Kontakt",
-            link: ""
+            link: "/kontakt"
         }
     ];
 
     return (
-        <div className='header-container'>
+        <div  className="flex justify-between items-center w-full fixed left-0 flex justify-center" style={{display: 'flex', left: '0', top: '116px'}}>
+        <div className='w-full mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto header-container'>
             <div className='header-subcontainer'>
             <Logo 
                 logoSrc={LogoDark}
@@ -83,6 +84,7 @@ const Header = () => {
                     className='header-button'
                 />
             </div>
+        </div>
         </div>
     )
 }

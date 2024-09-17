@@ -1,3 +1,6 @@
+.nnb-wrapper {
+    min-height: 100vh;
+}
 [class^='button-'] {
     width: 172px;
     height: 53px;
@@ -182,6 +185,19 @@
 }
 .section-divider {
     border: 1px solid #1B1B1B;
+}
+
+.footer-divider {
+    border-top: 1px solid #ffffff;
+    border-left: 0px; 
+    border-right: 0px; 
+    border-bottom: 0px;
+    max-width: 1766px;
+    margin: 20px 0;
+}
+
+.footer-shadow {
+    box-shadow: 0px 4px 100px -25px #56C4CF;
 }
 
 .our-team-container {
@@ -463,16 +479,24 @@
 
 .header-container {
     background: transparent;
-    display: flex;
-    justify-content: center;
+    display: grid;
+    width: 100%;
 
     .header-subcontainer {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        width: 100%;
+        max-width: 1400px;
+        justify-self: center;
         .header-items-list {
+            display: flex;
+            gap: 50px;
             text-align: left;
+            justify-items: space-between;
             justify-content: center;
+            align-items: center;
+            flex-wrap: nowrap;
             .header-item {
                 cursor: pointer;
                 text-decoration: none;
@@ -485,23 +509,24 @@
     }
 }
 .footer-list-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    display: flex;
+    flex-direction: row;
+}
+.footer-list-section {
+    display: flex;
+    flex-direction: column;
 }
 
-.footer-list-item:nth-child(-n+4) {
-    grid-column: 1;
-}
-
-.footer-list-item:nth-child(n+5) {
-    grid-column: 2;
-}
 
 .footer-list-item {
-    background-color: #f2f2f2;
     padding: 10px;
-    border: 1px solid #ccc;
+    break-inside: avoid;
+    text-transform: uppercase;
+}
+.footer-socials {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .calendar-title {
@@ -614,4 +639,15 @@
     font-weight: 400;
     line-height: 33.48px;
     text-align: center;
+}
+
+.instagram-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.instagram-post img {
+    width: 100%;
+    height: auto;
 }

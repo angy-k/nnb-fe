@@ -9,6 +9,7 @@ const ViberCommunity = ({
 }) => {
     function joinCommunity() {
         //TODO: join viber community
+        //https://l.instagram.com/?u=https%3A%2F%2Finvite.viber.com%2F%3Fg2%3DAQBR%252B5ef5lKUX1MxICpe2OAUY8lYMdQcNtmvse9JE0D1fZBOi8mWfzr3nMxcOCSU&e=AT2EX3a-2QilL0lvqIk36AfemA_3QiutW-mSyEAtEAF62EW0-tM-a2FGmCSa1Tr0mtgz1zsnYftBkKPZve5sVdV9C8deGbXyEMhb6w
     }
     return(
         <div className={type === 'dark' ? "viber-community-dark" : "viber-community-light"}>
