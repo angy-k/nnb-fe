@@ -1,0 +1,33 @@
+$gw-phone:600px
+$gw-tablet-portrait: 768px
+$gw-tablet: 1024px
+$gw-desktop: 1600px
+
+@mixin phone
+  @media only screen and (max-width: $gw-phone)
+    @content
+
+@mixin phone-and-tablet
+  @media only screen and (max-width: $gw-tablet)
+    @content
+
+@mixin tablet-portrait
+  @media only screen and (min-width: $gw-phone + 1) and (max-width: $gw-tablet-portrait)
+    @content
+
+@mixin tablet
+  @media only screen and (min-width: $gw-phone + 1) and (max-width: $gw-tablet)
+    @content
+
+@mixin desktop
+  @media only screen and (min-width: $gw-tablet + 1) and (max-width: $gw-desktop)
+    @content
+
+@mixin hd-desktop
+  @media only screen and (min-width: $gw-desktop + 1)
+    @content
+
+//Use to conserve vertical space on smarthones (i.e. iPhone 5)
+@mixin phone-shorty
+  @media only screen and (max-width: $gt-phone) and (max-height: 600px)
+    @content

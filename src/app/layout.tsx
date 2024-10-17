@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+// import { Inter, OpenSans,  } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import GoogleAnalytics from '@/components/GoogleAnalytics/GoogleAnalytics'
 
-const inter = Inter({ subsets: ['latin'] })
+// const opensans = OpenSans({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -18,10 +19,41 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <head>
+        <GoogleAnalytics />
+        <meta charSet='utf-8' />
+        <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+        <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <link
+          rel='icon'
+          href={process.env.favicon}
+        />
+        <meta name='theme-color' content='#000000' />
+        {process.env.NEXT_PUBLIC_APP_ENV !== 'production' && (
+          <>
+            <meta name='googlebot' content='noindex' />
+            <meta name='googlebot-news' content='nosnippet' />
+            <meta name='googlebot-news' content='noindex' />
+            <meta name='robots' content='noindex' />
+          </>
+        )}
+        <link rel='apple-touch-icon' href='/logo.png' />
+        {/* <link rel='manifest' href='/manifest.json' /> */}
+        <link rel='preconnect' href='https://fonts.googleapis.com' />
+        <link 
+          rel='preconnect'
+          href='https://fonts.gstatic.com'
+          crossOrigin=''
+        />
+        <link 
+          href='https://fonts.googleapis.com/css2?family=Open Sans:wght@400;700&family=MADA GoodTime Script:wght@400&display=optional'
+          rel='stylesheet'
+        />
+      </head>
+       <body> {/*className={opensans.className}> */}
         <div className='bg-[#261A54] flex flex-col nnb-wrapper bg-full'>
             <Header />
-          <main className="flex min-h-screen flex-col items-center justify-between p-36">
+          <main className="flex min-h-screen flex-col items-center justify-between">
             {/* <div className="z-10 w-full items-center justify-between font-mono text-sm lg:flex"> */}
               {children}
             {/* </div> */}

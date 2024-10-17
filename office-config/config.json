@@ -1,13 +1,127 @@
 {
-    "socialLinks": {
-        "fb": "https://www.facebook.com/trg.preduzetnistva",
-        "instagram": "https://www.instagram.com/novosadskinocnibazar/",
-        "youtube": "",
-        "viberCommunityLink": "https://invite.viber.com/?g2=AQBR%2B5ef5lKUX1MxICpe2OAUY8lYMdQcNtmvse9JE0D1fZBOi8mWfzr3nMxcOCSU&lang=en"
+  "socialLinks": {
+    "fb": "https://www.facebook.com/trg.preduzetnistva",
+    "instagram": "https://www.instagram.com/novosadskinocnibazar/",
+    "youtube": "https://www.youtube.com/channel/UC07-tu4kyCykHjvi4Ns7FJQ/videos?view_as=subscriber",
+    "viberCommunityLink": "https://invite.viber.com/?g2=AQBR%2B5ef5lKUX1MxICpe2OAUY8lYMdQcNtmvse9JE0D1fZBOi8mWfzr3nMxcOCSU&lang=en"
+  },
+  "officeData":{
+    "fullName": "Novosadski noćni bazar",
+    "emails": ["office@nocnibazar.rs", "rezervacije@nocnibazar.rs"],
+    "phones": ["+381 60 66 44 857"]
+  },
+  "envs": {
+    "dev": {
+      "PORT": 3000,
+      "NEXT_APP_OFFICE": "nnb",
+      "NEXT_PUBLIC_BACKEND_URL": "http://localhost:8000",
+      "NEXT_PUBLIC_URL": "http://localhost:3000"
     },
-    "officeData":{
-        "fullName": "Novosadski noćni bazar",
-        "emails": ["office@nocnibazar.rs", "rezervacije@nocnibazar.rs"],
-        "phones": ["+381 60 66 44 857"]
+    "staging": {
+      "PORT": 3000,
+      "NEXT_APP_OFFICE": "nnb",
+      "NEXT_PUBLIC_BACKEND_URL": "http://localhost:8000",
+      "NEXT_PUBLIC_URL": "http://localhost:3000"
+
+    },
+    "prod": {
+      "PORT": 3000,
+      "NEXT_APP_OFFICE": "nnb",
+      "NEXT_PUBLIC_BACKEND_URL": "http://localhost:8000",
+      "NEXT_PUBLIC_URL": "http://localhost:3000"
     }
+  },
+  "common": {
+    "NEXT_PUBLIC_GOOGLE_ANALYTICS": "",
+    "NEXT_PUBLIC_GOOGLE_ANALYTICS_4": ""
+  },
+  "agency": {
+    "info": {
+      "favicon": "/office/favicon.ico"
+    },
+    "headerItems": [
+      {
+        "id": 1,
+        "name": "O nama",
+        "link": "/o-nama"
+      },
+      {
+        "id": 2,
+        "name": "Događaji",
+        "link": "/dogadjaji"
+      },
+      {
+        "id": 3,
+        "name": "Projekti",
+        "link": "/projekti"
+      },
+      {
+        "id": 4,
+        "name": "Blog",
+        "link": "/blog"
+      },
+      {
+        "id": 5,
+        "name": "Galerija",
+        "link": "/galerija"
+      },
+      {
+        "id": 6,
+        "name": "Kalendar",
+        "link": "/kalendar"
+      },
+      {
+          "id": 7,
+          "name": "Prijatelji",
+          "link": "/prijatelji"
+      },
+      {
+          "id": 8,
+          "name": "Kontakt",
+          "link": "/kontakt"
+      }
+    ],
+    "footerItems": [
+      {
+        "id": 1,
+        "name": "O nama",
+        "link": "/o-nama"
+      },
+      {
+        "id": 2,
+        "name": "Događaji",
+        "link": "/dogadjaji"
+      },
+      {
+        "id": 3,
+        "name": "Projekti",
+        "link": "/projekti"
+      },
+      {
+        "id": 4,
+        "name": "Paketi",
+        "link": "/paketi"
+      },
+      {
+        "id": 5,
+        "name": "Blog",
+        "link": "/blog"
+      },
+      {
+        "id": 6,
+        "name": "Galerija",
+        "link": "/galerija"
+      },
+      {
+        "id": 7,
+        "name": "Prijatelji",
+        "link": "/prijatelji"
+      },
+      {
+        "id": 8,
+        "name": "Kontakt",
+        "link": "/kontakt"
+      }
+    ]
+  }
 }

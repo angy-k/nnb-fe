@@ -10,7 +10,7 @@
     border: 1px solid #ffffff;
     opacity: 0px;
     .text {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 18px;
         font-weight: 400;
         line-height: 24.51px;
@@ -112,7 +112,6 @@
     border-radius: 102px 0px 0px 0px;
     border: 1px  solid #ffffff;
     opacity: 0px;
-
     &__orange:hover {
         background: var(--orange);
         color: var(--darkBlue);
@@ -127,7 +126,7 @@
     }
 
     &__title {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 64px;
         font-weight: 700;
         line-height: 87.16px;
@@ -136,7 +135,7 @@
 
     }
     &__description {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 27px;
         font-weight: 400;
         line-height: 36.77px;
@@ -150,7 +149,7 @@
     flex-direction: column;
 
     &-author {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 18px;
         font-weight: 400;
         line-height: 24.51px;
@@ -158,7 +157,7 @@
         color: var(--black);
     }
     &-title-blog {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 36px;
         font-weight: 700;
         line-height: 49.03px;
@@ -166,7 +165,7 @@
         color: var(--black)
     }
     &-creation-date {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 18px;
         font-weight: 400;
         line-height: 24.51px;
@@ -176,7 +175,7 @@
 }
 
 .our-team-title {
-    font-family: MADE GoodTime Script;
+    font-family: made-goodtime-script;
     font-size: 64px;
     font-weight: 400;
     line-height: 87.04px;
@@ -185,6 +184,38 @@
 }
 .section-divider {
     border: 1px solid #1B1B1B;
+}
+.footer-container {
+    display: flex;
+    flex-direction: column;
+    left: 0;
+    bottom: 0;
+    padding: 75px 0;
+    @media screen and (max-width: 599px) {
+        padding: 20px 0;
+        align-items: center;
+    }
+}
+
+.footer-subsection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    @media screen and (max-width: 599px) {
+        max-width: 420px;
+        grid-template-columns: 1fr;
+        justify-self: center;
+    }
+}
+
+.footer-logo {
+    @media screen and (max-width: 599px) {
+        grid-template-columns: 1fr;
+        justify-self: center;
+        img {
+            max-width: 200px;
+        }
+    }
 }
 
 .footer-divider {
@@ -253,7 +284,7 @@
     }
 }
 .blog-title {
-    font-family: MADE GoodTime Script;
+    font-family: made-goodtime-script;
     font-size: 64px;
     font-weight: 400;
     line-height: 87.04px;
@@ -267,7 +298,7 @@
 }
 
 .contact-section-title {
-    font-family: MADE GoodTime Script;
+    font-family: made-goodtime-script;
     font-size: 64px;
     font-weight: 400;
     line-height: 64px;
@@ -282,7 +313,7 @@
     }
 
     .office-contact-section-title {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 15px;
         font-weight: 700;
         line-height: 20.43px;
@@ -290,7 +321,7 @@
         color: #000000;
     }
     .office-contact-section-content {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 15px;
         font-weight: 400;
         line-height: 20.43px;
@@ -305,7 +336,7 @@
     border-radius: 30px;
     
     .viber-community-text {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 36px;
         font-weight: 700;
         line-height: 49.02px;
@@ -321,7 +352,7 @@
     border-radius: 30px;
     
     .viber-community-text {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 36px;
         font-weight: 700;
         line-height: 49.02px;
@@ -338,7 +369,7 @@
         border: 1px solid var(--darkBlue);
         border-radius: 30px;
         .title {
-            font-family: Open Sans;
+            font-family: open-sans;
             font-size: 36px;
             font-weight: 400;
             line-height: 49.02px;
@@ -346,7 +377,7 @@
             color: var(--darkBlue);
         }
         .content {
-            font-family: Open Sans;
+            font-family: open-sans;
             font-size: 18px;
             font-weight: 400;
             line-height: 24.51px;
@@ -358,7 +389,7 @@
 
 .table-container {
     .table-title {
-        font-family: MADE GoodTime Script;
+        font-family: made-goodtime-script;
         font-size: 64px;
         font-weight: 400;
         line-height: 87.04px;
@@ -366,7 +397,7 @@
         color: var(--darkBlue);
     }
     .table-header-value {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 18px;
         font-weight: 700;
         line-height: 24.51px;
@@ -382,7 +413,7 @@
         background: var(--darkBlue);
     }
     .table-cell-value {
-        font-family: Open Sans;
+        font-family: open-sans;
         font-size: 18px;
         font-weight: 400;
         line-height: 24.51px;
@@ -466,7 +497,7 @@
             border-radius: 36.5px;
             cursor: pointer;
             .text {
-                font-family: Open Sans;
+                font-family: open-sans;
                 font-size: 18px;
                 font-weight: 400;
                 line-height: 24.51px;
@@ -506,6 +537,25 @@
                 color: #ffffff;
             }
         }
+        .header-menu-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 30px;
+            text-align: left;
+            justify-items: space-between;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: nowrap;
+            .header-item {
+                cursor: pointer;
+                text-decoration: none;
+                color: #ffffff;
+            }
+            .header-item:hover {
+                color: #ffffff;
+            }
+        }
     }
 }
 .footer-list-container {
@@ -527,10 +577,11 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    align-items: flex-end;
 }
 
 .calendar-title {
-    font-family: Open Sans;
+    font-family: open-sans;
     font-size: 26px;
     font-weight: 700;
     line-height: 35.4px;
@@ -591,7 +642,7 @@
             gap: 20px;
         }
         .section-main-word-title {
-            font-family: MADE GoodTime Script;
+            font-family: made-goodtime-script;
             font-size: 64px;
             font-weight: 400;
             line-height: 87.27px;
@@ -600,7 +651,7 @@
 
         }
         .section-main-word-subtitle {
-            font-family: Open Sans;
+            font-family: open-sans;
             font-size: 26px;
             font-weight: 400;
             line-height: 35.39px;
@@ -608,7 +659,7 @@
             /* color: var(--darkBlue) */
         }
         .section-main-word-content {
-            font-family: Open Sans;
+            font-family: open-sans;
             font-size: 18px;
             font-weight: 400;
             line-height: 24.51px;
@@ -626,7 +677,7 @@
     padding: 50px 0;
 }
 .organizer-section-main-quote {
-    font-family: MADE GoodTime Script;
+    font-family: made-goodtime-script;
     font-size: 64px;
     font-weight: 400;
     line-height: 87.04px;
@@ -634,7 +685,7 @@
 
 }
 .organizer-section-sub-quote {
-    font-family: Open Sans;
+    font-family: open-sans;
     font-size: 18px;
     font-weight: 400;
     line-height: 33.48px;

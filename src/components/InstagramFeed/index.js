@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image'
 
 const InstagramPosts = () => {
     const [posts, setPosts] = useState([]);
@@ -25,7 +26,7 @@ const InstagramPosts = () => {
         <div className="instagram-grid">
             {posts.map((post, index) => (
                 <div key={index} className="instagram-post">
-                    <img src={post.image_url} alt={post.caption} />
+                    <Image src={post.image_url} alt={post.caption} />
                 </div>
             ))}
         </div>

@@ -2,11 +2,11 @@ import Image from 'next/image'
 import People from './assets/people.png'
  
 const SectionImage = ({
-    imageSrc = People,
-    width = 540,
-    height = 540,
-    radius = '5px',
-    altText = 'Section image alt text'
+  imageSrc = People,
+  width = 540,
+  height = 540,
+  radius = '5px',
+  altText = 'Section image alt text'
 }) => {
   return (
     <div style={{borderRadius: `${radius}`, overflow: 'hidden'}}>

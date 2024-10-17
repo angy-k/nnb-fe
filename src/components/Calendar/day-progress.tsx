@@ -1,3 +1,4 @@
+'use client'
 import { useState, useEffect } from "react";
 
 import { startOfDay, differenceInMinutes } from "date-fns";
