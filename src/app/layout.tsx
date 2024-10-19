@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 // import { Inter, OpenSans,  } from 'next/font/google'
-import './globals.css'
+import '@/styles/global.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import GoogleAnalytics from '@/components/GoogleAnalytics/GoogleAnalytics'
@@ -22,8 +22,7 @@ export default function RootLayout({
       <head>
         <GoogleAnalytics />
         <meta charSet='utf-8' />
-        <meta name='viewport' content='width=device-width, initial-scale=1.0' />
-        <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0' />
         <link
           rel='icon'
           href={process.env.favicon}
@@ -50,14 +49,10 @@ export default function RootLayout({
           rel='stylesheet'
         />
       </head>
-       <body> {/*className={opensans.className}> */}
+       <body>
         <div className='bg-[#261A54] flex flex-col nnb-wrapper bg-full'>
-            <Header />
-          <main className="flex min-h-screen flex-col items-center justify-between">
-            {/* <div className="z-10 w-full items-center justify-between font-mono text-sm lg:flex"> */}
-              {children}
-            {/* </div> */}
-          </main>
+          <Header />
+          <main className="flex-1 min-h-screen flex-col nnb-wrapper">{children}</main>
           {/* <SnackBarToast /> */}
           <Footer />
         </div>

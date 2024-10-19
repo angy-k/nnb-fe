@@ -16,6 +16,7 @@
     "@nextui-org/input": "^2.2.4",
     "@nextui-org/modal": "^2.0.39",
     "@nextui-org/table": "^2.0.39",
+    "@tailwindcss/forms": "^0.5.3",
     "class-variance-authority": "^0.7.0",
     "create-next-app": "^14.2.7",
     "date-fns": "^3.6.0",

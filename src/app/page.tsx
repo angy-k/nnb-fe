@@ -1,13 +1,45 @@
-import '../styles/global.css'
+import '@/styles/global.css'
 import Image from 'next/image'
 import { Calendar } from '@/components/Calendar'
 import OrganizerWord from '@/components/Organizer'
 import { eventsMock } from '@/components/Calendar/event-mocks'
 import Header from '@/components/Header'
+import { homepage } from '@/constants/schemas'
 
-export default function Home() {
+export const metadata = {
+  title: `Novosadski noćni bazar`,
+  description: ``,
+  alternates: {
+    canonical: `/`,
+  },
+}
+
+export async function getData() {
+  const response = await []
+  return {
+    data: await response
+  }
+}
+
+export default async function Home() {
+  const {
+    data
+  } = await getData()
   return (
-    <>
+    <div className='min-h-screen'>
+      {/** Add JSON-LD to your page */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{__html: JSON.stringify(homepage)}}
+      />
+      <div className='2xl:max-w-screen-2xl mx-auto 2xl:mt-10 2xl:place-items-center'>
+        {/* here will be positioned all child sections of this page */}
+      </div>
+
+
+
+
+
     {/* <div className="flex justify-between items-center w-full fixed left-0 flex justify-center" style={{display: 'flex', left: '0', top: '116px'}}>
       <Header />
     </div>
@@ -128,7 +160,6 @@ export default function Home() {
 
       {/* </div> */}
     {/* </main> */}
-    </>
-    
+    </div>
   )
 }

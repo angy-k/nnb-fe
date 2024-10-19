@@ -1,11 +1,21 @@
+'use client'
 import { Divider } from "@nextui-org/divider";
 import FooterLogo from "../Logo/FooterLogo";
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from "react";
 
 const Footer = () => {
+  const pathname = usePathname()
+  const [display, setDisplay] = useState(true);
+
+  useEffect(() => {
+    setDisplay(pathname !== '/not-found')
+  }, [pathname])
 
   return (
-    <div className="footer-container flex justify-between items-center w-full fixed left-0 justify-center footer-shadow p-5 mobileMin:w-full md:pl-9 lg:pl-14 lg:pb-11">
+    <>
+    {display && <div className="footer-container flex justify-between items-center w-full left-0 justify-center footer-shadow p-5 mobileMin:w-full md:pl-9 lg:pl-14 lg:pb-11">
       <div className="w-full gap-x-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2" style={{ justifyContent: 'space-between', width: '100%', maxWidth: '1400px', justifySelf: 'space-between'}}>
         <div className="footer-subsection justify-space-between grid gap-y-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
           <div className="footer-list-container grid grid-cols-1 sm:grid-cols-1 sm:justify-center">
@@ -39,7 +49,8 @@ const Footer = () => {
       </div>
       <Divider  className="footer-divider"/>
       <span className="w-full text-start" style={{maxWidth: '1400px'}}>{`Design and developed: ...`}</span>
-    </div>
+    </div>}
+    </>
   )
 }
 

@@ -9,16 +9,14 @@ const SectionImage = ({
   altText = 'Section image alt text'
 }) => {
   return (
-    <div style={{borderRadius: `${radius}`, overflow: 'hidden'}}>
     <Image
       src={imageSrc}
       loading = 'lazy'
       width={width}
       height={height}
       alt={altText}
-    //   className='rounded-full aspect-square object-cover'
+      style={{borderRadius: `${radius}`, overflow: 'hidden'}}
     />
-    </div>
   )
 }
 

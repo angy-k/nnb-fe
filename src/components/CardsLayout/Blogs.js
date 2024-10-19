@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { formatTitleForUri } from '@/utils/transform-helper';
 
 const Blogs = ({
-  title = 'Blog',
+  title,
   numberForDisplay,
   blogs = mockBlogs,
   pagination = false, 
@@ -21,7 +21,7 @@ const Blogs = ({
 
   let limitedBlogs = numberForDisplay ? blogs.slice(0,numberForDisplay) : blogs
   return (
-    <div className="blogs-container">
+    <div className="blogs-container mt-24 grid place-items-center pb-24">
       {title && <span className="blog-title">{title}</span>}
       {title && <Button
           key={`section-component-title-button-${sectionType}`}
@@ -31,7 +31,7 @@ const Blogs = ({
       />}
       {title && <Divider className="section-divider"/>}
       <div className="blog-container">
-        {limitedBlogs.map((blog, index) => {
+        {limitedBlogs.map((blog, index) => (
           <div className="blog-card">
             <Link
               prefetch={false}
@@ -54,7 +54,7 @@ const Blogs = ({
               />
             </Link>
           </div>
-        })}
+        ))}
       </div>
       {/* pagination */}
       {pagination && <Divider className="section-divider"/>}

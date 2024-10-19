@@ -1,3 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Open Sans';
+  font-weight: 400;
+  src: url('../../public/static/fonts/OpenSans-Regular.ttf') format('ttf');
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-weight: 700;
+  src: url('../../public/static/fonts/OpenSans-Bold.ttf') format('ttf');
+}
+
+@font-face {
+  font-family: 'MADE GoodTime Script';
+  font-weight: 400;
+  src: url('../../public/static/fonts/MADEGoodTimeScriptPERSONALUSE.otf') format('otf');
+}
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+h1 {
+    font-family: 'MADE GoodTime Script';
+    font-weight: 400;
+    font-size: 128px;
+    line-height: 118.01px;
+}
+
+h2 {
+    font-family: 'Open Sans';
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 65.36px;
+}
+h6 {
+    font-family: 'Open Sans';
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 29.96px;
+    max-width: 725px;
+}
+
 .nnb-wrapper {
     min-height: 100vh;
 }
@@ -81,9 +147,9 @@
 }
 
 .button-outlined-dark {
-    border: 1px solid var(--black);
+    border: 1px solid #1B1B1B;
     .text {
-        color: var(--black);
+        color: #1B1B1B;
     }
 }
 
@@ -149,23 +215,25 @@
     flex-direction: column;
 
     &-author {
-        font-family: open-sans;
+        padding-top: 52px;
+        font-family: 'Open Sans';
         font-size: 18px;
         font-weight: 400;
         line-height: 24.51px;
         text-align: left;
-        color: var(--black);
+        color: #1B1B1B;
     }
     &-title-blog {
-        font-family: open-sans;
+        padding-top: 6px;
+        font-family: 'Open Sans';
         font-size: 36px;
         font-weight: 700;
         line-height: 49.03px;
         text-align: left;
-        color: var(--black)
+        color: #1B1B1B;
     }
     &-creation-date {
-        font-family: open-sans;
+        font-family: 'Open Sans';
         font-size: 18px;
         font-weight: 400;
         line-height: 24.51px;
@@ -270,7 +338,7 @@
 .blogs-container {
     .blog-container {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         grid-template-rows: auto auto;
         gap: 28px;
     }
@@ -520,6 +588,12 @@
         width: 100%;
         max-width: 1400px;
         justify-self: center;
+        .main-list {
+            display: flex;
+            @media screen and (max-width: 1299px) {
+                display: none;
+            }
+        }
         .header-items-list {
             display: flex;
             gap: 50px;
@@ -701,4 +775,22 @@
 .instagram-post img {
     width: 100%;
     height: auto;
+}
+
+.not-found-section {
+    display: flex;
+    flex-direction: row;
+    padding-left: 10px;
+    @media screen and (max-width: 1024px) {
+        flex-direction: column-reverse;
+        padding: 10px;
+    }
+    .owls-image {
+        width: 1005px;
+        height: 609px;
+        @media screen and (min-width: 1025px) and (max-width: 1200px) {
+            width: 795px;
+            height: 550px;
+        }
+    }
 }

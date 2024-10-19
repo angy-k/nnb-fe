@@ -45,7 +45,7 @@ const CardComponent = ({
         iconSize={buttonIconSize}
         onClick={buttonAction}
       />
-      {creationDate && <span>{creationDate}</span>}
+      {creationDate && <span className="card-component-creation-date" style={{alignSelf: 'flex-end'}}>{creationDate}</span>}
     </div>
   )
 }
