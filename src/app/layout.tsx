@@ -48,6 +48,8 @@ export default function RootLayout({
           href='https://fonts.googleapis.com/css2?family=Open Sans:wght@400;700&family=MADA GoodTime Script:wght@400&display=optional'
           rel='stylesheet'
         />
+        <link href="https://fonts.cdnfonts.com/css/made-goodtime-script" rel="stylesheet" />
+                
       </head>
        <body>
         <div className='bg-[#261A54] flex flex-col nnb-wrapper bg-full'>

@@ -26,7 +26,7 @@ const Header = ({bgColor = '#261A54'}) => {
   }, [pathname])
 
   return (
-    <div  className="flex justify-between items-center w-full fixed left-0 flex justify-center bg-[#261A54]" style={{display: display ? 'flex' : 'none', left: '0', top: '116px'}}>
+    <div  className="flex justify-between items-center w-full fixed left-0 flex justify-center bg-[#261A54] z-5" style={{display: display ? 'flex' : 'none', left: '0', paddingTop: '116px', paddingBottom: '60px',}}>
     <div className='w-full mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto header-container'>
       <div className='header-subcontainer'>
         <button
@@ -61,7 +61,7 @@ const Header = ({bgColor = '#261A54'}) => {
         />
         <div className="flex items-center">
           {/* loading needs to be !loading here */}
-          {!loading && (
+          {loading && (
             <>
             {!openMenu && (
               <div className="main-list lg:gap-7 header-items-list">

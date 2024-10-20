@@ -1,11 +1,14 @@
 'use client'; 
+import Events from '@/components/CardsLayout/Events';
+
 const EventsPage = () => {
-    return (
-        <div>
-            <h1>Events</h1>
-            <p>Welcome to the events page!</p>
-        </div>
-    );
+  return (
+    <div className="mt-60 grid place-items-center w-full">
+      <Events
+        numberForDisplay={6}
+      />
+    </div>
+    )
 }
 
 export default EventsPage;

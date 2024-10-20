@@ -3,11 +3,9 @@ import Blogs from '@/components/CardsLayout/Blogs';
 
 const BlogPage = () => {
   return (
-    <div className="mt-60 grid place-items-center pb-24  w-full bg-[#F0F0F0]">
-      {/* <h1>Blogs</h1>
-      <p>Welcome to the blogs page!</p> */}
+    <div className="mt-60 grid place-items-center w-full">
       <Blogs
-        numberForDisplay={6}
+        numberForDisplay={7}
         pagination={true}
       />
     </div>

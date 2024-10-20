@@ -29,6 +29,8 @@ const Button = ({
         return 'title-description-button';
       case 'outlined-white':
         return 'button-outlined-white';
+      case 'outlined-icon':
+        return 'outlined-icon-button';
       default:
         return customStyle;
 
@@ -46,6 +48,7 @@ const Button = ({
         width={iconSize}
         height={iconSize}
         alt={iconAlt}
+        style={{marginLeft: '14px'}}
       />}
       {name && <span className={(name && description) ? "title" : "text"}>{name}</span>}
       {description && <span className="description">{description}</span>}

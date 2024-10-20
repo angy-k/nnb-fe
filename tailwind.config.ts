@@ -51,7 +51,10 @@ const config: Config = {
         18: '4.5rem',
         103: '103%',
         90: '90px',
+        125: '125px',
         185: '185px',
+        200: '200px',
+        380: '380px',
         385: '385px',
         500: '500px',
         600: '600px'
@@ -109,6 +112,7 @@ const config: Config = {
         wider_mobile: '400px',
       },
       zIndex: {
+        1: '1',
         5: '5',
       },
       lineHeight: {
@@ -123,6 +127,8 @@ const config: Config = {
         500: '500px',
         530: '530px',
         570: '570px',
+        1400: '1400px',
+        1440: '1440px'
       },
       height: {
         5.5: '1.375rem',

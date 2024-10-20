@@ -31,12 +31,12 @@ const Footer = () => {
             </div>
           </div>
           <div className="footer-list-container grid grid-cols-1 sm:grid-cols-1 sm:text-center" style={{display: 'flex', flexDirection: 'column'}}>
-            {JSON.parse(JSON.stringify(process.env.officeData.emails).toString()).map((email) => (
-                <span className="office-contact-section-content">{email}</span>
+            {JSON.parse(JSON.stringify(process.env.officeData.emails).toString()).map((email, index) => (
+                <span className="office-contact-section-content" key={`footer-email-contact-${index}`}>{email}</span>
             ))}
             <p className="p-4"></p>
-            {JSON.parse(JSON.stringify(process.env.officeData.phones).toString()).map((phone) => (
-                <span className="office-contact-section-content">{phone}</span>
+            {JSON.parse(JSON.stringify(process.env.officeData.phones).toString()).map((phone, index) => (
+                <span className="office-contact-section-content" key={`footer-phone-contact-${index}`}>{phone}</span>
             ))}
             <p className="p-4"></p>
             <Link href="/uslovi-koriscenja">{'Uslovi korišćenja i politika privatnosti'}</Link>

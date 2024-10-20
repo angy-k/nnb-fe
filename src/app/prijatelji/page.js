@@ -1,11 +1,12 @@
 'use client';
+import Partners from '@/components/CardsLayout/Partners';
+
 const FriendsPage = () => {
-    return (
-        <div>
-            <h1>Friends</h1>
-            <p>Welcome to the friends page!</p>
-        </div>
-    );
+  return (
+    <div className="mt-60 grid place-items-center w-full">
+      <Partners />
+    </div>
+      )
 }
 
 export default FriendsPage;
