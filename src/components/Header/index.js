@@ -59,7 +59,7 @@ const Header = ({bgColor = '#261A54'}) => {
           logoHeight={60.45}
           logoAlt={'Header logo.'}
         />
-        <div className="flex items-center">
+        <div className="main-header-items items-center">
           {/* loading needs to be !loading here */}
           {loading && (
             <>

@@ -92,7 +92,7 @@ h6 {
   width: 136px;
   height: 73px;
   gap: 0px;
-  border-radius: 36.5px 0px 0px 0px;
+  border-radius: 36.5px;
   border: 1px solid #FFFFFF;
   opacity: 0px;
   background: #261A54;
@@ -149,6 +149,16 @@ h6 {
   border: 1px solid #1B1B1B;
   .text {
       color: #1B1B1B;
+  }
+}
+
+.submit-button-outlined-dark {
+  border: 1px solid #1B1B1B;
+  background-color: #261A54;
+  border-radius: 30.5px;
+  height: 53px;
+  .text {
+      color: #ffffff;
   }
 }
 
@@ -426,36 +436,52 @@ h6 {
       text-align: left;
     }
   }
+  &-fields {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    @media screen and (max-width: 1023px) {
+      grid-template-columns: repeat(1, 1fr);;
+    }
+  }
 }
-.viber-community-dark {
-  display: flex;
-  flex-direction: row;
-  background: #261A54;
-  border-radius: 30px;
-  
-  .viber-community-text {
+
+.viber-community {
+  /* display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 5px;
+  @media screen and (max-width: 599px) {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
+  } */
+
+  &-dark {
+    background: #261A54;
+    border-radius: 30px;
+  }
+
+  &-light { 
+    background: #ffffff;
+    border-radius: 30px;
+  }
+
+  &-text {
     font-family: 'Open Sans';
     font-size: 36px;
     font-weight: 700;
     line-height: 49.02px;
     text-align: left;
     color: #ffffff;
-  }
-}
-
-.viber-community-light {
-  display: flex;
-  flex-direction: row;
-  background: #ffffff;
-  border-radius: 30px;
-  
-  .viber-community-text {
-    font-family: 'Open Sans';
-    font-size: 36px;
-    font-weight: 700;
-    line-height: 49.02px;
-    text-align: left;
-    color: #261A54;
+    @media screen and (max-width: 1023px) {
+      display: flex;
+      flex-direction: column;
+      font-size: 26px;
+    }
+    @media screen and (max-width: 599px) {
+      display: flex;
+      flex-direction: column;
+      font-size: 18px;
+    }
   }
 }
 
@@ -463,10 +489,11 @@ h6 {
   border: 1px solid #FFFFFF;
   border-radius: 30px;
   background: #56C4CF;
-  .accordion {
+  &-accordion {
     border: 1px solid #261A54;
     border-radius: 30px;
-    .title {
+    padding: 10px;
+    h2 {
       font-family: 'Open Sans';
       font-size: 36px;
       font-weight: 400;
@@ -474,7 +501,7 @@ h6 {
       text-align: left;
       color: #261A54;
     }
-    .content {
+    .section {
       font-family: 'Open Sans';
       font-size: 18px;
       font-weight: 400;
@@ -482,6 +509,7 @@ h6 {
       text-align: left;
       color: #261A54;
     }
+    :focus {outline:0 !important;}
   }
 }
 
@@ -605,7 +633,12 @@ h6 {
     }
   }
 }
-
+.main-header-items {
+  display: flex;
+  @media screen and (max-width: 1299px) {
+    display: none;
+  }
+}
 .header-container {
   background: transparent;
   display: grid;
@@ -643,7 +676,7 @@ h6 {
     .header-menu-items-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 20px;
       padding-bottom: 30px;
       text-align: left;
       justify-items: space-between;
@@ -654,6 +687,12 @@ h6 {
         cursor: pointer;
         text-decoration: none;
         color: #ffffff;
+        font-family: 'Open Sans';
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 24.51px;
+        text-align: left;
+
       }
       .header-item:hover {
         color: #ffffff;
@@ -823,22 +862,34 @@ h6 {
     }
   }
 }
-.page-hiro-section {
-  overflow: 'hidden';
+.page-hero-section {
+  overflow: hidden;
   &-title {
     font-family: 'MADE GoodTime Script', sans-serif;
     font-weight: 400;
-    font-size: 128;
+    font-size: 128px;
     line-height: 118.01px;
     color: #ffffff;
+    @media screen and (max-width: 599px) {
+      font-size: 60px;
+    }
   }
-  .hero-owl-image {
+  &-description {
+    min-width: 400px;
+    margin-bottom: 40px;
+    font-family: 'Open Sans';
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 24.51px;
+    text-align: left;
+  }
+  /* .hero-owl-image {
     width: 660.35px;
     height: 914.13px;
     box-sizing: border-box;
-    /* @media screen and (min-width: 1025px) and (max-width: 1200px) {
+    @media screen and (min-width: 1025px) and (max-width: 1200px) {
       width: 795px;
       height: 550px;
-    } */
-  }
+    }
+  } */
 }

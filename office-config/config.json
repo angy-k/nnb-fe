@@ -8,7 +8,7 @@
   "officeData":{
     "fullName": "Novosadski noćni bazar",
     "emails": ["office@nocnibazar.rs", "rezervacije@nocnibazar.rs"],
-    "phones": ["+381 60 66 44 857"]
+    "phones": ["+381 66 80 03 969"]
   },
   "envs": {
     "dev": {
@@ -33,7 +33,8 @@
   },
   "common": {
     "NEXT_PUBLIC_GOOGLE_ANALYTICS": "",
-    "NEXT_PUBLIC_GOOGLE_ANALYTICS_4": ""
+    "NEXT_PUBLIC_GOOGLE_ANALYTICS_4": "",
+    "RECAPTCHA_SITE_KEY": "6Lf3zmYqAAAAAC--4uKRI_D6hfmg-ReEgwZo9Mnc"
   },
   "agency": {
     "info": {

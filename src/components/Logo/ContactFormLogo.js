@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 const ContactFormLogo = () => {
   return(
-    <div className="office-data">
+    <div className="office-contact">
       <Image
         src={LogoLight}
         width={260}
@@ -14,16 +14,16 @@ const ContactFormLogo = () => {
         alt={'Contact form office logo.'}
       />
       <div style={{display: 'flex', flexDirection: 'column', gap: '25px', paddingTop: '57px', paddingBottom: '42px'}}>
-        <span className="office-contact-section-title text-black font-bold">{'Telefon'}</span>
+        <span className="office-contact-section-title text-black font-bold pt-10">{'Telefon'}</span>
         {JSON.parse(JSON.stringify(process.env.officeData.phones).toString()).map((phone, index) => (
             <span className="office-contact-section-content text-black" key={`contact-section-phone-contact-${index}`}>{phone}</span>
         ))}
-        <span className="office-contact-section-title text-black font-bold">{'E-mail'}</span>
+        <span className="office-contact-section-title text-black font-bold pt-10">{'E-mail'}</span>
         {JSON.parse(JSON.stringify(process.env.officeData.emails).toString()).map((email, index) => (
             <span className="office-contact-section-content text-black" key={`contact-section-email-contact-${index}`}>{email}</span>
         ))}
       </div>
-      <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
+      <div style={{display: 'flex', flexDirection: 'row', gap: '15px', paddingTop: '25px'}}>
         <Image
           src={FacebookIcon}
           width={30}
@@ -31,10 +31,10 @@ const ContactFormLogo = () => {
           alt={'Contact form facebook icon.'}
         />
         <Image
-            src={InstagramIcon}
-            width={30}
-            height={30}
-            alt={'Contact form instagram icon.'}
+          src={InstagramIcon}
+          width={30}
+          height={30}
+          alt={'Contact form instagram icon.'}
         />
         <Image
           src={YouTubeIcon}

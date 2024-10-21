@@ -1,11 +1,12 @@
 'use client';
+import Projects from "@/components/CardsLayout/Projects";
+
 const ProjectsPage = () => {
-    return (
-        <div>
-            <h1>Projects</h1>
-            <p>Welcome to the projects page!</p>
-        </div>
-    );
+  return (
+    <div className="mt-60 grid place-items-center w-full">
+      <Projects />
+    </div>
+  );
 }
 
 export default ProjectsPage;

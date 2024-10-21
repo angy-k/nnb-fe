@@ -47,7 +47,7 @@ const nextConfig = {
       },
       {
         source: '/kalendar-manifestacija-u-2024-godini',
-        destination: '/kalendar', //add year as a query param???,
+        destination: '/kalendar-dogadjaja', //add year as a query param???,
         permanent: true
       },
       {
@@ -83,6 +83,11 @@ const nextConfig = {
       {
         source: '/fruski-jazacki',
         destination: '/prijatelji/fruski-jazacki',
+        permanent: true
+      },
+      {
+        source: '/category/:path',
+        destination: '/',
         permanent: true
       }
 

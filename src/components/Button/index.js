@@ -23,6 +23,8 @@ const Button = ({
         return 'button-outlined-light';
       case 'outlined-dark': 
         return 'button-outlined-dark';
+      case 'submit-outlined-dark':
+        return 'submit-button-outlined-dark';
       case 'icon':
         return 'button-icon';
       case 'title-description': 

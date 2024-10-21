@@ -28,6 +28,8 @@ const config: Config = {
         white: '#F0F0F0',
         black: '#1B1B1B',
         gray: '#808080',
+        'negative-color': '#EC4923',
+        'border-color': '#ffffff'
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -40,8 +42,10 @@ const config: Config = {
         xxs: '5px',
         10: '10px',
         11: '11px',
+        18: '18px',
         23: '23px',
-        35: '35px'
+        35: '35px',
+        36: '36px',
       },
       spacing: {
         '10%': '10%',

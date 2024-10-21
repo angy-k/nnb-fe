@@ -15,7 +15,7 @@ const NavigateMenu = ({
   }
 
   return (
-    <div className={`absolute top-16 left-0 sm:pl-10 lg:pl-16 pt-19 bg-[#261A54] w-full px-7 h-screen xl:relative xl:top-0 xl:h-auto xl:flex xl:hidden`}>
+    <div className={`absolute top-16 left-0 sm:pl-10 lg:pl-16 pt-19 bg-[#261A54] w-full px-7 h-screen xl:relative xl:top-0 xl:h-auto xl:flex xl:hidden`} style={{top: '230px'}}>
       <div className='header-menu-items-list'>
         {JSON.parse(JSON.stringify(process.env.headerItems).toString()).map((item) => (
           <ul key={`header-item-${item.id}`}>

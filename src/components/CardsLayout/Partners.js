@@ -12,7 +12,7 @@ const Partners = ({
   return (
     <>
       <PageHeroSection 
-        title={`Partneri`}
+        title={`Prijatelji`}
       />
       <div className="w-full blogs-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
         <div className="blog-container grid sm:grid-template-1 md:grid-template-2">
@@ -32,8 +32,9 @@ const Partners = ({
           ))}
         </div>
         {/* kontakt sekcija */}
-        <ContactForm 
-          title={`Želite da sarađujete sa nama?`}
+        <ContactForm
+          sectionTitle={`Želite da sarađujete sa nama?`}
+          predefinedTitle={`Želim da sarađujem sa vama`}
           withImage={false}
         />
       </div>
