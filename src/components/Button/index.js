@@ -41,7 +41,7 @@ const Button = ({
   return (
     <button
       key={keyValue}
-      className={setStyle(type) + (color ? (+ ' ' + setStyle(type) + '__' + color) : '')}
+      className={`${setStyle(type) + (color ? (+ ' ' + setStyle(type) + '__' + color) : '')}`}
       disabled={disabled}
       onClick={onClick}
     >
@@ -51,6 +51,7 @@ const Button = ({
         height={iconSize}
         alt={iconAlt}
         style={{marginLeft: '14px'}}
+        className='w-10'
       />}
       {name && <span className={(name && description) ? "title" : "text"}>{name}</span>}
       {description && <span className="description">{description}</span>}

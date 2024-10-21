@@ -1,3 +1,4 @@
+'use client'
 import CardComponent from "@/components/CardComponent";
 import PlusIcon from "../../icons/plus-icon.svg";
 import PageHeroSection from "@/components/Hero/pageOwl";

@@ -31,8 +31,8 @@ const NotFoundPage = () => {
         </div>
         <img 
         className='top-227 left-1047 owls-image'
-        maxWidth={'1005px'}
-        maxHeight={'609px'}
+        maxwidth={'1005px'}
+        maxheight={'609px'}
         src='/owls.svg'
         alt="owls"
       />
