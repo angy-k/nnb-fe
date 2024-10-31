@@ -7,9 +7,10 @@ const BlogPage = () => {
       <h1>Blogs</h1>
       <p>Welcome to the blogs page!</p>
       <Blogs
-        title={'Blog'}
-        numberForDisplay={6}
-        pagination={true}
+        title={'Pročitaj još'}
+        sectionType={'blog'}
+        numberForDisplay={3}
+        pagination={false}
       />
     </div>
   );

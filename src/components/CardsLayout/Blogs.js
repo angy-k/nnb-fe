@@ -1,9 +1,12 @@
+'use client'
 import CardComponent from "../CardComponent";
 import { Divider } from "@nextui-org/divider";
 import Button from "../Button";
 import Link from 'next/link';
 import { formatTitleForUri } from '@/utils/transform-helper';
+import { useRouter } from 'next/navigation'
 import PageHeroSection from '@/components/Hero/pageOwl';
+
 
 const Blogs = ({
   title,
@@ -12,8 +15,11 @@ const Blogs = ({
   pagination = false, 
   sectionType = 'blog'
 }) => {
-  function goToSingleBlog() {
-    console.log('preview single blog post')
+  const router = useRouter()
+
+  function goToSingleBlog(blog) {
+    console.log('preview single blog post: ', blog.title)
+    // router.push(`/blog/${formatTitleForUri(blog.title.toLowerCase().replaceAll(" ", '-'))}`)
   }
 
   function previewAllPosts() {
@@ -54,7 +60,7 @@ const Blogs = ({
                   author={blog.author}
                   title={blog.title}
                   creationDate={blog.creationDate}
-                  buttonAction={() => goToSingleBlog()}
+                  buttonAction={() => goToSingleBlog(blog)}
                   buttonText="Pročitaj više"
                 />
               </Link>

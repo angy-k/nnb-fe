@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'Open Sans';
+  font-family: 'Open Sans', sans-serif;
   font-weight: 400;
   src: url('../../public/static/fonts/OpenSans-Regular.ttf') format('ttf');
 }
 
 @font-face {
-  font-family: 'Open Sans';
+  font-family: 'Open Sans', sans-serif;
   font-weight: 700;
   src: url('../../public/static/fonts/OpenSans-Bold.ttf') format('ttf');
 }
@@ -51,13 +51,13 @@ h1 {
 }
 
 h2 {
-  font-family: 'Open Sans';
+  font-family: 'Open Sans', sans-serif;
   font-weight: 700;
   font-size: 48px;
   line-height: 65.36px;
 }
 h6 {
-  font-family: 'Open Sans';
+  font-family: 'Open Sans', sans-serif;
   font-weight: 400;
   font-size: 22px;
   line-height: 29.96px;
@@ -76,7 +76,7 @@ h6 {
   border: 1px solid #ffffff;
   opacity: 0px;
   .text {
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     font-weight: 400;
     line-height: 24.51px;
@@ -208,7 +208,7 @@ h6 {
   }
 
   &__title {
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 64px;
     font-weight: 700;
     line-height: 87.16px;
@@ -217,7 +217,7 @@ h6 {
 
   }
   &__description {
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 27px;
     font-weight: 400;
     line-height: 36.77px;
@@ -235,7 +235,7 @@ h6 {
   &-author {
     padding-top: 52px;
     max-width: 438px;
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     font-weight: 400;
     line-height: 24.51px;
@@ -244,7 +244,7 @@ h6 {
   }
   &-title {
     padding: 30px 0;
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 36px;
     font-weight: 700;
     line-height: 49.03px;
@@ -255,7 +255,7 @@ h6 {
     padding-top: 6px;
     padding-bottom: 30px;
     max-width: 438px;
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 36px;
     font-weight: 700;
     line-height: 49.03px;
@@ -264,7 +264,7 @@ h6 {
   }
 
   &-creation-date {
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     font-weight: 400;
     line-height: 24.51px;
@@ -420,14 +420,14 @@ h6 {
     display: flex;
     flex-direction: column;
     &-section-title {
-      font-family: 'Open Sans';
+      font-family: 'Open Sans', sans-serif;
       font-size: 15px;
       font-weight: 700;
       line-height: 20.43px;
       text-align: left;
     }
     &-section-content {
-      font-family: 'Open Sans';
+      font-family: 'Open Sans', sans-serif;
       font-size: 15px;
       font-weight: 400;
       line-height: 20.43px;
@@ -464,7 +464,7 @@ h6 {
   }
 
   &-text {
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 36px;
     font-weight: 700;
     line-height: 49.02px;
@@ -492,7 +492,7 @@ h6 {
     border-radius: 30px;
     padding: 10px;
     h2 {
-      font-family: 'Open Sans';
+      font-family: 'Open Sans', sans-serif;
       font-size: 36px;
       font-weight: 400;
       line-height: 49.02px;
@@ -500,7 +500,7 @@ h6 {
       color: #261A54;
     }
     .section {
-      font-family: 'Open Sans';
+      font-family: 'Open Sans', sans-serif;
       font-size: 18px;
       font-weight: 400;
       line-height: 24.51px;
@@ -521,7 +521,7 @@ h6 {
     color: #261A54;
   }
   .table-header-value {
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     font-weight: 700;
     line-height: 24.51px;
@@ -537,7 +537,7 @@ h6 {
     background: #261A54;
   }
   .table-cell-value {
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     font-weight: 400;
     line-height: 24.51px;
@@ -621,7 +621,7 @@ h6 {
       border-radius: 36.5px;
       cursor: pointer;
       .text {
-        font-family: 'Open Sans';
+        font-family: 'Open Sans', sans-serif;
         font-size: 18px;
         font-weight: 400;
         line-height: 24.51px;
@@ -685,7 +685,7 @@ h6 {
         cursor: pointer;
         text-decoration: none;
         color: #ffffff;
-        font-family: 'Open Sans';
+        font-family: 'Open Sans', sans-serif;
         font-size: 18px;
         font-weight: 400;
         line-height: 24.51px;
@@ -721,7 +721,7 @@ h6 {
 }
 
 .calendar-title {
-  font-family: 'Open Sans';
+  font-family: 'Open Sans', sans-serif;
   font-size: 26px;
   font-weight: 700;
   line-height: 35.4px;
@@ -791,7 +791,7 @@ h6 {
 
     }
     .section-main-word-subtitle {
-      font-family: 'Open Sans';
+      font-family: 'Open Sans', sans-serif;
       font-size: 26px;
       font-weight: 400;
       line-height: 35.39px;
@@ -799,7 +799,7 @@ h6 {
       /* color: #261A54; */
     }
     .section-main-word-content {
-      font-family: 'Open Sans';
+      font-family: 'Open Sans', sans-serif;
       font-size: 18px;
       font-weight: 400;
       line-height: 24.51px;
@@ -825,7 +825,7 @@ h6 {
 
 }
 .organizer-section-sub-quote {
-  font-family: 'Open Sans';
+  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   font-weight: 400;
   line-height: 33.48px;
@@ -875,7 +875,7 @@ h6 {
   &-description {
     min-width: 400px;
     margin-bottom: 40px;
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     font-weight: 400;
     line-height: 24.51px;

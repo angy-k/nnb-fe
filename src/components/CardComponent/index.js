@@ -1,3 +1,4 @@
+'use client'
 import SectionImage from "@/components/SectionImage"
 import Button from "@/components/Button"
 import DefaultImage from "./assets/card-component-default-image.png"
