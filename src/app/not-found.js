@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const NotFoundPage = () => {
   return (
@@ -29,7 +30,7 @@ const NotFoundPage = () => {
             Vrati se na početnu stranicu
           </Link>
         </div>
-        <img 
+        <Image
         className='top-227 left-1047 owls-image'
         maxwidth={'1005px'}
         maxheight={'609px'}

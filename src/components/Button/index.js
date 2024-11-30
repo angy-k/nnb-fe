@@ -33,6 +33,8 @@ const Button = ({
         return 'button-outlined-white';
       case 'outlined-icon':
         return 'outlined-icon-button';
+      case 'outlined-orange':
+        return 'button-outlined-orange';
       default:
         return customStyle;
 

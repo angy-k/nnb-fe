@@ -77,8 +77,8 @@ import {
   ): WeekEvent[][] => {
     const filteredEvents: WeekEvent[] = [];
   
-    const weekEnd = endOfWeek(date);
-    const weekStart = startOfWeek(date);
+    const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
+    const weekStart = startOfWeek(date, { weekStartsOn: 1 });
   
     for (let event of events) {
       const { end_date, start_date } = event;

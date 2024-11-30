@@ -14,17 +14,17 @@ export const metadata = {
   },
 }
 
-export async function getData() {
-  const response = await []
-  return {
-    data: await response
-  }
-}
+// export async function getData() {
+//   const response = await []
+//   return {
+//     data: await response
+//   }
+// }
 
 export default async function Home() {
-  const {
-    data
-  } = await getData()
+  // const {
+  //   data
+  // } = await getData()
   return (
     <div className='min-h-screen'>
       {/** Add JSON-LD to your page */}

@@ -6,9 +6,11 @@ import Faq from '@/components/FaQ'
 
 const ContactPage = () => {
     return (
-      <div className="grid place-items-center w-full">
+      <div className="grid place-items-center w-full pt-80">
         <PageHeroSection 
           title={`Kontakt`}
+          type="description"
+          icons={false}
           description={`Ukoliko imate bilo kakvo pitanje, sugestiju, kritiku, ili samo želite da se dodatno informišete o našim dešavanjima, 
               osećajte se slobodni da nam pišete u svako doba dana, odgovorićemo Vam u najbržem roku.`}
         />

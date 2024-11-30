@@ -1,6 +1,9 @@
 import { startOfDay, differenceInMinutes, format } from "date-fns";
-
+import { cn } from '@/utils'
 import { Event } from "../types";
+import Image from 'next/image';
+import SingleEventLight from '@/icons/event-light.svg';
+import SingleEventDark from '@/icons/event-dark.svg';
 
 const MINUTES_IN_DAY = 24 * 60;
 
@@ -42,7 +45,7 @@ export const DayEvent: React.FC<DayEventProps> = ({
       top,
       height,
       padding: "2px 8px",
-      zIndex: 100 + index,
+      zIndex: 10 + index,
       width: `calc((100% - 96px) * ${widthPercentage})`,
     };
 
@@ -56,12 +59,20 @@ export const DayEvent: React.FC<DayEventProps> = ({
     };
   };
 
+  let definedStyle = generateBoxStyle();
+  
   return (
     <div
-      style={generateBoxStyle()}
-      className="bg-blue-400 border border-white rounded cursor-pointer absolute"
+      style={definedStyle}
+      className={cn("border border-white rounded cursor-pointer absolute", Number(event.id)%2 ? 'bg-[#56C4CF]' : 'bg-[#261A54]', definedStyle.height > 55 ? ' flex flex-column' : '')}
     >
-      <h1 className="text-white text-xs">
+      {definedStyle.height > 55 && <Image 
+        src={Number(event.id)%2 ? SingleEventLight : SingleEventDark}
+        width={126}
+        height={52}
+        alt='single-event'
+      />}
+      <h1 className={cn("text-white text-xs", definedStyle.height > 55 ? 'self-center' : '')}>
         {`${event.title}, 
         ${format(event.start_date, "h:mm a")} - 
         ${format(event.end_date, "h:mm a")}`}

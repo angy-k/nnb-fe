@@ -4,7 +4,7 @@ import Button from "@/components/Button"
 import DefaultImage from "./assets/card-component-default-image.png"
 
 const CardComponent = ({
-  key,
+  key = 'single-card-component',
   imageSrc = DefaultImage,
   imageWidth = 438,
   imageHeight = 344,
@@ -40,19 +40,19 @@ const CardComponent = ({
           {position && <span className="card-component-author">{position}</span>}
         </>
         {title && <span className={author ? "card-component-title-blog mb-30" : "card-component-title"}>{title}</span>}
-        {subtitle && <span>{subtitle}</span>}
-        {description && <span>{description}</span>}
-      <Button
-        key={`card-component-button-${sectionType}`}
-        type={buttonIcon ? 'outlined-icon' : 'outlined-dark'}
-        name={buttonIcon ?  null : buttonText}
-        iconAlt="see-more-button"
-        iconPath={buttonIcon}
-        iconSize={buttonIconSize}
-        onClick={buttonAction}
-        className="card-component-button"
-      />
-      {creationDate && <span className="card-component-creation-date" style={{alignSelf: 'flex-end'}}>{creationDate}</span>}
+        {subtitle && <span style={sectionType === 'our-team' ? {color: '#1B1B1B', fontWeight: '400', fontSize: '17'} : {}}>{subtitle}</span>}
+        {description && <span style={sectionType === 'our-team' ? {color: '#616161', fontWeight: '400', fontSize: '17'} : {}}>{description}</span>}
+        {buttonAction && <Button
+          key={`card-component-button-${sectionType}`}
+          type={buttonIcon ? 'outlined-icon' : 'outlined-dark'}
+          name={buttonIcon ?  null : buttonText}
+          iconAlt="see-more-button"
+          iconPath={buttonIcon}
+          iconSize={buttonIconSize}
+          onClick={buttonAction}
+          className="card-component-button"
+        />}
+        {creationDate && <span className="card-component-creation-date" style={{alignSelf: 'flex-end'}}>{creationDate}</span>}
     </div>
   )
 }

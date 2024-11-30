@@ -16,11 +16,11 @@ type MonthWeekViewProps = {
 };
 
 const dayLabelVariants = cva(
-  "my-2 flex justify-center items-center text-sm font-semibold",
+  "my-2 flex justify-center items-center text-sm font-normal",
   {
     variants: {
       variant: {
-        default: "bg-transparent text-gray-500",
+        default: "bg-transparent text-[#1B1B1B]",
         today: "bg-blue-400 text-white",
       },
       size: {
@@ -61,7 +61,7 @@ export const MonthWeekView: React.FC<MonthWeekViewProps> = ({
           return (
             <div
               key={"day-label-" + day.toISOString()}
-              className="flex-1 flex flex-col items-center border-b border-l last:border-r"
+              className="flex-1 flex flex-col items-center [&:not(:last-child)]:border-r border-b text-[#B0B0B0]"
             >
               <h2 className={className}>{text}</h2>
             </div>

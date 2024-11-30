@@ -44,7 +44,7 @@ export const DayProgress: React.FC<DayProgressProps> = ({
       style={{ top }}
       aria-label="day time progress"
       className={cn(
-        "h-1 w-full absolute left-24 -translate-y-1/2 z-[1000000]",
+        "h-1 w-full absolute left-24 -translate-y-1/2 z-50", //z-[1000000]",
         className
       )}
     >

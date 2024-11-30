@@ -35,10 +35,10 @@ export const DayView: React.FC<DayViewProps> = ({ date, events = [] }) => {
   const { eventGroups, allDayEvents } = groupEvents(date, events);
 
   return (
-    <section id="calendar-day-view" className="flex-1 h-full">
-      <div className="border-b flex scrollbar-gutter-stable">
+    <section id="calendar-day-view" className="flex-1 h-full min-h-[800px] max-h-[888px]">
+      <div className="border-b flex scrollbar-gutter-stable text-[#B0B0B0]">
         <div className="min-w-24 h-14 flex justify-center items-center">
-          <span className="text-xs">{format(new Date(), "z")}</span>
+          <span className="text-xs text-[#1B1B1B]">{format(new Date(), "z")}</span>
         </div>
         <div className="flex flex-col flex-1 justify-center items-center border-l gap-[1px]">
           {allDayEvents.map((event) => (
@@ -64,7 +64,7 @@ export const DayView: React.FC<DayViewProps> = ({ date, events = [] }) => {
             <div className="h-14 flex" key={time.toISOString() + index}>
               <div className="h-full w-24 flex items-start justify-center">
                 <time
-                  className="text-xs -m-3 select-none"
+                  className="text-xs -m-3 select-none text-[#B0B0B0]"
                   dateTime={format(time, "yyyy-MM-dd")}
                 >
                   {index === 0 ? "" : format(time, "h a")}
@@ -72,7 +72,7 @@ export const DayView: React.FC<DayViewProps> = ({ date, events = [] }) => {
               </div>
               <div
                 className={cn(
-                  "flex-1 relative border-l",
+                  "flex-1 relative border-l text-[#B0B0B0]",
                   index !== hours.length - 1 && "border-b"
                 )}
               />

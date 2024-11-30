@@ -62,8 +62,8 @@ import {
     },
     {
       id: "11",
-      start_date: startOfWeek(new Date()),
-      end_date: endOfWeek(new Date()),
+      start_date: startOfWeek(new Date(), { weekStartsOn: 1 }),
+      end_date: endOfWeek(new Date(), { weekStartsOn: 1 }),
       title: "Week event",
     },
     {

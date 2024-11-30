@@ -55,41 +55,54 @@ export const Calendar: React.FC<CalendarProps> = ({
 
     const formatDateForView = useCallback((date: Date) => {
         if (curView === "day") {
-        return format(date, "dd MMMM yyyy");
+            return date.toLocaleDateString('sr-Latn', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+            });
         }
 
         if (curView === "week") {
-        const weekStart = startOfWeek(date);
-        const weekEnd = endOfWeek(date);
+            const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+            const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
 
-        const startMonth = format(weekStart, "MMM");
-        const endMonth = format(weekEnd, "MMM");
-        const year = format(weekStart, "yyyy");
+            const startMonth = weekStart.toLocaleDateString('sr-Latn', {
+                month: 'short',
+            });
+            const endMonth = weekEnd.toLocaleDateString('sr-Latn', {
+                month: 'short',
+            });
+            const year = weekStart.toLocaleDateString('sr-Latn', {
+                year: 'numeric',
+            });
 
-        if (startMonth !== endMonth) {
-            return `${startMonth} – ${endMonth} ${year}`;
-        } else {
-            return `${startMonth} ${year}`;
+            if (startMonth !== endMonth) {
+                return `${startMonth} – ${endMonth} ${year}`;
+            } else {
+                return `${startMonth} ${year}`;
+            }
         }
-        }
 
-        return format(date, "MMMM yyyy");
+        return date.toLocaleDateString('sr-Latn', {
+            month: 'long',
+            year: 'numeric',
+        });
     }, [curView]);
 
 return (
-    <div key={"calendar-component"} className={"2xl:max-w-screen-2xl w-full h-full flex-1 flex flex-col overflow-hidden"}>
-        <section id="calendar-header" className="mb-6 w-full flex justify-between">
+    <div key={"calendar-component"} className={"2xl:max-w-screen-2xl w-full h-full flex-1 flex flex-col overflow-hidden pt-60"}>
+        <section id="calendar-header" className="mb-6 w-full flex justify-between pb-24">
             <div className="flex gap-2 items-center w-full justify-center">
-                <span className="calendar-title">
-                    {formatDateForView(curDate)}
+                <span className="calendar-title capitalize">
+                    {formatDateForView(curDate).toLowerCase()}
                 </span>
                 {/* <button aria-label={"set date today"} onClick={() => setCurDate(new Date())} className={"py-2 px-3 border border-gray-200 rounded-md font-semibold hover:bg-blue-100 transition-colors duration-300"}>
                     {`Today`}
                 </button> */}
                 
             </div>
-            <div className="flex gap-2 calendar-buttons">
-                <button onClick={onPrev} aria-label={`prev ${curView}`} className="w-[42px] aspect-square border-none button-one font-semibold flex justify-center items-center hover:bg-lightBlue hover:opacity-75 transition-colors duration-300">
+            <div className="flex gap-2 calendar-buttons h-[48px]">
+                <button onClick={onPrev} aria-label={`prev ${curView}`} className="w-[42px] aspect-square border-none button-one font-semibold flex justify-center items-center hover:bg-[lightBlue] hover:opacity-75 transition-colors duration-300">
                     <Image
                         src={ArrowLeft}
                         width={24}
@@ -98,7 +111,7 @@ return (
                     />
                 </button>
                 <Divider orientation="vertical" className="section-divider" />
-                <button onClick={onNext} aria-label={`next ${curView}`} className="w-[42px] aspect-square border-none button-two font-semibold flex justify-center items-center hover:bg-lightBlue hover:opacity-75 transition-colors duration-300">
+                <button onClick={onNext} aria-label={`next ${curView}`} className="w-[42px] aspect-square border-none button-two font-semibold flex justify-center items-center hover:bg-[lightBlue] hover:opacity-75 transition-colors duration-300">
                     <Image
                         src={ArrowRight}
                         width={24}

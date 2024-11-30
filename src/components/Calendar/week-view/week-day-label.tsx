@@ -11,8 +11,10 @@ export const WeekDayLabel: React.FC<WeekDayLabelProps> = ({ day }) => {
 
   return (
     <div className="flex-1 min-w-36 flex flex-col items-center">
-      <span aria-hidden className="text-md text-gray-400">
-        {format(day, "iii")}
+      <span aria-hidden className="text-md text-[#1B1B1B] capitalize">
+      {day.toLocaleDateString('sr-Latn', {
+                  weekday: 'long'
+              })}
       </span>
       <div
         aria-label={day.toDateString()}
@@ -21,7 +23,7 @@ export const WeekDayLabel: React.FC<WeekDayLabelProps> = ({ day }) => {
           isDayToday && "text-white bg-blue-400"
         )}
       >
-        <p className="leading-[44px]">{format(day, "d")}</p>
+        <p className={cn("leading-[44px] text-[#1B1B1B]", isDayToday && "text-white")}>{format(day, "d")}</p>
       </div>
     </div>
   );

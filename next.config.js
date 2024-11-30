@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 // const officeConfig = require(`./office-config/config.json`)
 const genereateRobotsTxt = require('./src/scripts/generate-robots-txt');
+const rewriteOldPaths = require('./rewriteOldPaths');
 
 /** @type {import('next').NextConfig} */
 
@@ -16,7 +17,7 @@ const officeConfig = readFile(`./${process.env.NEXT_PUBLIC_APP_NAME}-config/conf
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
-  distDir: `build/${process.env.NEXT_PUBLIC_APP_NAME}`,
+  distDir: `.next`, //!!domain ? `.next` : `./build/${process.env.NEXT_PUBLIC_APP_NAME}`,
   env: {
     ...JSON.parse(officeConfig).envs[`${process.env.npm_config_env}`],
     ...JSON.parse(officeConfig).agency,
@@ -29,68 +30,7 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      //old routes redirections ... should be deleted in a few months - first check with SEO team
-      {
-        source: '/nocni-bazar-dogadjaji',
-        destination: '/dogadjaji',
-        permanent: true
-      },
-      {
-        source: '/ostali-dogadjaji',
-        destination: '/dogadjaji',
-        permanent: true
-      },
-      {
-        source: '/partneri/projekat-market-of-entrepreneurship/', // stari projekat
-        destination: '/projekti/projekat-market-of-entrepreneurship',
-        permanent: true
-      },
-      {
-        source: '/kalendar-manifestacija-u-2024-godini',
-        destination: '/kalendar-dogadjaja', //add year as a query param???,
-        permanent: true
-      },
-      {
-        source: '/kalendar-manifestacija-u-2023-godini',
-        destination: '/kalendar', //add year as a query param???,
-        permanent: true
-      },
-      {
-        source: '/kalendar-manifestacija-u-2022-godini',
-        destination: '/kalendar', //add year as a query param???,
-        permanent: true
-      },
-      {
-        source: '/partneri',
-        destination: '/prijatelji',
-        permanent: true
-      },
-      {
-        source: '/partneri/:path',
-        destination: '/prijatelji/:path',
-        permanent: true
-      },
-      {
-        source: '/sponzori',
-        destination: '/prijatelji',
-        permanent: true
-      },
-      {
-        source: '/erasmus',
-        destination: '/prijatelji/erasmus',
-        permanent: true
-      },
-      {
-        source: '/fruski-jazacki',
-        destination: '/prijatelji/fruski-jazacki',
-        permanent: true
-      },
-      {
-        source: '/category/:path',
-        destination: '/',
-        permanent: true
-      }
-
+      ...rewriteOldPaths
     ]
   },
   async rewrites() {

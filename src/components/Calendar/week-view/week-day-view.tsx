@@ -55,7 +55,7 @@ export const WeekDayView: React.FC<WeekDayViewProps> = ({
           <div
             key={time.toISOString()}
             className={cn(
-              "h-14 w-full border-l",
+              "h-14 w-full border-l text-[#B0B0B0]",
               index !== hours.length - 1 && "border-b"
             )}
           />

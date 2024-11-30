@@ -144,6 +144,19 @@ h6 {
       color: #261A54;
   }
 }
+.button-outlined-orange {
+  background-color: #EC4923;
+  ;
+  border: 1px solid #ffffff;
+  .text {
+    color: #ffffff;
+  }
+  :hover {
+    background-color: #EC4923;
+    ;
+    color: #ffffff;
+  }
+}
 
 .button-outlined-dark {
   border: 1px solid #1B1B1B;
@@ -195,7 +208,7 @@ h6 {
   border: 1px  solid #ffffff;
   opacity: 0px;
   &__orange:hover {
-    background: #F18020;
+    background-color: #F18020;
     color: #261A54;
   }
   &__light:hover {
@@ -283,6 +296,9 @@ h6 {
 }
 .section-divider {
   border: 1px solid #1B1B1B;
+  &-light {
+    border: 1px solid #ffffff;
+  }
 }
 .footer-container {
   display: flex;
@@ -331,30 +347,42 @@ h6 {
 }
 
 .our-team-container {
-  .card-container {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: auto auto;
-    gap: 20px;
+  padding: 90px 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto auto;
+
+  @media screen and (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
   }
-    
+  @media screen and (max-width: 599px) {
+    grid-template-columns: repeat(1, 1fr);
+  }
+  
+  .card-container {
+    padding: 0 20px;
+    background-color: transparent;
+  }
   .card-item {
     background-color: transparent;
-    /* padding: 20px; */
-    /* border-radius: 8px; */
     text-align: center;
   }
   
   /* Style to lower the second and fourth items in each row */
-  .card-container .card-item:nth-child(2),
-  .card-container .card-item:nth-child(4),
-  .card-container .card-item:nth-child(6),
-  .card-container .card-item:nth-child(8) {
-    margin-top: 20px;
+  .card-container:nth-child(2),
+  .card-container:nth-child(4),
+  .card-container:nth-child(6),
+  .card-container:nth-child(8) {
+    margin-top: 53px;
   }
 
   .team-card-gradient {
-    background: radial-gradient(44.51% 44.51% at 50% 50%, rgba(86, 196, 207, 0.4) 0%, rgba(240, 240, 240, 0.4) 100%);
+    background: radial-gradient(44.51% 44.51% at 50% 50%, rgba(86, 196, 207, 0.4) 0%, rgba(240, 240, 240, 0.4) 100%) left #f0f0f0;
+    background-position-x: -100px;
+  }
+  .team-card-gradient:nth-child(4),
+  .team-card-gradient:nth-child(8) {
+    background-repeat: no-repeat;
   }
 
     /* this is example for circle gradient which is positioned 3/4 from top and 0 from left of the div */
@@ -746,6 +774,43 @@ h6 {
     border-radius: 0px 24px 24px 0px;
   }
 }
+.calendar-border {
+  stroke: #b0b0b0;
+  fill: none;
+  stroke-width: 1;
+}
+
+.about-us-container {
+  max-width: 1400px;
+  margin: auto 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  grid-template-rows: auto auto;
+  @media screen and (max-width: 599px) {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+.about-us-title-container {
+  display: inline-block;
+  text-align: center;
+}
+.about-us-title-container .title-row:first-child {
+  display: inline;
+}
+.about-us-title-container .title-row:last-child {
+  display: block;
+}
+.about-us-hero-title {
+  font-family: MADE GoodTime Script;
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 55.68px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  color: #56C4CF;
+}
 
 .section-main-word-background-image-div {
   width: 100%;
@@ -880,6 +945,17 @@ h6 {
     font-weight: 400;
     line-height: 24.51px;
     text-align: left;
+    color: #ffffff;
+  }
+  &-about_us {
+    font-family: 'MADE GoodTime Script', sans-serif;
+    font-weight: 400;
+    font-size: 128px;
+    line-height: 118.01px;
+    color: #56C4CF;
+    @media screen and (max-width: 599px) {
+      font-size: 60px;
+    }
   }
   /* .hero-owl-image {
     width: 660.35px;

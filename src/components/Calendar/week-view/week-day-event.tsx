@@ -1,6 +1,9 @@
 import { startOfDay, differenceInMinutes, format } from "date-fns";
-
+import { cn } from "@/utils";
 import { Event } from "../types";
+import Image from 'next/image';
+import SingleEventLight from '@/icons/event-light.svg';
+import SingleEventDark from '@/icons/event-dark.svg';
 
 const MINUTES_IN_DAY = 24 * 60;
 
@@ -38,7 +41,7 @@ export const WeekDayEvent: React.FC<WeekDayEventProps> = ({
       top,
       height,
       padding: "2px 8px",
-      zIndex: 100 + index,
+      zIndex: 10 + index,
       width: `calc(100% * ${widthPercentage})`,
     };
 
@@ -51,12 +54,19 @@ export const WeekDayEvent: React.FC<WeekDayEventProps> = ({
       left: `calc(100% * ${(1 / grouplength) * index})`,
     };
   };
+  let definedStyle = generateBoxStyle();
 
   return (
     <div
-      style={generateBoxStyle()}
-      className="bg-blue-400 border border-white rounded cursor-pointer absolute"
+      style={definedStyle}
+      className={cn("border border-white rounded cursor-pointer absolute", index%2 ? 'bg-[#56C4CF]' : 'bg-[#261A54]', definedStyle.height > 55 ? ' flex flex-column' : '')}
     >
+      {definedStyle.height > 55 && <Image 
+        src={Number(index)%2 ? SingleEventLight : SingleEventDark}
+        width={126}
+        height={52}
+        alt='single-event'
+      />}
       <h1 className="text-white text-xs">
         {`${event.title}, 
         ${format(event.start_date, "h:mm a")} - 

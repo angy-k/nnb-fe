@@ -27,8 +27,8 @@ export const WeekView: React.FC<WeekViewProps> = ({ date, events = [] }) => {
   });
 
   const days = eachDayOfInterval({
-    start: startOfWeek(date),
-    end: endOfWeek(date),
+    start: startOfWeek(date, { weekStartsOn: 1 }),
+    end: endOfWeek(date, { weekStartsOn: 1 }),
   });
 
   const { weekGroups, dayGroups } = createGroups(events);
@@ -36,11 +36,11 @@ export const WeekView: React.FC<WeekViewProps> = ({ date, events = [] }) => {
   return (
     <section
       id="calendar-day-view"
-      className="flex-1 flex flex-col overflow-x-auto overflow-y-hidden"
+      className="flex-1 flex flex-col overflow-x-auto overflow-y-hidden min-h-[800px] max-h-[888px]"
     >
-      <div className="min-w-[calc(96px+(144px*7))] flex border-b scrollbar-gutter-stable">
+      <div className="min-w-[calc(96px+(144px*7))] flex border-b scrollbar-gutter-stable text-[#B0B0B0]">
         <div className="min-w-24 h-14 flex justify-center items-center">
-          <span className="text-xs">{format(new Date(), "z")}</span>
+          <span className="text-xs text-[#1B1B1B]">{format(new Date(), "z")}</span>
         </div>
         <div className="flex flex-col flex-1">
           <div className="relative flex flex-1">
@@ -75,7 +75,7 @@ export const WeekView: React.FC<WeekViewProps> = ({ date, events = [] }) => {
               className="min-h-14 w-24 flex items-start justify-center"
             >
               <time
-                className="text-xs -m-3 select-none"
+                className="text-md -m-3 select-none text-[#B0B0B0]"
                 dateTime={format(time, "yyyy-MM-dd")}
               >
                 {index === 0 ? "" : format(time, "h a")}
