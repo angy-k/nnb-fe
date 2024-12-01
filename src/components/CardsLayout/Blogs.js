@@ -19,7 +19,7 @@ const Blogs = ({
 
   function goToSingleBlog(blog) {
     console.log('preview single blog post: ', blog.title)
-    // router.push(`/blog/${formatTitleForUri(blog.title.toLowerCase().replaceAll(" ", '-'))}`)
+    router.push(`/blog/${formatTitleForUri(blog.title.toLowerCase().replaceAll(" ", '-'))}`)
   }
 
   function previewAllPosts() {

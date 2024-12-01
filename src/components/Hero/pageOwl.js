@@ -97,6 +97,7 @@ const PageHiroSection = ({
               icons={icons} 
             />
             <HeroRight 
+              illustration={illustration}
               description={description}
             />
           </div>
@@ -178,20 +179,20 @@ const HeroLeft = ({ title, description, icons }) => {
   )
 }
 
-const HeroRight = ({ description }) => (
+const HeroRight = ({ description, illustration }) => (
   <div 
     className={
       cn("flex-1 w-full md:w-6/12 lg:w-6/12 xl:w-6/12 2xl:w-6/12", description ? 'pt-[40px]' : 'pt-[40px]')
     }
   >
-    <Image 
+    {illustration && <Image 
       maxwidth={'660px'}
       width={660}
       maxheight={'914px'}
       height={914}
       src='/hero-owl.svg'
       alt="hero-owl"
-    />
+    />}
   </div>
 )
 

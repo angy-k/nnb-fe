@@ -4,15 +4,18 @@ import Button from '@/components/Button';
 import FacebookIcon from '../../icons/facebook-icon-light.svg'
 import InstagramIcon from '../../icons/instagram-icon-light.svg'
 import YouTubeIcon from '../../icons/youtube-icon-light.svg'
+import { useDisclosure } from "@nextui-org/react";
+import { useEffect } from "react";
 
 const NavigateMenu = ({
   className,
   onClick
 }) => {
+  const {isOpen, onOpen, onClose} = useDisclosure();
 
-  function becomeExhibitor() {
-    //TODO redirect on register
-  }
+  useEffect(() => {
+    onOpen();
+  }, []);
 
   return (
     <div className={`absolute top-16 left-0 sm:pl-10 lg:pl-16 pt-19 bg-[#261A54] w-full px-7 h-screen xl:relative xl:top-0 xl:h-auto xl:flex xl:hidden`} style={{top: '230px'}}>
@@ -27,7 +30,7 @@ const NavigateMenu = ({
         key={`header-button`}
         type={'outlined-light'}
         name={'Postani izlagač'}
-        onClick={becomeExhibitor()}
+        onClick={onOpen}
         className='header-button'
       />
       <div className='pt-10 xl:hidden'>

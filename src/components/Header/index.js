@@ -3,19 +3,29 @@ import { useEffect, useState } from "react";
 import useUser from '@/data/use-user'
 import Logo from "../Logo";
 import Link from 'next/link';
-import Button from '../Button';
+import CustomButton from '../Button';
 import LogoDark from '@/../public/logo-dark.svg'
 import NavigateMenu from '@/components/NavigateMenu'
 import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  useDisclosure
+} from "@nextui-org/react";
 
 const Header = ({bgColor = '#261A54'}) => {
-  function becomeExhibitor() {
-    //TODO redirect on register
-  }
+  const router = useRouter()
+  const {isOpen, onOpen, onOpenChange, onClose} = useDisclosure();
 
   const {user, loading} = useUser()
   const [anchorElUser, setAnchorElUser] = useState(null)
   const [openMenu, setOpenMenu] = useState(false)
+  const [modalOpen] = useState(false)
   const [sentMail, setSentMail] = useState(true)
   const [profilePhotoUrl, setProfilePhotoUrl] = useState('static/images/login.svg')
   const pathname = usePathname()
@@ -24,6 +34,10 @@ const Header = ({bgColor = '#261A54'}) => {
   useEffect(() => {
     setDisplay(pathname !== '/not-found')
   }, [pathname])
+
+  useEffect(() => {
+    onOpen();
+  }, []);
 
   return (
     <div  className="flex justify-between items-center w-full fixed left-0 flex justify-center bg-[#261A54] z-[55]" style={{display: display ? 'flex' : 'none', left: '0', paddingTop: '116px', paddingBottom: '60px',}}>
@@ -82,15 +96,43 @@ const Header = ({bgColor = '#261A54'}) => {
            className={`absolute top-16 left-0 sm:pl-10 lg:pl-16 pt-19 bg-${bgColor} w-full px-7 h-screen xl:relative xl:top-0 xl:h-auto xl:flex xl:hidden`}
           />
         )}
-          <Button
+          <CustomButton
             key={`header-button`}
             type={'outlined-light'}
             name={'Postani izlagač'}
-            onClick={becomeExhibitor()}
+            onClick={onOpen}
             className='header-button'
           />
       </div>
     </div>
+
+    <Modal
+      backdrop="blur"
+      placement="center"
+      isOpen={modalOpen}
+      onOpenChange={onOpenChange}
+      onClose={onClose}
+      classNames="w-[200px] h-[200px] bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20"
+    >
+      <ModalContent style={{ zIndex: 1051 }}>
+        {(onClose) => (
+          <>
+            <ModalHeader classNames="flex flex-col gap-1">{'title'}</ModalHeader>
+            <ModalBody>
+              <p>{`ovde sam`}</p>
+            </ModalBody>
+            <ModalFooter>
+            <Button color="danger" variant="light" onPress={onClose}>
+              Close
+            </Button>
+            <Button color="primary" onPress={onClose}>
+              Action
+            </Button>
+            </ModalFooter>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
     </div>
   )
 }

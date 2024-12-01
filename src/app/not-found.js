@@ -5,7 +5,7 @@ import Image from 'next/image';
 const NotFoundPage = () => {
   return (
     <div className="mt-24 grid place-items-center mb-24">
-      <img
+      <Image
           // className="md:w-3/12 lg:w-2/12 2xl:x-2/12"
           src="/logo-dark.svg"
           alt="logo"
@@ -31,12 +31,12 @@ const NotFoundPage = () => {
           </Link>
         </div>
         <Image
-        className='top-227 left-1047 owls-image'
-        maxwidth={'1005px'}
-        maxheight={'609px'}
-        src='/owls.svg'
-        alt="owls"
-      />
+          className='top-227 left-1047 owls-image'
+          maxwidth={'1005px'}
+          maxheight={'609px'}
+          src='/owls.svg'
+          alt="owls"
+        />
       </div>
     </div>
   );

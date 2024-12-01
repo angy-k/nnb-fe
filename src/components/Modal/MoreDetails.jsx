@@ -9,10 +9,9 @@ const MoreDetailsModal = ({
     imageWidth = 211,
     imageHeight = 138,
     onClickActionButton,
-    actionButtonText,
+    actionButtonText = '',
     defaultLayout = 'column'
 }) => {
-  const {isOpen, onOpen, onClose} = useDisclosure();
 
   const handleOpen = () => {
     onOpen();
@@ -44,7 +43,7 @@ const MoreDetailsModal = ({
                     height={imageHeight}
                     alt={'Modal image alt text.'}
                 />}
-                <p>{modalBody}</p>
+                {modalBody && <p>{modalBody}</p>}
                 </div>
               </ModalBody>
               <ModalFooter>
