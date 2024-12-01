@@ -2,7 +2,7 @@
 import PageHeroSection from "@/components/Hero/pageOwl";
 import Image from 'next/image'
 
-const GalleryPage = ({
+const PhotosPage = ({
   // images = []
 }) => {
   return (
@@ -45,4 +45,4 @@ const GalleryPage = ({
   );
 }
 
-export default GalleryPage;
+export default PhotosPage;

@@ -2,7 +2,7 @@
 import PageHeroSection from "@/components/Hero/pageOwl";
 import Image from 'next/image'
 
-const GalleryPage = ({
+const VideoPage = ({
   // images = []
 }) => {
   return (
@@ -37,7 +37,7 @@ const GalleryPage = ({
            />
             // </Link>
           ))): ( */}
-          <p className="text-[darkBlue] our-team-title">{` Ne brinite, fotografije uskoro stižu.`}</p>
+          <p className="text-[darkBlue] our-team-title">{` Ne brinite, video zapisi uskoro stižu.`}</p>
         {/* )} */}
         </div>
       </div>
@@ -45,4 +45,4 @@ const GalleryPage = ({
   );
 }
 
-export default GalleryPage;
+export default VideoPage;
