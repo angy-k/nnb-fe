@@ -57,8 +57,7 @@ const PageHiroSection = ({
   }
   const titleHero = () => {
     return (
-      <div className="w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto page-hero-section"
-        // style={{gridTemplateColumns: '1fr 1fr'}}
+      <div className="w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto page-hero-section"
       >
         <HeroLeft
           title={title} 
@@ -76,7 +75,7 @@ const PageHiroSection = ({
     switch(type) {
       case 'image':
         return (
-          <div className="w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto page-hero-section">
+          <div className="w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto page-hero-section">
             <HeroWithImage 
               title={title}
               formatTitle={formatTitle}
@@ -88,7 +87,7 @@ const PageHiroSection = ({
       case 'title' || 'icons' || 'description':
         return (
           <div 
-            className={cn("w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto page-hero-section",title ? '' : 'pt-60')}
+            className={cn("w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto page-hero-section",title ? '' : 'pt-60')}
             // style={{gridTemplateColumns: '1fr 1fr'}}
           >
             <HeroLeft
@@ -203,17 +202,17 @@ const HeroWithImage = ({ title, formatTitle, image, illustration }) => {
       </div>}
       {image && <Image 
         src={'/about-us-hero-image.png'}
-        className=""
+        className="about-us-hero-image"
         width={1440}
         height={486}
         alt='about-us-hero-image'
       />}
       {!illustration && <div 
-        className="flex flex-row" 
+        className="flex flex-row grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2" 
         style={{width: '100%', height: '100%', maxWidth: '1400px'}}
         >
         <div 
-          className="flex flex-row w-full md:w-6/12 lg:w-6/12 xl:w-6/12 2xl:w-6/12 align-center items-center gap-[20px]"
+          className="flex flex-row w-full align-center items-center gap-[20px]"
         >
           <Image 
             src={aboutUsIcon}
@@ -223,7 +222,7 @@ const HeroWithImage = ({ title, formatTitle, image, illustration }) => {
           <span className="about-us-hero-title max-w-[400px]">{`Prvi Novosadski noćni bazar`}</span>
         </div>
         <span 
-          className="w-full md:w-6/12 lg:w-6/12 xl:w-6/12 2xl:w-6/12 content-center font-[18px] text-[#ffffff]" 
+          className="w-full content-center font-[18px] text-[#ffffff]" 
           style={{ whiteSpace: 'nowrap', textAlign: 'justify'}}
         >
           <span 

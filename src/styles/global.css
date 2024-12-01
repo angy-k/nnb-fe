@@ -811,22 +811,30 @@ h6 {
   text-decoration-skip-ink: none;
   color: #56C4CF;
 }
+.about-us-hero-image {
+  max-width: 100%;
+  @media screen and (max-width: 1400px) {
+    width: 100%;
+  }
+}
 
 .section-main-word-background-image-div {
   width: 100%;
-  height: 1523px;
-  background-image: url('/handsome-confident-smiling-man-with-hands-crossed-chest.png');
+  height: 100%;
+  top: 0;
+  left: 0;
+  position: absolute;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 
   .section-main-word-wrapper {
-      display: grid;
-      align-items: center;
-      justify-content: right;
-      height: 100%;
-      position: relative; 
-      width: 100%; 
+    display: grid;
+    align-items: center;
+    justify-content: right;
+    height: 100%;
+    position: relative; 
+    width: 100%; 
   }
   .section-main-word {
     max-width: 710px;
@@ -840,6 +848,11 @@ h6 {
     max-height: 100%;
     transform: translateX(-50%);
     backdrop-filter: blur(5px); /* Apply blur effect */
+    @media screen and (max-width: 768px) {
+      max-width: 500px;
+      left: 20%;
+      width: 80%;
+    }
     
     .section-main-subcomponent {
       display: flex;

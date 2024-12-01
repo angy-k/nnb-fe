@@ -1,11 +1,17 @@
+import Image from 'next/image';
 
 const OrganizerWord = ({
     mainWordText = mockWords
 }) => {
   return (
-    <div className='w-full'>
-      <div className="w-full section-main-word-background-image-div">
-        <div className="section-main-word-wrapper">
+    <div className='w-full' style={{position: 'relative', width: '100%', height: '100%',  display: 'flex'}}>
+      <div className="w-full section-main-word-background-image-div" style={{width: '100%', height: '1743px',  display: 'block', position: 'relative'}}>
+        <Image
+          src={'/handsome-confident-smiling-man-with-hands-crossed-chest.png'}
+          fill={true}
+          alt='organizer-main-word-bg'
+        />
+        <div className="section-main-word-wrapper items-center" style={{ maxWidth: '1400px', justifySelf: 'center',}}>
           <div className="section-main-word">
             <div className="section-main-subcomponent">
               <span className="section-main-word-title text-darkBlue">{`Marija Radojčić`}</span>
@@ -15,7 +21,7 @@ const OrganizerWord = ({
           </div>
         </div>
       </div>
-      <div className="bg-darkBlue organizer-section-quote justify-center">
+      <div className="bg-darkBlue organizer-section-quote justify-center" style={{position: 'absolute', bottom: 0, width: '100%'}}>
         <span className="organizer-section-main-quote text-lightBlue">{`“Život nema reprizu”`}</span>
         <span className="organizer-section-sub-quote text-[#ffffff]">{`je misao koju ja živim u svakom smislu.`}</span>
       </div>

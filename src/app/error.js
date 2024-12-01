@@ -10,8 +10,8 @@ const ErrorPage = () => {
           // className="md:w-3/12 lg:w-2/12 2xl:x-2/12"
           src="/logo-dark.svg"
           alt="logo"
-          width={'264px'}
-          height={'83px'}
+          width={264}
+          height={83}
       />
       <div className='not-found-section mt-24'>
         <div 
