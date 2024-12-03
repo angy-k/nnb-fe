@@ -14,7 +14,7 @@ const ProfileComponent = ({
       <PageHeroSection 
           illustration={false}
       />
-      <div className="grid place-items-center w-full w-full mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-[48px] md-2xl:pb-[35px]" style={{ background: 'linear-gradient(to bottom, #261A54 70%, #f0f0f0 70%)'}}>
+      <div className="grid place-items-center w-full w-full mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-[48px] md-2xl:pb-[35px]" style={{ background: 'linear-gradient(to bottom, #261A54 60%, #f0f0f0 60%)'}}>
         <div className='edit-profile'>
           <div className='place-items-center' style={{display: 'flex', flexDirection: 'row', gap: '20px'}}>
             <Avatar
@@ -23,7 +23,7 @@ const ProfileComponent = ({
               radius="full"
               isBordered
               color='default'
-              className="w-[223px] h-[223px] text-tiny bg-[#261A54] p-[36px]"
+              className="w-[223px] h-[223px] text-tiny bg-[#261A54] p-[36px] border border-solid border-violet-300"
             />
             <span style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
               <span className='font-bold font-[48px] text-[#ffffff]'>{account.brandName}</span>
@@ -50,26 +50,24 @@ const ProfileComponent = ({
 
 export default ProfileComponent;
 
-
 const mockedUser = {
-    brandName: 'Krafter',
-    type: 'pivara',
-    image: exhibitorIcon,
-    owner: {
-      fullName: 'Marija Marijanović',
-      email: 'marijamarijanovic@gmail.com',
-      phone: '+381 60 123 45 678',
-      address: 'Vuka Karadžića 55, Novi Sad',
-      dateOfBirth: '01.01.1990.'
-    },
-    company: {
-      name: 'Pivara Krafter',
-      address: 'Vuka Karadžića 55, Novi Sad',
-      mb: '12345678',
-      pib: '12345678987654'
-    },
-    images: [],
-    videos: [],
-    reservations: []
-  }
-  
+  brandName: 'Krafter',
+  type: 'pivara',
+  image: exhibitorIcon,
+  owner: {
+    fullName: 'Marija Marijanović',
+    email: 'marijamarijanovic@gmail.com',
+    phone: '+381 60 123 45 678',
+    address: 'Vuka Karadžića 55, Novi Sad',
+    dateOfBirth: '01.01.1990.'
+  },
+  company: {
+    name: 'Pivara Krafter',
+    address: 'Vuka Karadžića 55, Novi Sad',
+    mb: '12345678',
+    pib: '12345678987654'
+  },
+  images: [],
+  videos: [],
+  reservations: []
+}

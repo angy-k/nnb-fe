@@ -2,16 +2,16 @@
 import PageHeroSection from '@/components/Hero/pageOwl';
 import { Avatar } from "@nextui-org/avatar";
 import exhibitorIcon from '@/icons/exhibitor-icon.svg';
-import MyReservations from '@/components/CardsLayout/MyReservations';
+import MyPreviousReservations from '@/components/CardsLayout/MyPreviousReservations';
 import { useRouter } from 'next/navigation'
 
-const MyReservationsComponent = ({
-  account = mockedUser,
+const MyPreviousReservationsComponent = ({
+  account = mockedUser
 }) => {
 
   const router = useRouter()
 
-  function viewPreviousReservations() {
+  function viewActiveReservations() {
     router.push('/prethodne-rezervacije')  
   }
   function goBackToProfile() {
@@ -48,28 +48,24 @@ const MyReservationsComponent = ({
           </button>
           <button
             key={`edit-profile-button`}
-            onClick={viewPreviousReservations}
+            onClick={viewActiveReservations}
             className='text-[#ffffff]'
             style={{border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', height: '60px', width: '300px'}}
           >
-            {'Prethodne rezervacije'}
+            {'Aktuelne rezervacije'}
           </button>
         </div>
         <div className='w-full grid place-items-center bg-[#f0f0f0]'>
           <div style={{maxWidth: '1400px'}}>
-            <span className='font-normal font-[18px] text-[#261A54]'>
-              {`*Rezervaciju je moguće otkazati kontaktiranjem Noćnog Bazara.`}
-            </span>
-            
-            <MyReservations />
+            <MyPreviousReservations />
           </div>
         </div>
       </div>
     </>
-  );
+    )
 }
 
-export default MyReservationsComponent;
+export default MyPreviousReservationsComponent;
 
 const mockedUser = {
   brandName: 'Krafter',
@@ -92,4 +88,3 @@ const mockedUser = {
   videos: [],
   reservations: []
 }
-

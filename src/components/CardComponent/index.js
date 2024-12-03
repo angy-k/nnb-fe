@@ -1,7 +1,7 @@
 'use client'
 import SectionImage from "@/components/SectionImage"
 import Button from "@/components/Button"
-import DefaultImage from "./assets/card-component-default-image.png"
+import DefaultImage from "@/../public/card-component-default-image.png"
 
 const CardComponent = ({
   key = 'single-card-component',

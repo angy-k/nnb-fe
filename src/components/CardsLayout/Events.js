@@ -1,4 +1,3 @@
-import EventDefaultImage from "./assets/event-default-image.png"
 import CardComponent from "@/components/CardComponent";
 import Link from 'next/link';
 import { formatTitleForUri } from '@/utils/transform-helper';
@@ -47,7 +46,7 @@ const Events = ({
 const mockEvents = [
     {
       id: 1,
-      coverImage: EventDefaultImage,
+      coverImage: './event-cover.svg',
       title: "Noćni bazar u Rumi",
     },
     {

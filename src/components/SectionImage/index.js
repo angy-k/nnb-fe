@@ -6,7 +6,8 @@ const SectionImage = ({
   width = 540,
   height = 540,
   radius = '5px',
-  altText = 'Section image alt text'
+  altText = 'Section image alt text',
+  isGrey = false
 }) => {
   return (
     <Image
@@ -15,7 +16,7 @@ const SectionImage = ({
       width={width}
       height={height}
       alt={altText}
-      style={{borderRadius: `${radius}`, overflow: 'hidden'}}
+      style={{borderRadius: `${radius}`, overflow: 'hidden', filter: isGrey ? 'grayscale(100%)' : '', opacity: isGrey ? '0.6' : '1'}}
     />
   )
 }
