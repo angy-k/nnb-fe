@@ -5,6 +5,10 @@ import OrganizerWord from '@/components/Organizer'
 import { eventsMock } from '@/components/Calendar/event-mocks'
 import Header from '@/components/Header'
 import { homepage } from '@/constants/schemas'
+import Newsletter from '@/components/Newsletter'
+import Faq from '@/components/FaQ'
+import ContactForm from '@/components/ContactForm'
+import Impressions from '@/components/CardsLayout/Impressions'
 
 export const metadata = {
   title: `Novosadski noćni bazar`,
@@ -34,6 +38,38 @@ export default async function Home() {
       />
       <div className='2xl:max-w-screen-2xl mx-auto 2xl:mt-10 2xl:place-items-center'>
         {/* here will be positioned all child sections of this page */}
+      </div>
+
+      <div className='mt-60'></div>
+
+      {/* Impressions Section */}
+      <section className=''>
+        <div className='w-full'>
+          <Impressions />
+        </div>
+      </section>
+      
+      {/* Newsletter Section */}
+      <section className="py-16 bg-gray-50" style={{justifyItems: 'center'}}>
+        <div className="w-[1800px]" >
+          {/* <div className="max-w-3xl mx-auto"> */}
+            <Newsletter />
+          {/* </div> */}
+        </div>
+      </section>
+
+      {/* Frequently asked questions */}
+      <section className=''>
+        <div className="grid place-items-center w-full grid place-items-center pb-24 pt-[152px]">
+          <Faq isHome={true} />
+        </div>
+      </section>
+
+      {/* Contact form */}
+      <div className='pb-24'>
+      <ContactForm 
+        withImage={true}
+      />
       </div>
 
 

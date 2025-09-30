@@ -66,15 +66,16 @@ const ContactForm = ({
       {sectionTitle && <span className="contact-section-title text-left">{sectionTitle}</span>}
       {sectionTitle && <Divider  className="section-divider w-1440"/>}
       <div 
-        className="flex flex-col-reverse lg:flex-row place-items-center justify-center gap-1 sm:gap-20 md:gap-60 lg:gap-60 lg:w-1440 contact-from bg-[#ffffff] mt-24 2xl:max-w-screen-2xl 2xl:mx-aut py-20 px-20 md:px-40 rounded-3xl"
+        className={`flex flex-col-reverse lg:flex-row place-items-center justify-center gap-1 ${withImage ? 'sm:gap-24 md:gap-[24px] lg:gap-[24px] ' : 'sm:gap-20 md:gap-60 lg:gap-60 py-20 px-20 md:px-40'} lg:w-1440 contact-from bg-[#ffffff] mt-24 2xl:max-w-screen-2xl 2xl:mx-auto rounded-3xl`}
       >
         {withImage ? <Image
             src={DefaultImage}
-            width={260}
-            height={81.8}
+            width={606}
+            height={555}
             alt={'Contact form default image.'}
           /> : <ContactFormLogo />
         }
+        <div className={`w-[100%] ${withImage ? 'p-[48px]' : 'p-0'}`}>
         <Formik
           initialValues={{
             title: title,
@@ -87,10 +88,11 @@ const ContactForm = ({
           }}
           enagleReinitialize
           validationSchema={validateContact}
+          
           onSubmit={onSubmit}>
             {() => (
               <Form className="w-full">
-                <div className="grid grid-cols-1 2xl:grid 2xl:grid-cols-2 2xl:w-8/12 mb-20">
+                <div className="grid grid-cols-1 2xl:grid 2xl:grid-cols-2 2xl:w-8/12">
                   <div className="contact-form-fields 2xl:grid 2xl:mr-5">
                     <div className="pb-5">
                       <MainTextInput
@@ -206,6 +208,7 @@ const ContactForm = ({
               </Form>
             )}
           </Formik>
+        </div>
       </div>
     </div>
   )

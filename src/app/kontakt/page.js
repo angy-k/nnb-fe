@@ -15,12 +15,12 @@ const ContactPage = () => {
               osećajte se slobodni da nam pišete u svako doba dana, odgovorićemo Vam u najbržem roku.`}
         />
         <div className="w-full grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
-          <div className="blog-container"></div>
+          
           <Faq />
           <ContactForm 
             withImage={false}
           />
-          <ViberCommunity />
+          <ViberCommunity type={'dark'}/>
         </div>
       </div>
     );

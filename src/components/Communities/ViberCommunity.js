@@ -1,4 +1,5 @@
-import ViberIcon from "../../icons/viber-icon.svg"
+import ViberIconLight from "../../icons/viber-icon-light.svg"
+import ViberIconDark from "../../icons/viber-icon-dark.svg"
 import OwlsCommunity from "../../icons/owls-community.svg"
 import office from "../../../office-config/config.json"
 import Image from 'next/image'
@@ -9,37 +10,33 @@ const ViberCommunity = ({
 }) => {
   function joinCommunity() {
     //TODO: join viber community
-    //https://l.instagram.com/?u=https%3A%2F%2Finvite.viber.com%2F%3Fg2%3DAQBR%252B5ef5lKUX1MxICpe2OAUY8lYMdQcNtmvse9JE0D1fZBOi8mWfzr3nMxcOCSU&e=AT2EX3a-2QilL0lvqIk36AfemA_3QiutW-mSyEAtEAF62EW0-tM-a2FGmCSa1Tr0mtgz1zsnYftBkKPZve5sVdV9C8deGbXyEMhb6w
+    window.open('https://invite.viber.com/?g2=AQBR%2B5ef5lKUX1MxICpe2OAUY8lYMdQcNtmvse9JE0D1fZBOi8mWfzr3nMxcOCSU', '_blank');
   }
   return(
-    <div className={`${type === 'dark' ? "viber-community-dark" : "viber-community-light"} place-items-center justify-center grid md:flex lg:flex pb-3 mt-24 w-full lg:w-1440 md:mx-auto lg:mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto`}>
-      <Image
-        // className="hidden md:flex lg:flex sm:left-0"
-        src={OwlsCommunity}
-        width="0"
-        height="0"
-        className='w-135'
-        alt={'Viber community owls icon.'}
-        style={{marginLeft: '-45px'}}
-      />
-      <div className="grid lg:flex place-items-center justify-space-between ">
-        <div className="flex place-items-center">
+    <div className={`viber-community-container ${type === 'dark' ? "viber-community-dark" : "viber-community-light"}`}>
+      <div className="viber-community-content">
+        <Image
+          src={OwlsCommunity}
+          width={`240`}
+          height={`80`}
+          alt='Viber community owls icon'
+          className="viber-community-owls"
+        />
+        <div className="viber-community-middle">
           <Image
-            // className="flex md:hidden lg:flex sm:left-0"
-            src={ViberIcon}
-            width="0"
-            height="0"
-            className='w-14'
+            src={type === 'dark' ? ViberIconDark : ViberIconLight}
+            width={24}
+            height={24}
             alt={'Viber community viber icon.'}
-            color={type === 'dark' ? "#ffffff" : "#261A54"}
           />
-          <span className={"viber-community-text px-3"}>{'Postani deo Viber zajednice'}</span>
+          <span className="viber-community-text">Postani deo Viber zajednice</span>
         </div>
         <Button
           key={`viber-community-button`}
-          type={'outlined-white'}
+          type={type === 'dark' ? 'outlined-white' : 'outlined-purple'}
           name={'Pristupi grupi'}
-          onClick={joinCommunity()}
+          onClick={() => joinCommunity()}
+          customStyle="viber-button"
         />
       </div>
     </div>

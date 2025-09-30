@@ -62,8 +62,8 @@ const Button = ({
         width={iconSize}
         height={iconSize}
         alt={iconAlt}
-        style={{marginLeft: '14px'}}
-        className='w-10'
+        // style={{marginLeft: '14px'}}
+        // className='w-10'
       />}
       {name && <span className={(name && description) ? "title" : "text"}>{name}</span>}
       {description && <span className="description">{description}</span>}

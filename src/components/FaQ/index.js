@@ -5,10 +5,11 @@ import MinusIcon from '@/icons/minus-icon.svg';
 import Image from 'next/image'
 
 const Faq = ({
-    faq = mockedFaQ
+    faq = mockedFaQ,
+    isHome = false,
 }) => {
   return (
-    <div className="grid place-items-center w-full pb-15 w-full mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto" style={{background: 'linear-gradient(to bottom, #261A54 30%, #f0f0f0 30%)'}}>
+    <div className="grid place-items-center w-full pb-15 w-full mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto" style={{background: isHome ? 'transparent' : 'linear-gradient(to bottom, #261A54 30%, #f0f0f0 30%)'}}>
       <div className="faq-container place-items-center p-5 w-full mx-auto lg:w-1440 2xl:max-w-screen-2xl 2xl:mx-auto">
         {faq && <Accordion variant="light">
             {faq.map((item, index) => (
