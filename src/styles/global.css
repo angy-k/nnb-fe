@@ -441,6 +441,22 @@ h6 {
   text-align: left;
   color: #261A54;
 }
+.single-blog-title {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 64px;
+  font-weight: 700;
+  text-align: left;
+  line-height: 100%;
+  color: #261A54;
+}
+.single-blog-content {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 136%;
+  text-align: left;
+  color: #1B1B1B;
+}
 
 .vertical-reverse {
   display: flex;

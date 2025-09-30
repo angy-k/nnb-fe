@@ -19,7 +19,7 @@ const nextConfig = {
   output: 'standalone',
   distDir: `.next`, //!!domain ? `.next` : `./build/${process.env.NEXT_PUBLIC_APP_NAME}`,
   env: {
-    ...JSON.parse(officeConfig).envs[`${process.env.npm_config_env}`],
+    ...JSON.parse(officeConfig).envs[`${process.env.NEXT_PUBLIC_ENV || process.env.npm_config_env || 'dev'}`],
     ...JSON.parse(officeConfig).agency,
     ...JSON.parse(officeConfig).common,
     default: JSON.parse(officeConfig).agency,
