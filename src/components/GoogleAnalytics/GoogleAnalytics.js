@@ -1,7 +1,8 @@
 const GoogleAnalitics = () => {
+  const appEnv = process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV
   return (
     <>
-      {process.env.NEXT_PUBLIC_APP_ENV === 'production' && (
+      {appEnv === 'production' && (
         <>
           <script 
             async

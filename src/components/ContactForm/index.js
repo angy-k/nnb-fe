@@ -14,6 +14,8 @@ import contactService from '@/services/contactService'
 import { useState, useRef } from "react";
 import useUser from '@/data/use-user'
 
+const getAppEnv = () => process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV
+
 const ContactForm = ({
   sectionTitle,
   predefinedTitle = 'Želim da sarađujem sa vama',
@@ -181,7 +183,7 @@ const ContactForm = ({
                         * Maksimalni dozvoljeni broj karaktera je 2047
                       </span>
                     </div>
-                    {!['development', 'testing'].includes(process.env.NEXT_PUBLIC_APP_ENV) && (
+                    {!['development', 'testing', 'dev'].includes(getAppEnv()) && (
                       <>
                         <ReCAPTCHA 
                           sitekey={process.env.RECAPTCHA_SITE_KEY}

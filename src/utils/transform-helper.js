@@ -7,7 +7,17 @@ const serbianMap = {
 }
 
 export const formatTitleForUri = (title) => {
-  return replaceCharacters(Array.isArray(title) ? title.join(',') : title, ',','-')
+  const raw = Array.isArray(title) ? title.join(' ') : title
+  const normalizedDashes = (raw ?? '')
+    .toString()
+    .replace(/\s*[-–—]\s*/g, '-')
+  const withSpaces = replaceCharacters(normalizedDashes, ' ', '-')
+  const withCommas = replaceCharacters(withSpaces, ',', '-')
+
+  return withCommas
+    .replace(/-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '')
 }
 
 export const replaceCharacters = (

@@ -1,6 +1,4 @@
 import Image from 'next/image'
-import { useDisclosure } from "@nextui-org/react";
-import { useEffect } from "react";
 
 const Button = ({
   keyValue,
@@ -15,13 +13,6 @@ const Button = ({
   onClick,
   customStyle
 }) => {
-  const {isOpen, onOpen, onClose} = useDisclosure();
-
-
-  useEffect(() => {
-    onOpen();
-  }, []);
-
   const setStyle = (buttonType) => {
     switch (buttonType) {
       case 'dark':

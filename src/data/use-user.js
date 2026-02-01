@@ -11,7 +11,7 @@ export default function useUser() {
   const { data, mutate, error } = useSWR('user', authService.getUser, {
     revalidateOnFocus: false,
     revalidateIfStale: false,
-    revalidateOnMount: false,
+    revalidateOnMount: true,
     revalidateOnReconnect: false,
     refreshInterval: 0,
     onError: () => {
@@ -22,7 +22,7 @@ export default function useUser() {
   })
 
   const loading = !data && !error;
-  const loggedOut = error && error.status === 403;
+  const loggedOut = error && (error.status === 401 || error.status === 403);
 
   return {
     loading,

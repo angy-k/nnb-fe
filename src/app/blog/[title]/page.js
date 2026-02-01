@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import PageHeroSection from '@/components/Hero/pageOwl';
 import Blogs from '@/components/CardsLayout/Blogs';
 import blogService from '@/services/blogService';
+import { formatTitleForUri } from '@/utils/transform-helper';
 import Image from 'next/image';
 import HomeIcon from '@/icons/home-icon.svg';
 
@@ -24,12 +25,33 @@ const BlogDetailPage = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // For now, we'll use blog ID 1 as example
-      // Later you can implement a way to get blog ID from title
-      const blogId = 1; // This should be derived from the title parameter
-      
-      const response = await blogService.getBlog(blogId);
+
+      const titleParam = Array.isArray(title) ? title[0] : title;
+      const slug = decodeURIComponent((titleParam ?? '').toString());
+      if (!slug) {
+        throw new Error('Missing blog title');
+      }
+
+      const listResponse = await blogService.getBlogs();
+      if (!listResponse.ok) {
+        throw new Error('Failed to fetch blogs');
+      }
+
+      const listJson = await listResponse.json();
+      if (!listJson.success || !Array.isArray(listJson.data)) {
+        throw new Error(listJson.message || 'Failed to fetch blogs');
+      }
+
+      const matched = listJson.data.find((b) => {
+        const candidateSlug = formatTitleForUri((b?.title ?? '').toString());
+        return candidateSlug === slug;
+      });
+
+      if (!matched?.id) {
+        throw new Error('Blog not found');
+      }
+
+      const response = await blogService.getBlog(matched.id);
       
       if (response.ok) {
         const data = await response.json();
@@ -75,11 +97,11 @@ const BlogDetailPage = () => {
                 {blog && (
                   <>
                     {/* Breadcrumb and Publication Date */}
-                    <div className="flex justify-between items-center mb-8 p-8 pb-0">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center items-start gap-4 mb-8 p-8 pb-0">
                       <div className="text-sm text-[#1B1B1B]">
                         Objavljeno: {blog.creationDate}
                       </div>
-                      <nav className="text-sm text-[#1B1B1B] flex items-center">
+                      <nav className="text-sm text-[#1B1B1B] flex flex-wrap items-center">
                         <button 
                           onClick={() => router.push('/')}
                           className="hover:opacity-70 cursor-pointer"
@@ -106,39 +128,40 @@ const BlogDetailPage = () => {
                     </div>
                     
                     {/* Title and Author */}
-                    <div className="flex justify-between items-start mb-8 px-8 gap-18">
-                      <h1 className="single-blog-title flex-1" style={{wordWrap: 'break-word', whiteSpace: 'normal'}}>
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-end items-start mb-8 px-8 gap-4 md:gap-18">
+                      <h1 className="single-blog-title flex-1 min-w-0" style={{wordWrap: 'break-word', whiteSpace: 'normal'}}>
                         {blog.title}
                       </h1>
-                      <div className="text-sm text-[#1B1B1B] whitespace-nowrap self-start" style={{alignSelf: 'flex-end'}}>
+                      <div className="text-sm text-[#1B1B1B] whitespace-normal md:whitespace-nowrap break-words max-w-full self-start md:self-end">
                         Autor: {blog.author}
                       </div>
                     </div>
                     <div className="px-8">
                       <img 
-                        src={blog.heroImage || '/card-component-default-image.png'} 
+                        src={blog.coverImage || blog.heroImage || '/card-component-default-image.png'} 
                         className="w-full h-80 object-cover rounded-lg mb-8"
                       />
-                      <div className="flex gap-8">
+                      <div className="flex flex-col md:flex-row gap-8">
                         {/* Blog Content */}
                         <div className="flex-1">
                           <div className="prose prose-lg max-w-none pb-8">
-                            <p className="text-gray-700 leading-relaxed text-lg single-blog-content">
-                              {blog.content || 'Blog content will be displayed here.'}
-                            </p>
+                            <div
+                              className="text-gray-700 leading-relaxed text-lg single-blog-content"
+                              dangerouslySetInnerHTML={{ __html: blog.content || '' }}
+                            />
                           </div>
                         </div>
                         
                         {/* Similar Blogs Sidebar */}
                         {similarBlogs && similarBlogs.length > 0 && (
-                          <div className="w-80">
+                          <div className="w-full md:w-80">
                             <h3 className="text-lg font-semibold text-[#1B1B1B] mb-4">Pročitaj još:</h3>
-                            <div className="bg-[#261A54] rounded-lg p-6 sticky top-24">
+                            <div className="bg-[#261A54] rounded-lg p-6 md:sticky md:top-24">
                               <ul className="space-y-3">
                                 {similarBlogs.map((similarBlog, index) => (
                                   <li key={index}>
                                     <button
-                                      onClick={() => router.push(`/blog/${similarBlog.title.toLowerCase().replace(/\s+/g, '-')}`)}
+                                      onClick={() => router.push(`/blog/${formatTitleForUri(similarBlog.title)}`)}
                                       className="text-blue-700 hover:text-blue-900 text-sm font-medium text-left w-full transition-colors duration-200"
                                     >
                                       {similarBlog.title}

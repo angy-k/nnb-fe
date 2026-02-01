@@ -1,28 +1,37 @@
 import { csrf } from '@/services/csrfService'
-import cookie from 'cookie'
+import { parse } from 'cookie'
 
 const base_url = `${process.env.NEXT_PUBLIC_BACKEND_URL}`
 
 const base_headers = (type = null) => {
+  const isBrowser = typeof window !== 'undefined'
+
   if (type === 'multipart') {
     return {
       Accept: 'application/json',
-      Referer: process.env.NEXT_PUBLIC_APP_URL
+      'X-Requested-With': 'XMLHttpRequest',
+      ...(isBrowser ? {} : { Referer: process.env.NEXT_PUBLIC_APP_URL })
     }
   }
 
   return {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    Referer: process.env.NEXT_PUBLIC_APP_URL
+    'X-Requested-With': 'XMLHttpRequest',
+    ...(isBrowser ? {} : { Referer: process.env.NEXT_PUBLIC_APP_URL })
   }
 }
 
 export const extractAuthHeadersFromRequestHeaders = reqHeaders => {
   let headers = {}
   const token = (() => {
-    const { 'XSRF-TOKEN': token } = cookie.parse(reqHeaders.get('cookie') || '')
-    return token
+    const { 'XSRF-TOKEN': token } = parse(reqHeaders.get('cookie') || '')
+    if (!token) return token
+    try {
+      return decodeURIComponent(token)
+    } catch {
+      return token
+    }
   })()
 
   if(reqHeaders.get('cookie')) {
@@ -36,15 +45,21 @@ export const extractAuthHeadersFromRequestHeaders = reqHeaders => {
 }
 
 function getCSRFValue() {
-  const { 'XSRF-TOKEN': token } = cookie.parse(document.cookie || '')
+  const { 'XSRF-TOKEN': token } = parse(document.cookie || '')
 
-  return token
+  if (!token) return token
+  try {
+    return decodeURIComponent(token)
+  } catch {
+    return token
+  }
 }
 
 export const get = (
   path, 
   { queryParams = {}, config = {}, next = {}, cache = 'force-cache' } = {}
 ) => {
+  const isBrowser = typeof window !== 'undefined'
   let url = `${base_url}${path}`
   if (Object.keys(queryParams).length > 0) {
     url +=
@@ -58,7 +73,8 @@ export const get = (
 
   return fetch(url, {
     headers: { ...base_headers(), ...config.headers },
-    credentials: 'include',
+    credentials: config.credentials ?? 'include',
+    redirect: config.redirect ?? (isBrowser ? 'manual' : 'follow'),
     next,
     cache
   })
@@ -75,6 +91,7 @@ export const post = async (
     type = null
   } = {},
 ) => {
+  const isBrowser = typeof window !== 'undefined'
   let url
 
   if (preBuiltURL) {
@@ -108,7 +125,8 @@ export const post = async (
     method: 'POST',
     headers: {...base_headers(type), ...config.headers },
     body: data,
-    credentials: 'include'
+    credentials: config.credentials ?? 'include',
+    redirect: config.redirect ?? (isBrowser ? 'manual' : 'follow'),
   })
 }
 
@@ -123,6 +141,7 @@ export const del = async (
     type = null,
   } = {}
 ) => {
+  const isBrowser = typeof window !== 'undefined'
   let url
   url = `${base_url}${path}`
   if(Object.keys(queryParams).length > 0) {
@@ -146,6 +165,7 @@ export const del = async (
   return fetch(url, {
     method: 'DELETE',
     headers: { ...base_headers(type), ...config.headers },
-    credentials: 'include',
+    credentials: config.credentials ?? 'include',
+    redirect: config.redirect ?? (isBrowser ? 'manual' : 'follow'),
   })
 }

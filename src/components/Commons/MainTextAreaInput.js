@@ -29,7 +29,7 @@ const MainTextAreaInput = ({
         className="mb-1 mt-1 text-sm text-left text-negative-color"
         name={field.name}
       />
-      {error && <AuthValidationErrors className="mb-1" erors={error} />}
+      {error && <AuthValidationErrors className="mb-1" errors={error} />}
     </>
   )
 }

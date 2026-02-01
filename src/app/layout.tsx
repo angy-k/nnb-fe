@@ -4,6 +4,7 @@ import '@/styles/global.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import GoogleAnalytics from '@/components/GoogleAnalytics/GoogleAnalytics'
+import Providers from './providers'
 
 // const opensans = OpenSans({ subsets: ['latin'] })
 
@@ -17,6 +18,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const appEnv = process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV
   return (
     <html lang="en">
       <head>
@@ -28,7 +30,7 @@ export default function RootLayout({
           href={process.env.favicon}
         />
         <meta name='theme-color' content='#000000' />
-        {process.env.NEXT_PUBLIC_APP_ENV !== 'production' && (
+        {appEnv !== 'production' && (
           <>
             <meta name='googlebot' content='noindex' />
             <meta name='googlebot-news' content='nosnippet' />
@@ -52,12 +54,14 @@ export default function RootLayout({
                 
       </head>
        <body>
-        <div className='bg-[#261A54] flex flex-col nnb-wrapper bg-full'>
-          <Header />
-          <main className="flex-1 min-h-screen flex-col nnb-wrapper">{children}</main>
-          {/* <SnackBarToast /> */}
-          <Footer />
-        </div>
+        <Providers>
+          <div className='bg-[#261A54] flex flex-col nnb-wrapper bg-full'>
+            <Header />
+            <main className="flex-1 min-h-screen flex-col nnb-wrapper">{children}</main>
+            {/* <SnackBarToast /> */}
+            <Footer />
+          </div>
+        </Providers>
         
       </body>
     </html>

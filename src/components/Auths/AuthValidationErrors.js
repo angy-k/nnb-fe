@@ -1,21 +1,29 @@
 const AuthValidationErrors = ({ errors = [], ...props }) => {
+  const normalizedErrors = (() => {
+    if (!errors) return []
+    if (Array.isArray(errors)) return errors.filter(Boolean)
+    if (typeof errors === 'string') return [errors]
+
+    if (typeof errors === 'object') {
+      return Object.values(errors)
+        .flat()
+        .filter(Boolean)
+    }
+
+    return []
+  })()
+
   return (
     <>
-      {errors.length > 0 ? (
+      {normalizedErrors.length > 0 ? (
         <div {...props}>
           <ul className="list-disc list-inside text-sm text-left text-negative-color">
-            {errors.map(error => (
-              <ul key={errir}>{error}</ul>
+            {normalizedErrors.map((error, idx) => (
+              <li key={`${idx}-${String(error)}`}>{error}</li>
             ))}
           </ul>
         </div>
-      ) : (
-        <div {...props}>
-          <ul className="list-disc list-inside text-base text-left text-negative-color">
-            <ul key={errors}>{errors.new_email}</ul>
-          </ul>
-        </div>
-      )}
+      ) : null}
     </>
   )
 }

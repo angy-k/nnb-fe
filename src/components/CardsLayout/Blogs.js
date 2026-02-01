@@ -18,7 +18,7 @@ const Blogs = ({
   showHero = true
 }) => {
   const router = useRouter()
-  const [blogs, setBlogs] = useState(propBlogs || mockBlogs)
+  const [blogs, setBlogs] = useState(propBlogs || [])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -38,7 +38,12 @@ const Blogs = ({
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
-          setBlogs(data.data)
+          const items = Array.isArray(data.data)
+            ? data.data
+            : Array.isArray(data.data?.data)
+              ? data.data.data
+              : []
+          setBlogs(items)
         } else {
           throw new Error(data.message || 'Failed to fetch blogs')
         }
@@ -48,8 +53,7 @@ const Blogs = ({
     } catch (err) {
       console.error('Error fetching blogs:', err)
       setError(err.message)
-      // Keep mock blogs as fallback
-      setBlogs(mockBlogs)
+      setBlogs([])
     } finally {
       setLoading(false)
     }
@@ -57,7 +61,7 @@ const Blogs = ({
 
   function goToSingleBlog(blog) {
     console.log('preview single blog post: ', blog.title)
-    router.push(`/blog/${formatTitleForUri(blog.title.toLowerCase().replaceAll(" ", '-'))}`)
+    router.push(`/blog/${formatTitleForUri(blog.title)}`)
   }
 
   function previewAllPosts() {
@@ -133,50 +137,5 @@ const Blogs = ({
     </>
   )
 }
-
-const mockBlogs = [
-    {
-        id: 1,
-        title: 'Lorem ipsum dolor sit amet',
-        author: 'Petar Petrović',
-        creationDate: '10 Maj ‘24 ',
-    },
-    {
-        id: 2,
-        title: 'Lorem ipsum dolor sit amet',
-        author: 'Petar Petrović',
-        creationDate: '10 Maj ‘24 ',
-    },
-    {
-        id: 3,
-        title: 'Lorem ipsum dolor sit amet',
-        author: 'Petar Petrović',
-        creationDate: '10 Maj ‘24 ',
-    },
-    {
-        id: 4,
-        title: 'Lorem ipsum dolor sit amet',
-        author: 'Petar Petrović',
-        creationDate: '10 Maj ‘24 ',
-    },
-    {
-        id: 5,
-        title: 'Lorem ipsum dolor sit amet',
-        author: 'Petar Petrović',
-        creationDate: '10 Maj ‘24 ',
-    },
-    {
-        id: 6,
-        title: 'Lorem ipsum dolor sit amet',
-        author: 'Petar Petrović',
-        creationDate: '10 Maj ‘24 ',
-    },
-    {
-        id: 7,
-        title: 'Lorem ipsum dolor sit amet',
-        author: 'Petar Petrović',
-        creationDate: '10 Maj ‘24 ',
-    },
-];
 
 export default Blogs;

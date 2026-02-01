@@ -6,12 +6,31 @@ const clearXSRFToken = () => {
 }
 
 const getUser = () => {
-  return get('/api/v1/profile/self', { cache: 'no-cache' }).then(res => {
+  return get('/api/v1/profile/self', { cache: 'no-cache' }).then(async res => {
+    const contentType = res.headers.get('content-type') || ''
+
+    // If the request got redirected (e.g. to /dashboard) or returned HTML,
+    // treat it as an auth failure so the UI doesn't consider it a valid user payload.
+    if (res.redirected || !contentType.includes('application/json')) {
+      const err = new Error('Unauthenticated.')
+      err.status = res.status || 401
+      throw err
+    }
+
     if (res.ok) {
       return res.json()
     }
+
+    if (res.status === 401 || res.status === 403) {
+      const err = new Error('Unauthenticated.')
+      err.status = res.status
+      throw err
+    }
+
     if (res.status !== 409) {
-      throw new Error('Profile deleted.')
+      const err = new Error('Profile deleted.')
+      err.status = res.status
+      throw err
     }
   })
 }
@@ -22,6 +41,10 @@ const login = async ({ values }) => {
 
 const register = async values => {
   return post('/register', values, { withCSRF: true })
+}
+
+const registerMultipart = async formData => {
+  return post('/register', formData, { withCSRF: true, type: 'multipart' })
 }
 
 const forgotPassword = async values => {
@@ -69,6 +92,7 @@ export default {
   getUser,
   login,
   register,
+  registerMultipart,
   logout,
   forgotPassword,
   resendEmailVerification,
