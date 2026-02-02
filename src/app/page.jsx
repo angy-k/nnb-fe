@@ -1,14 +1,12 @@
 import '@/styles/global.css'
-import Image from 'next/image'
-import { Calendar } from '@/components/Calendar'
-import OrganizerWord from '@/components/Organizer'
-import { eventsMock } from '@/components/Calendar/event-mocks'
-import Header from '@/components/Header'
 import { homepage } from '@/constants/schemas'
 import Newsletter from '@/components/Newsletter'
 import Faq from '@/components/FaQ'
 import ContactForm from '@/components/ContactForm'
 import Impressions from '@/components/CardsLayout/Impressions'
+import InstagramPosts from '@/components/InstagramFeed'
+import HomeCalendarSection from '@/components/HomeCalendarSection'
+import HomeBlogSection from '@/components/HomeBlogSection'
 
 export const metadata = {
   title: `Novosadski noćni bazar`,
@@ -41,6 +39,14 @@ export default async function Home() {
       </div>
 
       <div className='mt-60'></div>
+
+      <section className=''>
+        <div className='w-full pb-24'>
+          <HomeCalendarSection />
+          <HomeBlogSection />
+          <InstagramPosts />
+        </div>
+      </section>
 
       {/* Impressions Section */}
       <section className=''>

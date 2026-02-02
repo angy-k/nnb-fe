@@ -1592,11 +1592,22 @@ h6 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 16px;
 }
 
-.instagram-post img {
+.instagram-post {
+  display: block;
+}
+
+.instagram-post-inner {
+  position: relative;
   width: 100%;
-  height: auto;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 16px;
 }
 
 .not-found-section {

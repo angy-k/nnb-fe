@@ -18,6 +18,14 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   distDir: `.next`, //!!domain ? `.next` : `./build/${process.env.NEXT_PUBLIC_APP_NAME}`,
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'scontent.cdninstagram.com' },
+      { protocol: 'https', hostname: 'instagram.fbeg6-1.fna.fbcdn.net' },
+      { protocol: 'https', hostname: '**.cdninstagram.com' },
+      { protocol: 'https', hostname: '**.fbcdn.net' },
+    ],
+  },
   env: {
     ...JSON.parse(officeConfig).envs[`${process.env.NEXT_PUBLIC_ENV || process.env.npm_config_env || 'dev'}`],
     ...JSON.parse(officeConfig).agency,

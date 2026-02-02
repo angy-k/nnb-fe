@@ -23,9 +23,13 @@ const PageHiroSection = ({
     let remainingDiv = []
     words.map((word, index) => {
       if (styledWords.includes(word)) {
-        styledDiv.push(word === '\n' ? <br/> : <span key={index}>{` ${word} `}</span>)
+        styledDiv.push(
+          word === '\n'
+            ? <br key={`br-${index}`} />
+            : <span key={`styled-${index}`}>{` ${word} `}</span>,
+        )
       } else {
-        remainingDiv.push(<span key={index}>{`${word} `}</span>)
+        remainingDiv.push(<span key={`word-${index}`}>{`${word} `}</span>)
       }
     })
     return (
@@ -224,6 +228,7 @@ const HeroWithImage = ({ title, formatTitle, image, illustration }) => {
             src={aboutUsIcon}
             width={140}
             height={140}
+            alt="about-us-icon"
           />
           <span className="about-us-hero-title max-w-[400px]">{`Prvi Novosadski noćni bazar`}</span>
         </div>
