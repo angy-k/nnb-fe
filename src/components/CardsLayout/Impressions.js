@@ -1,7 +1,8 @@
 'use client'
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import CardComponent from "../CardComponent";
 import PlusIcon from "../../icons/plus-icon.svg"
+import reviewService from "@/services/reviewService";
 import {
   Modal,
   ModalContent,
@@ -14,15 +15,17 @@ import {
 
 
 const Impressions = ({
-    immpressions = mockImpressions
+    immpressions: propImpressions
 }) => {
     const [isPaused, setPause] = useState(false);
     const [selectedImpression, setSelectedImpression] = useState(null);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const [immpressions, setImmpressions] = useState(Array.isArray(propImpressions) ? propImpressions : []);
+    const [loading, setLoading] = useState(!Array.isArray(propImpressions));
+    const [error, setError] = useState(null);
     
     // Handler function to open modal with full impression content
     const previewFullImmpression = (impression) => {
-        console.log('Opening impression modal with data:', impression);
         // Pause the scroll animation
         setPause(true);
         // Set the selected impression with explicit properties
@@ -36,25 +39,78 @@ const Impressions = ({
         setPause(false);
         setSelectedImpression(null);
     };
+
+    useEffect(() => {
+        if (Array.isArray(propImpressions)) {
+            setImmpressions(propImpressions);
+            setLoading(false);
+            setError(null);
+            return;
+        }
+
+        const fetchReviews = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const response = await reviewService.getReviews();
+                if (!response.ok) {
+                    setImmpressions([]);
+                    setError('Greška prilikom učitavanja recenzija.');
+                    return;
+                }
+
+                const data = await response.json().catch(() => null);
+                if (!data?.success) {
+                    setImmpressions([]);
+                    setError(data?.message || 'Greška prilikom učitavanja recenzija.');
+                    return;
+                }
+
+                const items = Array.isArray(data?.data)
+                    ? data.data
+                    : Array.isArray(data?.data?.data)
+                        ? data.data.data
+                        : [];
+
+                setImmpressions(items);
+            } catch (e) {
+                setImmpressions([]);
+                setError('Greška prilikom učitavanja recenzija.');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchReviews();
+    }, [propImpressions]);
     
     return (
         <div className="immpressions-container">
-            <div className={`immpressions-scroll-content ${isPaused ? 'paused' : ''}`}>
-            {immpressions.map((immpression, index) => (
-                <CardComponent 
-                    key={`impression-card-${immpression.id}`}
-                    isDark={!!(index%2)}
-                    sectionType={`impression`}
-                    author={immpression.author}
-                    description={immpression.content}
-                    position={immpression.position}
-                    buttonIcon={PlusIcon}
-                    buttonIconSize={58}
-                    buttonAction={() => previewFullImmpression(immpression)} // Pass the impression to the handler
-                    className="immpression-card"
-                />
-            ))}
-            </div>
+            {loading && <div className="w-full grid place-items-center py-12">Učitavanje...</div>}
+            {!loading && error && <div className="w-full grid place-items-center py-12 text-[#EC4923]">{error}</div>}
+            {!loading && !error && (
+                <div className={`immpressions-scroll-content ${isPaused ? 'paused' : ''}`}>
+                {immpressions.map((immpression, index) => (
+                    <CardComponent 
+                        key={`impression-card-${immpression.id ?? index}`}
+                        isDark={!!(index%2)}
+                        sectionType={`impression`}
+                        author={immpression.author}
+                        description={immpression.content}
+                        position={immpression.position}
+                        buttonIcon={PlusIcon}
+                        buttonIconSize={58}
+                        cardAction={() => previewFullImmpression(immpression)}
+                        buttonAction={(e) => {
+                            e?.stopPropagation?.();
+                            previewFullImmpression(immpression);
+                        }}
+                        className="immpression-card"
+                    />
+                ))}
+                </div>
+            )}
             
             {/* Modal for displaying full impression content */}
             <Modal
@@ -69,7 +125,7 @@ const Impressions = ({
                     base: "impression-modal",
                     backdrop: "nnb-modal-backdrop",
                     body: "py-6",
-                    closeButton: "text-white bg-black/20 backdrop-blur-md",
+                    closeButton: "top-6 right-6 text-[#261A54] bg-transparent hover:bg-black/5 w-12 h-12 text-3xl",
                     modalWrapper: "w-full h-full max-w-full",
                     wrapper: "nnb-modal-wrapper max-w-full w-full h-full",
                     header: "border-b-0",
@@ -106,12 +162,7 @@ const Impressions = ({
                 }}>
                     {(onClose) => (
                         <>
-                            <ModalHeader className="flex justify-between items-center">
-                                <div></div> {/* Empty div for flex spacing */}
-                                <Button color="primary" variant="light" onPress={onClose} className="rounded-full">
-                                    Close
-                                </Button>
-                            </ModalHeader>
+                            <ModalHeader className="p-0 h-0 min-h-0" />
                             <ModalBody className="py-10">
                                 <div className="flex flex-col gap-10">
                                 {selectedImpression && (
@@ -172,48 +223,4 @@ const Impressions = ({
         </div>
     )
 }
-
-const mockImpressions = [
-    {
-        id: 1,
-        content: `Lorem ipsum dolor sit amet,
-            consectetur adipiscing elit.
-            Nullam venenatis varius posuere. In vehicula sapien eu nunc volutpat vehicula.`,
-        author: `Petar Petrović`,
-        position: `Generalni direktor`,
-    },
-    {
-        id: 2,
-        content: `Lorem ipsum dolor sit amet,
-            consectetur adipiscing elit.
-            Nullam venenatis varius posuere. In vehicula sapien eu nunc volutpat vehicula.`,
-        author: `Petar Petrović`,
-        position: `Generalni direktor`,
-    },
-    {
-        id: 3,
-        content: `Lorem ipsum dolor sit amet,
-            consectetur adipiscing elit.
-            Nullam venenatis varius posuere. In vehicula sapien eu nunc volutpat vehicula.`,
-        author: `Petar Petrović`,
-        position: `Generalni direktor`,
-    },
-    {
-        id: 4,
-        content: `Lorem ipsum dolor sit amet,
-            consectetur adipiscing elit.
-            Nullam venenatis varius posuere. In vehicula sapien eu nunc volutpat vehicula.`,
-        author: `Petar Petrović`,
-        position: `Generalni direktor`,
-    },
-    {
-        id: 5,
-        content: `Lorem ipsum dolor sit amet,
-            consectetur adipiscing elit.
-            Nullam venenatis varius posuere. In vehicula sapien eu nunc volutpat vehicula.`,
-        author: `Petar Petrović`,
-        position: `Generalni direktor`,
-    },
-]
-
 export default Impressions;

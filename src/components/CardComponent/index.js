@@ -20,6 +20,7 @@ const CardComponent = ({
   buttonIcon,
   buttonIconSize,
   buttonAction = null,
+  cardAction = null,
   creationDate,
   isDark = false
 }) => {
@@ -33,6 +34,7 @@ const CardComponent = ({
       buttonIcon={buttonIcon}
       buttonAction={buttonAction}
       buttonIconSize={buttonIconSize}
+      cardAction={cardAction}
       isDark={isDark}
     />}
     {sectionType !== 'impression' && <div 
@@ -80,11 +82,13 @@ const ImpressionCard = ({
   buttonIcon,
   buttonAction,
   buttonIconSize,
+  cardAction,
   isDark
 }) => {
   return (
     <div
       key={keyValue}
+      onClick={cardAction || undefined}
       style={{
         backgroundColor: `${isDark ? '#56C4CF' : '#ffffff'}`,
         color: '#1b1b1b',
@@ -94,7 +98,8 @@ const ImpressionCard = ({
         padding: '50px 95px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '50px'
+        gap: '50px',
+        cursor: cardAction ? 'pointer' : 'default'
       }}
     >
       {description && <p
