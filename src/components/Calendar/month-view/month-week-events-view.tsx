@@ -7,11 +7,13 @@ import { WeekEvent as WeekEventType } from "./group-events";
 type MonthWeekEventsViewProps = {
   date: Date;
   groups?: WeekEventType[][];
+  onEventClick?: (eventId: string) => void;
 };
 
 export const MonthWeekEventsView: React.FC<MonthWeekEventsViewProps> = ({
   date,
   groups = [],
+  onEventClick,
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState(1);
@@ -40,6 +42,7 @@ export const MonthWeekEventsView: React.FC<MonthWeekEventsViewProps> = ({
               event={event}
               key={event.id}
               containerWidth={containerWidth}
+              onEventClick={onEventClick}
             />
           ))}
         </div>

@@ -668,7 +668,17 @@ const AuthModal = ({ onSuccess, onClose }) => {
         </Formik>
       )}
 
-      <Modal isOpen={isLegalDocsOpen} onOpenChange={onLegalDocsOpenChange} onClose={onLegalDocsClose} size="lg">
+      <Modal
+        isOpen={isLegalDocsOpen}
+        onOpenChange={onLegalDocsOpenChange}
+        onClose={onLegalDocsClose}
+        size="lg"
+        backdrop="blur"
+        classNames={{
+          wrapper: 'nnb-modal-wrapper items-center justify-center',
+          backdrop: 'nnb-modal-backdrop',
+        }}
+      >
         <ModalContent>
           {onClose => (
             <>

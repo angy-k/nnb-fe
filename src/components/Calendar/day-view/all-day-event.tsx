@@ -3,11 +3,15 @@ import { cn } from '@/utils';
 
 type AllDayEventProps = {
   event: Event;
+  onEventClick?: (eventId: string) => void;
 };
 
-export const AllDayEvent: React.FC<AllDayEventProps> = ({ event }) => {
+export const AllDayEvent: React.FC<AllDayEventProps> = ({ event, onEventClick }) => {
   return (
-    <div className={cn("w-full py-1 px-2 cursor-pointer bg-blue-400 rounded", Number(event.id)%2 ? 'bg-[#56C4CF]' : 'bg-[#261A54]')}>
+    <div
+      className={cn("w-full py-1 px-2 cursor-pointer bg-blue-400 rounded", Number(event.id)%2 ? 'bg-[#56C4CF]' : 'bg-[#261A54]')}
+      onClick={() => onEventClick?.(event.id)}
+    >
       <h1 className="text-xs text-white">{event.title}</h1>
     </div>
   );

@@ -17,9 +17,10 @@ import { Event } from "../types";
 type MonthViewProps = {
   date: Date;
   events?: Event[];
+  onEventClick?: (eventId: string) => void;
 };
 
-export const MonthView: React.FC<MonthViewProps> = ({ date, events = [] }) => {
+export const MonthView: React.FC<MonthViewProps> = ({ date, events = [], onEventClick }) => {
   const days = eachDayOfInterval({
     start: startOfWeek(date, { weekStartsOn: 1 }),
     end: endOfWeek(date, { weekStartsOn: 1 }),
@@ -63,7 +64,7 @@ export const MonthView: React.FC<MonthViewProps> = ({ date, events = [] }) => {
             weekStartDate.toISOString() + "-" + weekEndDate.toISOString();
           const props = { week, ...groups[weekKey] };
 
-          return <MonthWeekView {...props} key={weekKey} />;
+          return <MonthWeekView {...props} key={weekKey} onEventClick={onEventClick} />;
         })}
       </div>
     </section>

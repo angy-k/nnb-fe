@@ -206,8 +206,8 @@ const Header = ({bgColor = '#261A54'}) => {
       scrollBehavior="inside"
       hideCloseButton
       classNames={{
-        wrapper: 'z-[1000]',
-        backdrop: 'z-[999]',
+        wrapper: 'nnb-modal-wrapper items-center justify-center',
+        backdrop: 'nnb-modal-backdrop',
         base: 'w-[min(1440px,calc(100vw-2rem))] h-[min(1092px,calc(100vh-2rem))] mx-4 bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20 rounded-[16px]',
       }}
     >

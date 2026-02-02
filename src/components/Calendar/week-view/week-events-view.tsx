@@ -9,11 +9,13 @@ import { Event } from "../types";
 type WeekEventsViewProps = {
   date: Date;
   events?: Event[];
+  onEventClick?: (eventId: string) => void;
 };
 
 export const WeekEventsView: React.FC<WeekEventsViewProps> = ({
   date,
   events = [],
+  onEventClick,
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState(1);
@@ -44,6 +46,7 @@ export const WeekEventsView: React.FC<WeekEventsViewProps> = ({
               event={event}
               key={event.id}
               containerWidth={containerWidth}
+              onEventClick={onEventClick}
             />
           ))}
         </div>

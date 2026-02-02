@@ -8,8 +8,7 @@ import ArrowRight from "../../icons/arrow-right.svg";
 import Image from 'next/image';
 import { eventsMock } from "./event-mocks";
 import { Divider } from "@nextui-org/divider";
-import { cn } from "../../utils";
-import { add, sub, endOfWeek, startOfWeek, format } from "date-fns";
+import { add, sub, endOfWeek, startOfWeek } from "date-fns";
 
 import type { Event } from "./types";
 
@@ -18,13 +17,15 @@ type View = "day" | "week" | "month";
 export type CalendarProps = {
   view?: View;
   events?: Event[];
-  date: string | number | Date;
+  date?: string | number | Date;
+  onEventClick?: (eventId: string) => void;
 };
 
 export const Calendar: React.FC<CalendarProps> = ({
     date = new Date(),
     events = eventsMock,
     view = "month",
+    onEventClick,
 }) => {
     const [curView, setCurView] = useState<View>(view);
     const [curDate, setCurDate] = useState<Date>(new Date(date));
@@ -150,9 +151,9 @@ return (
                 </button> */}
             </div>
         </section>
-        {curView === "day" && <DayView date={curDate} events={events} />}
-        {curView === "week" && <WeekView date={curDate} events={events} />}
-        {curView === "month" && <MonthView date={curDate} events={events} />}
+        {curView === "day" && <DayView date={curDate} events={events} onEventClick={onEventClick} />}
+        {curView === "week" && <WeekView date={curDate} events={events} onEventClick={onEventClick} />}
+        {curView === "month" && <MonthView date={curDate} events={events} onEventClick={onEventClick} />}
     </div>
     );
 };

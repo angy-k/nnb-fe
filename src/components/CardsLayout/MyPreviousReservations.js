@@ -3,7 +3,7 @@ import { formatTitleForUri } from '@/utils/transform-helper';
 import SectionImage from '@/components/SectionImage';
 
 const MyPreviousReservations = ({
-    events = mockEvents
+    events = []
 }) => {
   function getReservationStatus(status) {
       switch(status) {
@@ -99,30 +99,3 @@ const MyPreviousReservations = ({
 }
 
 export default MyPreviousReservations;
-
-const mockEvents = [
-    {
-      id: 1,
-      coverImage: './event-cover.svg',
-      title: "Noćni bazar u Rumi",
-      date: '05.05.2024.',
-      applicationDate: '20.04.2024.',
-      applicationStatus: 'waiting'
-    },
-    {
-      id: 2,
-      coverImage: './event-cover.svg',
-      title: "Noćni bazar u Rumi",
-      date: '05.05.2024.',
-      applicationDate: '20.04.2024.',
-      applicationStatus: 'approved'
-    },
-    {
-      id: 3,
-      coverImage: './event-cover.svg',
-      title: "Noćni bazar u Rumi",
-      date: '05.05.2024.',
-      applicationDate: '20.04.2024.',
-      applicationStatus: 'rejected'
-    },
-  ];

@@ -1,4 +1,4 @@
-import { startOfWeek, differenceInMinutes, format } from "date-fns";
+import { startOfWeek, differenceInMinutes } from "date-fns";
 import { cn } from '@/utils'
 import { WeekEvent as Event } from "./group-events";
 import Image from 'next/image';
@@ -11,12 +11,14 @@ type WeekEventProps = {
   date: Date;
   event: Event;
   containerWidth: number;
+  onEventClick?: (eventId: string) => void;
 };
 
 export const WeekEvent: React.FC<WeekEventProps> = ({
   date,
   event,
   containerWidth,
+  onEventClick,
 }) => {
   const generateBoxStyle = () => {
     const week = startOfWeek(date, { weekStartsOn: 1 });
@@ -38,6 +40,7 @@ export const WeekEvent: React.FC<WeekEventProps> = ({
     <div
       style={definedStyle}
       className={cn("h-full px-2 absolute z-10 bg-blue-400 rounded cursor-pointer", Number(event.id)%2 ? 'bg-[#56C4CF]' : 'bg-[#261A54]')}
+      onClick={() => onEventClick?.(String(event.id))}
     >
       <Image 
         src={Number(event.id)%2 ? SingleEventLight : SingleEventDark}

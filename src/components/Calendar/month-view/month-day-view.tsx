@@ -1,6 +1,9 @@
-import { format, isWithinInterval } from "date-fns";
+import { isWithinInterval } from "date-fns";
 
 import { Event } from "../types";
+import Image from 'next/image';
+import SingleEventLight from '@/icons/event-light.svg';
+import SingleEventDark from '@/icons/event-dark.svg';
 
 const MAX_EVENTS_TO_DISPLAY = 6;
 
@@ -9,6 +12,7 @@ type MonthDayViewProps = {
   events?: Event[];
   restEvents?: Event[];
   weekEventsShown?: number;
+  onEventClick?: (eventId: string) => void;
 };
 
 export const MonthDayView: React.FC<MonthDayViewProps> = ({
@@ -16,6 +20,7 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
   restEvents = [],
   day = new Date(),
   weekEventsShown = 0,
+  onEventClick,
 }) => {
   const filteredRestEvents = restEvents.filter((event) =>
     isWithinInterval(day, {
@@ -46,22 +51,33 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
   }
 
   return (
-    <ul className="pl-4 pr-6 flex-1 space-y-1 overflow-hidden">
+    <ul className="pl-4 pr-6 flex-1 flex flex-wrap gap-1 overflow-hidden">
       {eventsToDisplay.map((event) => (
         <li className="flex items-center" key={event.id}>
-          <svg className="mr-2 min-w-2 w-2 h-2 text-blue-400 fill-blue-400">
-            <circle cx="4" cy="4" r="4" />
-          </svg>
-          <p className="text-sm text-nowrap text-ellipsis">
-            {`${format(event.start_date, "h:mmaaa")}, ${event.title}`}
-          </p>
+          <button
+            type="button"
+            onClick={() => onEventClick?.(event.id)}
+            className={`inline-flex items-center justify-center px-2 h-8 rounded-full ${
+              !Number.isNaN(Number(event.id)) && Number(event.id) % 2
+                ? 'bg-[#56C4CF]'
+                : 'bg-[#261A54]'
+            }`}
+          >
+            <Image
+              className="w-25 h-25"
+              src={!Number.isNaN(Number(event.id)) && Number(event.id) % 2 ? SingleEventLight : SingleEventDark}
+              width={75}
+              height={60}
+              alt="event"
+            />
+          </button>
         </li>
       ))}
       {moreEventsNumber > 0 && (
         <li className="flex items-center">
-          <p className="text-sm text-nowrap text-ellipsis">
-            {moreEventsNumber} more
-          </p>
+          <span className="inline-flex items-center justify-center px-2 h-8 rounded-full bg-[#1B1B1B] text-white text-xs font-semibold">
+            +{moreEventsNumber}
+          </span>
         </li>
       )}
     </ul>

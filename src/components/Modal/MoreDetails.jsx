@@ -30,7 +30,16 @@ const MoreDetailsModal = ({
           {'prikazi modal'}
         </Button>
       </div>
-      <Modal backdrop={'blur'} isOpen={isOpen} onClose={onClose} defaultOpen={isDefaultOpen}>
+      <Modal
+        backdrop="blur"
+        isOpen={isOpen}
+        onClose={onClose}
+        defaultOpen={isDefaultOpen}
+        classNames={{
+          wrapper: 'nnb-modal-wrapper items-center justify-center',
+          backdrop: 'nnb-modal-backdrop',
+        }}
+      >
         <ModalContent>
           {(onClose) => (
             <>

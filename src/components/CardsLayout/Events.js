@@ -1,7 +1,6 @@
 'use client'
 import CardComponent from "@/components/CardComponent";
 import { Divider } from "@nextui-org/divider";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/modal";
 import Button from "../Button";
 import { formatTitleForUri } from '@/utils/transform-helper';
 import { useRouter } from 'next/navigation'
@@ -9,6 +8,10 @@ import PageHeroSection from '@/components/Hero/pageOwl';
 import { useState, useEffect } from 'react';
 import eventService from '@/services/eventService';
 import useUser from '@/data/use-user'
+import applicationService from '@/services/applicationService'
+import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
+import EventDetailsModal from '@/components/Modal/EventDetailsModal'
+import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
 
 const Events = ({
   title,
@@ -28,6 +31,11 @@ const Events = ({
   const [isReserveModalOpen, setIsReserveModalOpen] = useState(false)
   const [electricityOption, setElectricityOption] = useState('none')
   const [marketingOption, setMarketingOption] = useState('none')
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const [confirmCosts, setConfirmCosts] = useState({ cotization: 0, electricity: null, marketing: null })
+  const [isSubmittingReservation, setIsSubmittingReservation] = useState(false)
+  const [reservationError, setReservationError] = useState(null)
+  const [reservationSuccess, setReservationSuccess] = useState(null)
 
   useEffect(() => {
     // Only fetch from API if no events were passed as props
@@ -73,20 +81,78 @@ const Events = ({
     setIsModalOpen(true)
   }
 
+  function hideModal() {
+    setIsModalOpen(false)
+  }
+
   function closeModal() {
     setIsModalOpen(false)
     setSelectedEvent(null)
+  }
+
+  const resetReservationState = () => {
+    setElectricityOption('none')
+    setMarketingOption('none')
+    setConfirmCosts({ cotization: 0, electricity: null, marketing: null })
+    setReservationError(null)
+    setReservationSuccess(null)
+    setIsSubmittingReservation(false)
+  }
+
+  const closeAllModals = () => {
+    setIsConfirmModalOpen(false)
+    setIsReserveModalOpen(false)
+    setIsModalOpen(false)
+    setSelectedEvent(null)
+    resetReservationState()
   }
 
   function closeReserveModal() {
     setIsReserveModalOpen(false)
   }
 
+  function cancelReserveModal() {
+    setIsReserveModalOpen(false)
+    resetReservationState()
+  }
+
   function openReserveModal() {
     setIsReserveModalOpen(true)
   }
 
+  const computeConfirmCosts = (event, electricityOpt, marketingOpt) => {
+    const cotization = Number(event?.downPayment) || 0
+
+    const electricityCostBase = Number(event?.electricityExtensionCoasts) || 0
+    const electricity = electricityOpt && electricityOpt !== 'none' ? electricityCostBase : null
+
+    const fb = Number(event?.fbMarketingCoasts) || 0
+    const ig = Number(event?.ingMarketingCoasts) || 0
+
+    let marketing = null
+    if (marketingOpt === 'facebook') marketing = fb
+    else if (marketingOpt === 'instagram') marketing = ig
+    else if (marketingOpt === 'instagram_facebook') marketing = fb + ig
+
+    return { cotization, electricity, marketing }
+  }
+
   function submitReservationOptions() {
+    const eventId = selectedEvent?.id
+
+    if (loggedOut || !user) {
+      setConfirmCosts(computeConfirmCosts(selectedEvent, electricityOption, marketingOption))
+      closeReserveModal()
+      setIsConfirmModalOpen(true)
+      return
+    }
+
+    setConfirmCosts(computeConfirmCosts(selectedEvent, electricityOption, marketingOption))
+    closeReserveModal()
+    setIsConfirmModalOpen(true)
+  }
+
+  const confirmReservation = async () => {
     const eventId = selectedEvent?.id
 
     if (loggedOut || !user) {
@@ -96,17 +162,54 @@ const Events = ({
         marketing: marketingOption,
       }).toString()
 
-      closeReserveModal()
+      setIsConfirmModalOpen(false)
       router.push(`/prijava?${query}`)
       return
     }
 
-    console.log('Reservation options selected', {
-      eventId,
-      electricityOption,
-      marketingOption,
-    })
-    closeReserveModal()
+    if (!eventId) {
+      setReservationError('Nedostaje događaj.')
+      return
+    }
+
+    try {
+      setReservationError(null)
+      setReservationSuccess(null)
+      setIsSubmittingReservation(true)
+
+      const res = await applicationService.submitApplication({
+        eventId,
+        electricityOption,
+        marketingOption,
+      })
+
+      const contentType = res.headers.get('content-type') || ''
+      const data = contentType.includes('application/json') ? await res.json() : null
+
+      if (res.ok && data?.success) {
+        setReservationSuccess('Prijava je uspešno poslata.')
+        setTimeout(() => {
+          closeAllModals()
+        }, 1200)
+        return
+      }
+
+      if (res.status === 409) {
+        setReservationError(data?.message || 'Već ste poslali prijavu za ovaj događaj.')
+        return
+      }
+
+      setReservationError(data?.message || 'Greška prilikom slanja prijave.')
+    } catch (e) {
+      setReservationError('Greška prilikom slanja prijave.')
+    } finally {
+      setIsSubmittingReservation(false)
+    }
+  }
+
+  const cancelReservation = () => {
+    setIsConfirmModalOpen(false)
+    resetReservationState()
   }
 
   function previewAllEvents() {
@@ -180,298 +283,45 @@ const Events = ({
       </div>
 
       {/* Event Details Modal */}
-      <Modal 
-        isOpen={isModalOpen} 
+      <EventDetailsModal
+        isOpen={isModalOpen}
         onClose={closeModal}
-        size="2xl"
-        backdrop="blur"
-        placement="center"
-        classNames={{
-          backdrop: "backdrop-blur-sm bg-black/30",
-          base: "bg-white shadow-2xl",
-          body: "bg-white",
-          header: "bg-white border-b border-gray-200",
-          footer: "bg-white border-t border-gray-200"
+        event={selectedEvent}
+        showReserveButton={true}
+        reserveLabel="Rezerviši mesto"
+        onReserve={() => {
+          hideModal()
+          openReserveModal()
         }}
-      >
-        <ModalContent className="bg-white rounded-2xl overflow-hidden">
-          {(onClose) => (
-            <>
-              <ModalBody className="p-0 bg-white">
-                <div className="flex flex-col md:flex-row">
-                  {/* Left side - Event Image/Poster */}
-                  <div className="md:w-1/2 relative overflow-hidden">
-                    {/* Event cover image or gradient background */}
-                    {selectedEvent?.coverImage ? (
-                      <div className="absolute inset-0">
-                        <img 
-                          src={selectedEvent.coverImage} 
-                          alt={selectedEvent.name}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-black/40"></div>
-                      </div>
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-700"></div>
-                    )}
-                    
-                    {/* Content overlay */}
-                    <div className="relative z-10 p-8 h-full flex flex-col justify-center items-center text-white">
-                      {/* Close button */}
-                      <button 
-                        onClick={onClose}
-                        className="absolute top-4 right-4 text-white hover:text-gray-300 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
-                      >
-                        ×
-                      </button>
-                      
-                      {/* Event poster content */}
-                      <div className="text-center">
-                        <h1 className="text-4xl font-bold mb-4 leading-tight">
-                          {selectedEvent?.name || selectedEvent?.title}
-                        </h1>
-                        
-                        {/* Event logo/icon placeholder */}
-                        <div className="flex justify-center items-center mb-8">
-                          <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                            <span className="text-3xl">🏪</span>
-                          </div>
-                        </div>
-                        
-                        {/* Date and time info */}
-                        <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
-                          <div className="space-y-2">
-                            <p className="text-2xl font-bold">
-                              {selectedEvent?.dateTime?.split(' ')[0]} {selectedEvent?.dateTime?.split(' ')[1]}
-                            </p>
-                            <p className="text-lg opacity-90">
-                              Početak u {selectedEvent?.dateTime?.split(' ')[2] || '18:00'}
-                            </p>
-                            <p className="text-sm opacity-75">
-                              {selectedEvent?.eventAddress}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right side - Event Details */}
-                  <div className="md:w-1/2 p-8 flex flex-col">
-                    <div className="mb-6">
-                      <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                        {selectedEvent?.name || selectedEvent?.title}
-                      </h2>
-                      <p className="text-gray-600 leading-relaxed">
-                        Pridružite se našem događaju i uživajte u jedinstvenom iskustvu. 
-                        Rezervišite svoje mesto na vreme!
-                      </p>
-                    </div>
-
-                    {/* Event details */}
-                    <div className="space-y-6 mb-8 flex-grow">
-                      <div className="flex items-start space-x-4">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-blue-600 text-lg">📅</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">Datum i vreme</p>
-                          <p className="text-gray-600">{selectedEvent?.dateTime}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start space-x-4">
-                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-green-600 text-lg">📍</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">Lokacija</p>
-                          <p className="text-gray-600">{selectedEvent?.eventAddress}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start space-x-4">
-                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-purple-600 text-lg">👥</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">Dostupno mesta</p>
-                          <p className="text-gray-600">{selectedEvent?.maxNumOfSeats} mesta</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start space-x-4">
-                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-yellow-600 text-lg">💰</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">Kapara</p>
-                          <p className="text-gray-600">{selectedEvent?.downPayment} RSD</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start space-x-4">
-                        <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-red-600 text-lg">📧</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">Kontakt</p>
-                          <p className="text-gray-600">{selectedEvent?.eventContactEmail}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action button */}
-                    <div className="flex justify-end">
-                      <button 
-                        onClick={() => {
-                          console.log('Reserve spot for event:', selectedEvent?.name)
-                          onClose()
-                          openReserveModal()
-                        }}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-semibold transition-colors shadow-lg hover:shadow-xl"
-                      >
-                        Rezerviši mesto
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </ModalBody>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      />
 
       {/* Reservation Options Modal */}
-      <Modal
+      <ReservationOptionsModal
         isOpen={isReserveModalOpen}
-        onClose={closeReserveModal}
-        size="2xl"
-        backdrop="blur"
-        placement="center"
-        classNames={{
-          backdrop: "backdrop-blur-sm bg-black/30",
-          base: "bg-white shadow-2xl",
-          body: "bg-white",
+        onClose={cancelReserveModal}
+        electricityOption={electricityOption}
+        setElectricityOption={setElectricityOption}
+        marketingOption={marketingOption}
+        setMarketingOption={setMarketingOption}
+        onSubmit={submitReservationOptions}
+        submitLabel="Prijavite se"
+      />
+
+      <BoothReservationConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={cancelReservation}
+        costs={confirmCosts}
+        selections={{ electricityOption, marketingOption }}
+        onConfirm={confirmReservation}
+        onCancel={cancelReservation}
+        isLoading={isSubmittingReservation}
+        successMessage={reservationSuccess}
+        errorMessage={reservationError}
+        onDismissMessage={() => {
+          setReservationError(null)
+          setReservationSuccess(null)
         }}
-      >
-        <ModalContent className="bg-white rounded-2xl overflow-hidden">
-          {(onClose) => (
-            <>
-              <ModalBody className="p-0 bg-white">
-                <div className="p-10">
-                  <h2 className="text-center text-[#261A54] text-xl font-semibold mb-6">
-                    Da li Vam je osim osvetljenja potreban
-                    <br />
-                    strujni priključak za određeni uređaj
-                    <br />
-                    neophodan za izlaganje?
-                  </h2>
-
-                  <div className="space-y-3 mb-8">
-                    <label className="flex items-center gap-3 text-[#261A54]">
-                      <input
-                        type="radio"
-                        name="electricity"
-                        value="kw_xx"
-                        checked={electricityOption === 'kw_xx'}
-                        onChange={() => setElectricityOption('kw_xx')}
-                      />
-                      <span className="text-sm">Da, potreban nam je strujni priključak od XX kW</span>
-                    </label>
-                    <label className="flex items-center gap-3 text-[#261A54]">
-                      <input
-                        type="radio"
-                        name="electricity"
-                        value="kw_yy"
-                        checked={electricityOption === 'kw_yy'}
-                        onChange={() => setElectricityOption('kw_yy')}
-                      />
-                      <span className="text-sm">Da, potreban nam je strujni priključak od YY kW</span>
-                    </label>
-                    <label className="flex items-center gap-3 text-[#261A54]">
-                      <input
-                        type="radio"
-                        name="electricity"
-                        value="kw_zz"
-                        checked={electricityOption === 'kw_zz'}
-                        onChange={() => setElectricityOption('kw_zz')}
-                      />
-                      <span className="text-sm">Da, potreban nam je strujni priključak od ZZ kW</span>
-                    </label>
-                    <label className="flex items-center gap-3 text-[#261A54]">
-                      <input
-                        type="radio"
-                        name="electricity"
-                        value="none"
-                        checked={electricityOption === 'none'}
-                        onChange={() => setElectricityOption('none')}
-                      />
-                      <span className="text-sm">Ne, strujni priključak nam nije potreban</span>
-                    </label>
-                  </div>
-
-                  <h3 className="text-[#261A54] text-lg font-semibold mb-4">
-                    Da li vam je potrebna reklama?
-                  </h3>
-
-                  <div className="space-y-3 mb-8">
-                    <label className="flex items-center gap-3 text-[#261A54]">
-                      <input
-                        type="radio"
-                        name="marketing"
-                        value="instagram"
-                        checked={marketingOption === 'instagram'}
-                        onChange={() => setMarketingOption('instagram')}
-                      />
-                      <span className="text-sm">Da, potrebna nam je na instagramu</span>
-                    </label>
-                    <label className="flex items-center gap-3 text-[#261A54]">
-                      <input
-                        type="radio"
-                        name="marketing"
-                        value="facebook"
-                        checked={marketingOption === 'facebook'}
-                        onChange={() => setMarketingOption('facebook')}
-                      />
-                      <span className="text-sm">Da, potrebna nam je na fejsbuku</span>
-                    </label>
-                    <label className="flex items-center gap-3 text-[#261A54]">
-                      <input
-                        type="radio"
-                        name="marketing"
-                        value="instagram_facebook"
-                        checked={marketingOption === 'instagram_facebook'}
-                        onChange={() => setMarketingOption('instagram_facebook')}
-                      />
-                      <span className="text-sm">Da, potrebna nam je na instagramu i fejsbuku</span>
-                    </label>
-                    <label className="flex items-center gap-3 text-[#261A54]">
-                      <input
-                        type="radio"
-                        name="marketing"
-                        value="none"
-                        checked={marketingOption === 'none'}
-                        onChange={() => setMarketingOption('none')}
-                      />
-                      <span className="text-sm">Ne, nije nam potrebna reklama</span>
-                    </label>
-                  </div>
-
-                  <div className="flex justify-start">
-                    <button
-                      onClick={submitReservationOptions}
-                      className="bg-[#56C4CF] hover:opacity-90 text-white px-8 py-3 rounded-full font-semibold transition"
-                    >
-                      Prijavite se
-                    </button>
-                  </div>
-                </div>
-              </ModalBody>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      />
     </>
   )
 }

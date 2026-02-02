@@ -13,6 +13,7 @@ type WeekDayEventProps = {
   index: number;
   grouplength: number;
   containerHeight: number;
+  onEventClick?: (eventId: string) => void;
 };
 
 export const WeekDayEvent: React.FC<WeekDayEventProps> = ({
@@ -21,6 +22,7 @@ export const WeekDayEvent: React.FC<WeekDayEventProps> = ({
   index,
   grouplength,
   containerHeight,
+  onEventClick,
 }) => {
   const generateBoxStyle = () => {
     const today = startOfDay(day);
@@ -60,6 +62,7 @@ export const WeekDayEvent: React.FC<WeekDayEventProps> = ({
     <div
       style={definedStyle}
       className={cn("border border-white rounded cursor-pointer absolute", index%2 ? 'bg-[#56C4CF]' : 'bg-[#261A54]', definedStyle.height > 55 ? ' flex flex-column' : '')}
+      onClick={() => onEventClick?.(event.id)}
     >
       {definedStyle.height > 55 && <Image 
         src={Number(index)%2 ? SingleEventLight : SingleEventDark}

@@ -54,8 +54,8 @@ import {
       const same = isSameDay(start_date, end_date);
       const difference = differenceInMilliseconds(end_date, start_date);
   
-      const eventWeekEndDate = endOfWeek(end_date).toISOString();
-      const eventWeekStartDate = startOfWeek(start_date).toISOString();
+      const eventWeekEndDate = endOfWeek(end_date, { weekStartsOn: 1 }).toISOString();
+      const eventWeekStartDate = startOfWeek(start_date, { weekStartsOn: 1 }).toISOString();
   
       if (same && difference < MILLISECONDS_IN_DAY) {
         const weekKey = `${eventWeekStartDate}-${eventWeekEndDate}`;

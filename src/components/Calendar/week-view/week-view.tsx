@@ -18,9 +18,10 @@ import { Event } from "../types";
 type WeekViewProps = {
   date: Date;
   events?: Event[];
+  onEventClick?: (eventId: string) => void;
 };
 
-export const WeekView: React.FC<WeekViewProps> = ({ date, events = [] }) => {
+export const WeekView: React.FC<WeekViewProps> = ({ date, events = [], onEventClick }) => {
   const hours = eachHourOfInterval({
     start: startOfDay(date),
     end: endOfDay(date),
@@ -52,7 +53,7 @@ export const WeekView: React.FC<WeekViewProps> = ({ date, events = [] }) => {
             ))}
           </div>
           <div className="relative min-h-6">
-            <WeekEventsView date={date} events={weekGroups} />
+            <WeekEventsView date={date} events={weekGroups} onEventClick={onEventClick} />
 
             <div className="absolute inset-0 h-full flex flex-1">
               <div className="flex-1 min-w-36 border-l" />
@@ -86,7 +87,7 @@ export const WeekView: React.FC<WeekViewProps> = ({ date, events = [] }) => {
         <div className="flex flex-1 h-fit">
           {days.map((day) => {
             const iso = day.toISOString();
-            return <WeekDayView day={day} key={iso} events={dayGroups[iso]} />;
+            return <WeekDayView day={day} key={iso} events={dayGroups[iso]} onEventClick={onEventClick} />;
           })}
         </div>
       </div>

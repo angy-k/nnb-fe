@@ -51,7 +51,7 @@ export default async function Home() {
       
       {/* Newsletter Section */}
       <section className="py-16 bg-gray-50" style={{justifyItems: 'center'}}>
-        <div className="w-[1800px]" >
+        <div className="w-full" >
           {/* <div className="max-w-3xl mx-auto"> */}
             <Newsletter />
           {/* </div> */}

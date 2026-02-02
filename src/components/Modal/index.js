@@ -16,10 +16,14 @@ const ModalComponent = ({
   const {isOpen, onOpen, onOpenChange} = useDisclosure();
   return (
     <Modal
-      backdrop="opaque"
+      backdrop="blur"
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      classNames="bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20"
+      classNames={{
+        wrapper: 'nnb-modal-wrapper items-center justify-center',
+        backdrop: 'nnb-modal-backdrop',
+        base: 'bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20',
+      }}
     >
       <ModalContent>
         {(onClose) => (

@@ -4,6 +4,8 @@ import { Avatar } from "@nextui-org/avatar";
 import exhibitorIcon from '@/icons/exhibitor-icon.svg';
 import MyPreviousReservations from '@/components/CardsLayout/MyPreviousReservations';
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import applicationService from '@/services/applicationService'
 
 const MyPreviousReservationsComponent = ({
   account = mockedUser
@@ -11,11 +13,70 @@ const MyPreviousReservationsComponent = ({
 
   const router = useRouter()
 
+  const [events, setEvents] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let isActive = true
+
+    const load = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        const res = await applicationService.getMyApplications({ past: true, active: false })
+        const contentType = res.headers.get('content-type') || ''
+        const data = contentType.includes('application/json') ? await res.json() : null
+
+        if (!res.ok || !data?.success) {
+          if (isActive) setError(data?.message || 'Greška prilikom učitavanja rezervacija.')
+          if (isActive) setEvents([])
+          return
+        }
+
+        const items = Array.isArray(data.data) ? data.data : []
+        const mapped = items
+          .map((item) => {
+            const ev = item?.event || {}
+            const status = (item?.status ?? '').toString()
+
+            const applicationStatus = status === 'declined'
+              ? 'rejected'
+              : ['paid', 'approved'].includes(status)
+                ? 'approved'
+                : 'waiting'
+
+            return {
+              id: item?.id,
+              title: (ev?.title || ev?.name || '').toString(),
+              date: (ev?.dateTime || '').toString(),
+              applicationDate: (item?.appliedAt || '').toString(),
+              applicationStatus,
+            }
+          })
+          .filter((x) => x?.title)
+
+        if (isActive) setEvents(mapped)
+      } catch (e) {
+        if (isActive) setError('Greška prilikom učitavanja rezervacija.')
+        if (isActive) setEvents([])
+      } finally {
+        if (isActive) setLoading(false)
+      }
+    }
+
+    load()
+    return () => {
+      isActive = false
+    }
+  }, [])
+
   function viewActiveReservations() {
-    router.push('/prethodne-rezervacije')  
+    router.push('/moje-rezervacije')  
   }
   function goBackToProfile() {
-    router.back()
+    router.push('/profil')
   }
 
   return (
@@ -57,7 +118,17 @@ const MyPreviousReservationsComponent = ({
         </div>
         <div className='w-full grid place-items-center bg-[#f0f0f0]'>
           <div style={{maxWidth: '1400px'}}>
-            <MyPreviousReservations />
+            {loading && (
+              <div className='pt-6 text-[#261A54]'>Učitavanje...</div>
+            )}
+            {!loading && error && (
+              <div className='pt-6 text-[#EC4923]'>{error}</div>
+            )}
+            {!loading && !error && events.length === 0 && (
+              <div className='pt-6 text-[#261A54]'>Nemate prethodnih rezervacija.</div>
+            )}
+
+            {!loading && !error && events.length > 0 && <MyPreviousReservations events={events} />}
           </div>
         </div>
       </div>

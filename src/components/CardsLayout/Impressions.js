@@ -58,7 +58,7 @@ const Impressions = ({
             
             {/* Modal for displaying full impression content */}
             <Modal
-                backdrop="opaque"
+                backdrop="blur"
                 isOpen={isOpen}
                 onOpenChange={(open) => {
                     onOpenChange(open);
@@ -67,11 +67,11 @@ const Impressions = ({
                 size="full"
                 classNames={{
                     base: "impression-modal",
-                    backdrop: "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20",
+                    backdrop: "nnb-modal-backdrop",
                     body: "py-6",
                     closeButton: "text-white bg-black/20 backdrop-blur-md",
                     modalWrapper: "w-full h-full max-w-full",
-                    wrapper: "max-w-full w-full h-full",
+                    wrapper: "nnb-modal-wrapper max-w-full w-full h-full",
                     header: "border-b-0",
                     footer: "border-t-0"
                 }}

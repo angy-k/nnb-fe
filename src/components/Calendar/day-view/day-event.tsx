@@ -13,6 +13,7 @@ type DayEventProps = {
   index: number;
   grouplength: number;
   containerHeight: number;
+  onEventClick?: (eventId: string) => void;
 };
 
 export const DayEvent: React.FC<DayEventProps> = ({
@@ -21,6 +22,7 @@ export const DayEvent: React.FC<DayEventProps> = ({
   index,
   grouplength,
   containerHeight,
+  onEventClick,
 }) => {
   const today = startOfDay(day);
 
@@ -60,18 +62,33 @@ export const DayEvent: React.FC<DayEventProps> = ({
   };
 
   let definedStyle = generateBoxStyle();
+  const showLargeIcon = definedStyle.height > 55;
   
   return (
     <div
       style={definedStyle}
-      className={cn("border border-white rounded cursor-pointer absolute", Number(event.id)%2 ? 'bg-[#56C4CF]' : 'bg-[#261A54]', definedStyle.height > 55 ? ' flex flex-column' : '')}
+      className={cn(
+        "border border-white rounded cursor-pointer absolute flex gap-2",
+        Number(event.id)%2 ? 'bg-[#56C4CF]' : 'bg-[#261A54]',
+        showLargeIcon ? 'flex-col' : 'items-center'
+      )}
+      onClick={() => onEventClick?.(event.id)}
     >
-      {definedStyle.height > 55 && <Image 
-        src={Number(event.id)%2 ? SingleEventLight : SingleEventDark}
-        width={126}
-        height={52}
-        alt='single-event'
-      />}
+      {showLargeIcon ? (
+        <Image
+          src={Number(event.id)%2 ? SingleEventLight : SingleEventDark}
+          width={126}
+          height={52}
+          alt='single-event'
+        />
+      ) : (
+        <Image
+          src={Number(event.id)%2 ? SingleEventLight : SingleEventDark}
+          width={20}
+          height={20}
+          alt='single-event'
+        />
+      )}
       <h1 className={cn("text-white text-xs", definedStyle.height > 55 ? 'self-center' : '')}>
         {`${event.title}, 
         ${format(event.start_date, "h:mm a")} - 

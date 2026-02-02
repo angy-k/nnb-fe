@@ -20,9 +20,10 @@ import type { Event } from "../types";
 type DayViewProps = {
   date: Date;
   events?: Event[];
+  onEventClick?: (eventId: string) => void;
 };
 
-export const DayView: React.FC<DayViewProps> = ({ date, events = [] }) => {
+export const DayView: React.FC<DayViewProps> = ({ date, events = [], onEventClick }) => {
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
 
   const isDayToday = isToday(date);
@@ -42,7 +43,7 @@ export const DayView: React.FC<DayViewProps> = ({ date, events = [] }) => {
         </div>
         <div className="flex flex-col flex-1 justify-center items-center border-l gap-[1px]">
           {allDayEvents.map((event) => (
-            <AllDayEvent event={event} key={event.id} />
+            <AllDayEvent event={event} key={event.id} onEventClick={onEventClick} />
           ))}
         </div>
       </div>
@@ -57,6 +58,7 @@ export const DayView: React.FC<DayViewProps> = ({ date, events = [] }) => {
                 key={event.id}
                 grouplength={group.length}
                 containerHeight={ref?.offsetHeight || 1}
+                onEventClick={onEventClick}
               />
             ))
           )}

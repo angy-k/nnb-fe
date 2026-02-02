@@ -103,6 +103,17 @@ body {
   rgb(var(--background-start-rgb));
 }
 
+ .nnb-modal-wrapper {
+   z-index: 10000 !important;
+ }
+
+ .nnb-modal-backdrop {
+   z-index: 9999 !important;
+   backdrop-filter: blur(12px) !important;
+   -webkit-backdrop-filter: blur(12px) !important;
+   background: rgba(0, 0, 0, 0.3) !important;
+ }
+
  .auth-modal input,
  .auth-modal select {
    font-family: 'Open Sans', sans-serif;
@@ -315,6 +326,18 @@ h6 {
     ;
     color: #ffffff;
   }
+}
+
+.booth-confirm-actions .button-light {
+  width: 172px;
+  height: 53px;
+  border-radius: 30.5px;
+}
+
+.booth-confirm-actions .button-outlined-orange {
+  width: 172px;
+  height: 53px;
+  border-radius: 30.5px;
 }
 
 .button-outlined-dark {
@@ -742,16 +765,29 @@ h6 {
 }
 
 .viber-button {
-  min-width: 120px;
-  height: 36px;
-  border-radius: 30px;
+  min-width: 172px;
+  height: 53px;
+  border-radius: 30.5px;
   background-color: #261A54;
   color: #FFFFFF;
   font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 500;
   margin-right: 15px;
 }
+
+ .viber-button-turquoise {
+   min-width: 172px;
+   height: 53px;
+   border-radius: 30.5px;
+   background-color: #56C4CF;
+   border: 1px solid #56C4CF;
+   color: #FFFFFF;
+   font-family: 'Open Sans', sans-serif;
+   font-size: 18px;
+   font-weight: 500;
+   margin-right: 15px;
+ }
 
 .submit-button-outlined-dark {
   border: 1px solid #1B1B1B;
@@ -1070,9 +1106,9 @@ h6 {
     align-items: center;
     justify-content: center;
     width: 100%;
-    /* max-width: 1440px; */
-    /* margin: 0 auto;
-    padding: 0 20px; */
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 16px;
     position: relative;
   }
 

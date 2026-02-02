@@ -12,11 +12,13 @@ import type { Event } from "../types";
 type WeekDayViewProps = {
   day: Date;
   events?: Event[];
+  onEventClick?: (eventId: string) => void;
 };
 
 export const WeekDayView: React.FC<WeekDayViewProps> = ({
   day,
   events = [],
+  onEventClick,
 }) => {
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
 
@@ -45,6 +47,7 @@ export const WeekDayView: React.FC<WeekDayViewProps> = ({
                 key={event.id}
                 grouplength={group.length}
                 containerHeight={ref?.offsetHeight || 1}
+                onEventClick={onEventClick}
               />
             ))
           )}

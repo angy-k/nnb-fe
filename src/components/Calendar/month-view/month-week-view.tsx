@@ -13,6 +13,7 @@ type MonthWeekViewProps = {
   week: Date[];
   week_events: WeekEvent[];
   week_day_events: Record<string, Event[]>;
+  onEventClick?: (eventId: string) => void;
 };
 
 const dayLabelVariants = cva(
@@ -39,6 +40,7 @@ export const MonthWeekView: React.FC<MonthWeekViewProps> = ({
   week,
   week_events = [],
   week_day_events = {},
+  onEventClick,
 }) => {
   const groups = createWeekGroups(week_events, week[3]);
   const limitedGroups = groups.slice(0, 5);
@@ -69,7 +71,7 @@ export const MonthWeekView: React.FC<MonthWeekViewProps> = ({
         })}
       </div>
       <div className="mt-10 mb-5 absolute inset-0 space-y-1 overflow-hidden">
-        <MonthWeekEventsView date={week[3]} groups={limitedGroups} />
+        <MonthWeekEventsView date={week[3]} groups={limitedGroups} onEventClick={onEventClick} />
         <div className="min-h-6 flex">
           {week.map((day) => {
             const dayKey = day.toISOString();
@@ -81,6 +83,7 @@ export const MonthWeekView: React.FC<MonthWeekViewProps> = ({
                 events={events}
                 restEvents={restEvents}
                 weekEventsShown={limitedGroups.length}
+                onEventClick={onEventClick}
               />
             );
           })}
