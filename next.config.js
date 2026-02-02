@@ -49,6 +49,25 @@ const nextConfig = {
       },
     ]
   },
+  async headers() {
+    const allowIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === 'true' || process.env.ALLOW_INDEXING === 'true'
+
+    if (allowIndexing) {
+      return []
+    }
+
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow, noarchive, nosnippet',
+          },
+        ],
+      },
+    ]
+  },
   sassOptions: {
     includePaths: [path.resolve(__dirname, 'sass')],
     prependData: `

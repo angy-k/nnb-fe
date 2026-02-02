@@ -21,7 +21,9 @@ Sitemap: ${appUrl}/sitemap`
 const uncrawableRobotsTxt = `User-Agent: *\nDisallow: /`
 
 function genereateRobotsTxt() {
-  const robotsTxt = process.env.NEXT_PUBLIC_ENV === 'staging' || process.env.NEXT_PUBLIC_ENV === 'prod'
+  const allowIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === 'true' || process.env.ALLOW_INDEXING === 'true'
+
+  const robotsTxt = allowIndexing
     ? crawlableRobotsTxt(defaultConfig.envs[`${process.env.NEXT_PUBLIC_APP_NAME}`].NEXT_PUBLIC_URL)
     : uncrawableRobotsTxt
 

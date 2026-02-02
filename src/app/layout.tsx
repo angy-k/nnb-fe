@@ -19,6 +19,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const appEnv = process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV
+  const allowIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === 'true' || process.env.ALLOW_INDEXING === 'true'
   return (
     <html lang="en">
       <head>
@@ -30,7 +31,7 @@ export default function RootLayout({
           href={process.env.favicon}
         />
         <meta name='theme-color' content='#000000' />
-        {appEnv !== 'production' && (
+        {!allowIndexing && (
           <>
             <meta name='googlebot' content='noindex' />
             <meta name='googlebot-news' content='nosnippet' />
