@@ -11,8 +11,10 @@ import applicationService from '@/services/applicationService'
 import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
 import EventDetailsModal from '@/components/Modal/EventDetailsModal'
 import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
+import { useRouter } from 'next/navigation'
 
 const CalendarPage = () => {
+  const router = useRouter()
   const { user } = useUser()
   const [events, setEvents] = useState([])
   const [eventDetailsById, setEventDetailsById] = useState({})
@@ -169,6 +171,25 @@ const CalendarPage = () => {
     setIsReserveModalOpen(true)
   }
 
+  const goToReservationMap = async (event) => {
+    const eventId = event?.id
+    if (!eventId) return false
+
+    try {
+      const res = await eventService.getEventMapConfig(eventId)
+      if (!res.ok) return false
+
+      const data = await res.json()
+      const hasMap = !!data?.data?.map_url && Array.isArray(data?.data?.hotspots) && data.data.hotspots.length > 0
+      if (!hasMap) return false
+
+      router.push(`/rezervacija-mesta/${eventId}`)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   const computeConfirmCosts = (event, electricityOpt, marketingOpt) => {
     const cotization = Number(event?.downPayment) || 0
 
@@ -302,8 +323,24 @@ const CalendarPage = () => {
           showReserveButton={!!user && canApply}
           reserveLabel="Rezerviši mesto"
           onReserve={() => {
-            hideEventModal()
-            openReserveModal()
+            ;(async () => {
+              if (!user) {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('nnb:open-auth-modal'))
+                }
+                hideEventModal()
+                return
+              }
+
+              const navigated = await goToReservationMap(selectedEvent)
+              if (navigated) {
+                hideEventModal()
+                return
+              }
+
+              hideEventModal()
+              openReserveModal()
+            })()
           }}
         />
 

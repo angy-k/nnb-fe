@@ -118,7 +118,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
       payload.append('phone_number', values.phone_number || '')
 
       payload.append('activity_group_id', values.activity_group_id)
-      payload.append('activity_id', values.activity_id)
+      payload.append('activity_name', values.activity_name || '')
 
       payload.append('address', values.address || '')
       payload.append('city', values.city || '')
@@ -342,14 +342,11 @@ const AuthModal = ({ onSuccess, onClose }) => {
             gallery_images: [],
             terms_accepted: false,
             activity_group_id: '',
-            activity_id: '',
+            activity_name: '',
           }}
           onSubmit={handleRegister}
         >
           {({ values, setFieldValue }) => {
-            const group = activityGroups.find(g => String(g.id) === String(values.activity_group_id))
-            const activities = group?.activities || []
-
             return (
               <Form className="w-full h-full flex items-center justify-center">
                 <div className="w-full lg:w-[911px] lg:h-[833px] lg:overflow-y-auto lg:mx-auto">
@@ -454,7 +451,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
                           disabled={loadingActivityGroups}
                           onChange={e => {
                             setFieldValue('activity_group_id', e.target.value)
-                            setFieldValue('activity_id', '')
+                            setFieldValue('activity_name', '')
                           }}
                         >
                           <option value="" disabled>
@@ -470,45 +467,38 @@ const AuthModal = ({ onSuccess, onClose }) => {
                       </div>
 
                       <div className="mb-3">
-                        <select
-                          className="w-full rounded-md"
-                          value={values.activity_id}
+                        <MainTextInput
+                          name="activity_name"
+                          type="text"
+                          error={errors.activity_name}
+                          setErrors={setErrors}
+                          placeholder="Delatnost"
+                          className="line-flex w-full"
                           disabled={!values.activity_group_id}
-                          onChange={e => setFieldValue('activity_id', e.target.value)}
-                        >
-                          <option value="" disabled>
-                            Delatnost
-                          </option>
-                          {activities.map(a => (
-                            <option key={a.id} value={a.id}>
-                              {a.name}
-                            </option>
-                          ))}
-                        </select>
-                        <AuthValidationErrors className="mb-1" errors={errors.activity_id} />
+                        />
                       </div>
 
-                    <div className="mb-3">
-                      <MainTextInput
-                        name="address"
-                        type="text"
-                        error={errors.address}
-                        setErrors={setErrors}
-                        placeholder="Adresa"
-                        className="line-flex w-full"
-                      />
-                    </div>
+                      <div className="mb-3">
+                        <MainTextInput
+                          name="address"
+                          type="text"
+                          error={errors.address}
+                          setErrors={setErrors}
+                          placeholder="Adresa"
+                          className="line-flex w-full"
+                        />
+                      </div>
 
-                    <div className="mb-3">
-                      <MainTextInput
-                        name="city"
-                        type="text"
-                        error={errors.city}
-                        setErrors={setErrors}
-                        placeholder="Mesto stanovanja"
-                        className="line-flex w-full"
-                      />
-                    </div>
+                      <div className="mb-3">
+                        <MainTextInput
+                          name="city"
+                          type="text"
+                          error={errors.city}
+                          setErrors={setErrors}
+                          placeholder="Mesto stanovanja"
+                          className="line-flex w-full"
+                        />
+                      </div>
 
                     <div className="mb-3">
                       <input

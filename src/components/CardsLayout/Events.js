@@ -120,6 +120,25 @@ const Events = ({
     setIsReserveModalOpen(true)
   }
 
+  const goToReservationMap = async (event) => {
+    const eventId = event?.id
+    if (!eventId) return false
+
+    try {
+      const res = await eventService.getEventMapConfig(eventId)
+      if (!res.ok) return false
+
+      const data = await res.json()
+      const hasMap = !!data?.data?.map_url && Array.isArray(data?.data?.hotspots) && data.data.hotspots.length > 0
+      if (!hasMap) return false
+
+      router.push(`/rezervacija-mesta/${eventId}`)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   const computeConfirmCosts = (event, electricityOpt, marketingOpt) => {
     const cotization = Number(event?.downPayment) || 0
 
@@ -290,8 +309,24 @@ const Events = ({
         showReserveButton={true}
         reserveLabel="Rezerviši mesto"
         onReserve={() => {
-          hideModal()
-          openReserveModal()
+          ;(async () => {
+            if (!user) {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('nnb:open-auth-modal'))
+              }
+              hideModal()
+              return
+            }
+
+            const navigated = await goToReservationMap(selectedEvent)
+            if (navigated) {
+              hideModal()
+              return
+            }
+
+            hideModal()
+            openReserveModal()
+          })()
         }}
       />
 
