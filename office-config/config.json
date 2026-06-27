@@ -14,21 +14,17 @@
     "dev": {
       "PORT": 3000,
       "NEXT_APP_OFFICE": "nnb",
-      "NEXT_PUBLIC_BACKEND_URL": "http://localhost:8000",
       "NEXT_PUBLIC_URL": "http://localhost:3000"
     },
     "staging": {
       "PORT": 3000,
       "NEXT_APP_OFFICE": "nnb",
-      "NEXT_PUBLIC_BACKEND_URL": "https://admin.nocnibazar.rs",
       "NEXT_PUBLIC_URL": "https://nnb-fe.vercel.app"
-
     },
     "prod": {
       "PORT": 3000,
       "NEXT_APP_OFFICE": "nnb",
-      "NEXT_PUBLIC_BACKEND_URL": "https://admin.nocnibazar.rs",
-      "NEXT_PUBLIC_URL": "https://nnb-fe.vercel.app"
+      "NEXT_PUBLIC_URL": "https://nocnibazar.rs"
     }
   },
   "common": {

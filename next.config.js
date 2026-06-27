@@ -29,6 +29,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'localhost' },
       { protocol: 'https', hostname: 'nocninoctibazar.rs' },
       { protocol: 'https', hostname: '*.nocninoctibazar.rs' },
+      { protocol: 'https', hostname: 'admin.nocnibazar.rs' },
+      { protocol: 'https', hostname: '*.nocnibazar.rs' },
     ],
   },
   env: {

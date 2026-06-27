@@ -19,7 +19,7 @@ export const metadata = {
 
 async function getNextEvent() {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+    const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL
     const response = await fetch(`${apiUrl}/api/v1/events?active=1`, {
       credentials: 'omit',
       cache: 'no-store',

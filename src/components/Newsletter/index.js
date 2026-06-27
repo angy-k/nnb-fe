@@ -39,7 +39,7 @@ const Newsletter = () => {
         try {
             setIsSubmitting(true);
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/newsletter/subscribe`,
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/newsletter/subscribe`,
                 {
                     method: 'POST',
                     headers: {
