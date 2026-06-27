@@ -23,190 +23,177 @@ const ContactForm = ({
 }) => {
 
   const [errors, setErrors] = useState([])
-  const [message, setMessage] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [address, setAddress] = useState('')
-  const [title, setTitle] = useState(predefinedTitle || '');
+  const [formSuccess, setFormSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useUser();
   const recaptchaRef = useRef();
 
-
-
   const onSubmit = async(values, { resetForm }) => {
-    //TODO: send mail message
     if (isLoading) return
+
     values.recaptcha_token = await recaptchaRef.current?.getValue()
-
     setIsLoading(true)
+    setFormSuccess('')
+    setErrors([])
 
-    const response = await contactService.sendContact(values)
-    if (response.ok) {
-      enqueueSnackbar('Uspešno je poslat email.', {variant: 'success'})
-      resetForm()
-    } else {
-      switch(response.status) {
-        case 422:
-          const data = await response.json()
-          setErrors(data.errors)
-          enqueueSnackbar(data.message, { variant: 'error' })
-          break
-        default:
-          throw Error('Error resetPassword')
+    try {
+      const response = await contactService.sendContact(values)
+      if (response.ok) {
+        setFormSuccess('Vaša poruka je uspešno poslata. Odgovorićemo Vam u najkraćem roku.')
+        resetForm()
+        recaptchaRef.current?.reset()
+      } else {
+        switch(response.status) {
+          case 422: {
+            const data = await response.json()
+            setErrors(data.errors || [])
+            break
+          }
+          default:
+            setErrors({ failed: ['Došlo je do greške. Pokušajte ponovo.'] })
+        }
+        recaptchaRef.current?.reset()
       }
+    } catch {
+      setErrors({ failed: ['Došlo je do greške. Pokušajte ponovo.'] })
+    } finally {
+      setIsLoading(false)
     }
-    setLoading(false)
-    recaptchaRef.current.reset()
-
   }
-  //TODO: validacija input polja
+
   return (
     <div className="w-full contact-section grid place-items-center pt-24 mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto">
       {sectionTitle && <span className="contact-section-title text-left">{sectionTitle}</span>}
-      {sectionTitle && <Divider  className="section-divider w-1440"/>}
-      <div 
-        className={`flex flex-col-reverse lg:flex-row place-items-center justify-center gap-1 ${withImage ? 'sm:gap-24 md:gap-[24px] lg:gap-[24px] ' : 'sm:gap-20 md:gap-60 lg:gap-60 py-20 px-20 md:px-40'} lg:w-1440 contact-from bg-[#ffffff] mt-24 2xl:max-w-screen-2xl 2xl:mx-auto rounded-3xl`}
+      {sectionTitle && <Divider className="section-divider w-1440"/>}
+      <div
+        className={`flex flex-col-reverse lg:flex-row ${withImage ? '' : 'place-items-center'} justify-center gap-1 ${withImage ? 'sm:gap-24 md:gap-[24px] lg:gap-[24px]' : 'sm:gap-20 md:gap-60 lg:gap-60 py-20 px-20 md:px-40'} lg:w-1440 contact-from bg-[#ffffff] mt-24 2xl:max-w-screen-2xl 2xl:mx-auto rounded-3xl overflow-hidden`}
       >
-        {withImage ? <Image
-            src={DefaultImage}
-            width={606}
-            height={555}
-            alt={'Contact form default image.'}
-          /> : <ContactFormLogo />
-        }
+        {withImage ? (
+          <div className="relative w-full min-h-[300px] lg:min-h-0 lg:self-stretch lg:w-[45%] flex-shrink-0 overflow-hidden rounded-b-3xl lg:rounded-b-none lg:rounded-l-3xl">
+            <Image
+              src={DefaultImage}
+              fill
+              style={{ objectFit: 'cover', objectPosition: 'center' }}
+              alt="Contact form default image."
+            />
+          </div>
+        ) : (
+          <ContactFormLogo />
+        )}
         <div className={`w-[100%] ${withImage ? 'p-[48px]' : 'p-0'}`}>
-        <Formik
-          initialValues={{
-            title: title,
-            email: user ? user.email : (email ? email : ''),
-            firstName: user ? user.firstName : (firstName ? firstName : ''),
-            lastName: user ? user.lastName : (lastName ? lastName : ''),
-            address: user ? user.address : (address ? address : ''),
-            phoneNumber: user ? user.phoneNumber : (phoneNumber ? phoneNumber : ''),
-            message: message ? message : '',
-          }}
-          enagleReinitialize
-          validationSchema={validateContact}
-          
-          onSubmit={onSubmit}>
+          <Formik
+            initialValues={{
+              title: predefinedTitle,
+              email: '',
+              firstName: '',
+              lastName: '',
+              phoneNumber: '',
+              address: '',
+              message: '',
+            }}
+            validationSchema={validateContact}
+            onSubmit={onSubmit}
+          >
             {() => (
               <Form className="w-full">
-                <div className="grid grid-cols-1 2xl:grid 2xl:grid-cols-2 2xl:w-8/12">
-                  <div className="contact-form-fields 2xl:grid 2xl:mr-5">
-                    <div className="pb-5">
-                      <MainTextInput
-                        error={errors.firstName}
-                        setErrors={setErrors}
-                        label="Ime"
-                        name="firstName"
-                        palceholder="Ime"
-                        type="text"
-                        className="mt-1.5 line-flex pl-9 w-full pt-2"
-                      />
-                    </div>
-                    
-                    <div className="pb-5">
-                      <MainTextInput
-                        error={errors.lastName}
-                        setErrors={setErrors}
-                        label="Prezime"
-                        name="lastName"
-                        palceholder="Prezime"
-                        type="text"
-                        className="mt-1.5 line-flex pl-9 w-full pt-2"
-                      />
-                    </div>
-
-                    <div className="pb-5">
-                      <MainTextInput
-                        error={errors.email}
-                        setErrors={setErrors}
-                        label="E-mail"
-                        name="email"
-                        palceholder="E-mail"
-                        type="email"
-                        className="mt-1.5 line-flex pl-9 w-full pt-2"
-                      />
-                    </div>
-
-                    <div className="pb-5">
-                      <MainTextInput
-                        error={errors.phoneNumber}
-                        setErrors={setErrors}
-                        label="Telefon"
-                        name="phoneNumber"
-                        palceholder="Telefon"
-                        type="text"
-                        className="mt-1.5 line-flex pl-9 w-full pt-2"
-                      />
-                    </div>
-
-                    <div className="pb-5">
-                      <MainTextInput
-                        error={errors.address}
-                        setErrors={setErrors}
-                        label="Adresa"
-                        name="address"
-                        palceholder="Adresa"
-                        type="text"
-                        className="mt-1.5 line-flex pl-9 w-full pt-2"
-                      />
-                    </div>
-
-                    <div className="pb-5">
-                      <MainTextInput
-                        error={errors.title}
-                        setErrors={setErrors}
-                        label="Naslov"
-                        name="title"
-                        palceholder="Naslov"
-                        type="text"
-                        disabled={true}
-                        className="mt-1.5 line-flex pl-9 w-full pt-2"
-                      />
-                    </div>
+                {/* 2-kolumna grid: Ime/Prezime, E-mail/Telefon, Adresa/Naslov */}
+                <div className="contact-form-inputs grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-6 gap-y-5 mb-5">
+                  <div>
+                    <MainTextInput
+                      error={errors.firstName}
+                      setErrors={setErrors}
+                      label="Ime"
+                      name="firstName"
+                      type="text"
+                    />
                   </div>
-                  <div className="pb-5">
-                      <MainTextAreaInput 
-                        rows={5}
-                        cols={5}
-                        label={'Poruka'}
-                        name="message"
-                        palceholder="Poruka"
-                        className="mt-2 w-full rounded-md shadow-sm border-none"
-                        value={message}
-                      />
-                      <span className="text-xs text-[#A4A4A4]">
-                        * Maksimalni dozvoljeni broj karaktera je 2047
-                      </span>
-                    </div>
-                    {!['development', 'testing', 'dev'].includes(getAppEnv()) && (
-                      <>
-                        <ReCAPTCHA 
-                          sitekey={process.env.RECAPTCHA_SITE_KEY}
-                          ref={recaptchaRef}
-                        />
-
-                        <AuthValidationErrors 
-                          className="mb-1"
-                          errors={errors.recaptcha_token}
-                        />
-                      </>
-                    )}
-
-                    {/* Validation Errors */}
-                    <AuthValidationErrors className="mb-1" errors={errors.failed} />
-
-                    <Button
-                      key={`contact-form-button`}
-                      type={'submit-outlined-dark'}
-                      name={'Pošalji poruku'}
-                      className={'button w-full 2xl:w-6/12 2xl:mll-auto 2xl:mt-0'}
-                     />
+                  <div>
+                    <MainTextInput
+                      error={errors.lastName}
+                      setErrors={setErrors}
+                      label="Prezime"
+                      name="lastName"
+                      type="text"
+                    />
+                  </div>
+                  <div>
+                    <MainTextInput
+                      error={errors.email}
+                      setErrors={setErrors}
+                      label="E-mail"
+                      name="email"
+                      type="email"
+                    />
+                  </div>
+                  <div>
+                    <MainTextInput
+                      error={errors.phoneNumber}
+                      setErrors={setErrors}
+                      label="Telefon"
+                      name="phoneNumber"
+                      type="text"
+                    />
+                  </div>
+                  <div>
+                    <MainTextInput
+                      error={errors.address}
+                      setErrors={setErrors}
+                      label="Adresa"
+                      name="address"
+                      type="text"
+                    />
+                  </div>
+                  <div>
+                    <MainTextInput
+                      error={errors.title}
+                      setErrors={setErrors}
+                      label="Naslov"
+                      name="title"
+                      type="text"
+                      disabled={true}
+                    />
+                  </div>
                 </div>
+
+                {/* Poruka — full width */}
+                <div className="contact-form-inputs mb-5">
+                  <MainTextAreaInput
+                    rows={5}
+                    label="Poruka"
+                    name="message"
+                    className="mt-2 w-full rounded-md shadow-sm border-none"
+                  />
+                  <span className="text-xs text-[#A4A4A4]">
+                    * Maksimalni dozvoljeni broj karaktera je 2047
+                  </span>
+                </div>
+
+                {!['development', 'testing', 'dev'].includes(getAppEnv()) && (
+                  <>
+                    <ReCAPTCHA
+                      sitekey={process.env.RECAPTCHA_SITE_KEY}
+                      ref={recaptchaRef}
+                    />
+                    <AuthValidationErrors
+                      className="mb-1"
+                      errors={errors.recaptcha_token}
+                    />
+                  </>
+                )}
+
+                {formSuccess && (
+                  <div className="text-sm text-green-600 py-2 mb-2">{formSuccess}</div>
+                )}
+
+                <AuthValidationErrors className="mb-1" errors={errors.failed} />
+
+                <Button
+                  key="contact-form-button"
+                  type="submit-outlined-dark"
+                  name={isLoading ? 'Šalje se...' : 'Pošalji poruku'}
+                  disabled={isLoading}
+                  className="w-full mt-2"
+                />
               </Form>
             )}
           </Formik>

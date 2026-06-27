@@ -1,43 +1,41 @@
 'use client';
-import exhibitorIcon from '@/icons/exhibitor-icon.svg'
+import { useRouter } from 'next/navigation'
 import { Avatar } from "@nextui-org/avatar";
-import PageHeroSection from '@/components/Hero/pageOwl';
 import Reservations from '@/components/Reservations/Reservations';
 import AccountData from './accountData';
 import ProfileGallery from './gallery';
 import useUser from '@/data/use-user'
 
 const ProfileComponent = ({
-    account,
+  account,
 }) => {
+  const router = useRouter()
   const { user, loading, loggedOut } = useUser()
 
   if (loading && !account) {
     return (
-      <>
-        <PageHeroSection illustration={false} />
-        <div className="grid place-items-center w-full pb-48 bg-[#f0f0f0]">
-          <div className="mt-24">Učitavanje...</div>
-        </div>
-      </>
+      <div className="w-full min-h-screen bg-[#261A54]" />
     )
   }
 
   if (loggedOut && !account) {
     return (
       <>
-        <PageHeroSection illustration={false} />
+        <div className="w-full bg-[#261A54] pt-60 pb-16" />
         <div className="grid place-items-center w-full pb-48 bg-[#f0f0f0]">
-          <div className="mt-24">Morate biti ulogovani da biste videli profil.</div>
-          <button
-            type="button"
-            className="mt-6 px-6 py-3 rounded-md bg-[#261A54] text-white"
-            onClick={() => {
-              window.dispatchEvent(new Event('nnb:open-auth-modal'))
-            }}
-          >
-            Prijavite se
-          </button>
+          <div className="mt-24 flex flex-col items-center gap-6">
+            <p className="text-[#261A54]">Morate biti ulogovani da biste videli profil.</p>
+            <button
+              type="button"
+              className="px-6 py-3 rounded-full font-semibold text-white"
+              style={{ backgroundColor: '#56C4CF' }}
+              onClick={() => {
+                window.dispatchEvent(new Event('nnb:open-auth-modal'))
+              }}
+            >
+              Prijavite se
+            </button>
+          </div>
         </div>
       </>
     )
@@ -53,70 +51,78 @@ const ProfileComponent = ({
 
     return {
       brandName: user.name || '-',
-      type: '',
-      image: user.profile_photo_url || exhibitorIcon,
+      type: user.activity?.name || user.activity_group?.name || '',
+      image: user.profile_photo_url || null,
       owner: {
         fullName,
         email: user.email || '-',
-        phone: '-',
-        address: '-',
+        phone: user.phone_number || '-',
+        address: user.address || '-',
         dateOfBirth: user.date_of_birth || '-',
+        facebook: user.facebook || null,
+        instagram: user.instagram || null,
       },
       company: {
-        name: '-',
-        address: '-',
-        mb: '-',
-        pib: '-',
+        name: user.legal_entity?.company_name || '-',
+        address: user.legal_entity?.company_address || '-',
+        mb: user.legal_entity?.mb || '-',
+        pib: user.legal_entity?.pib || '-',
       },
+      gallery_images: user.gallery_images || [],
+      gallery_videos: user.gallery_videos || [],
       images: [],
       videos: [],
       reservations: [],
     }
   })()
 
+  // Only use real URL strings as avatar src — not SVG import objects
+  const avatarSrc = (() => {
+    const img = mappedAccount?.image
+    if (typeof img === 'string' && img.length > 0) return img
+    return null
+  })()
+
   return (
     <>
-      <PageHeroSection 
-          illustration={false}
-      />
-      <div 
-        className="grid place-items-center w-full w-full mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-[48px] md-2xl:pb-[35px]" 
-        style={{ background: 'linear-gradient(to bottom, #261A54 70%, #f0f0f0 70%)'}}
-      >
-        <div className='edit-profile gap-4'>
-          <div className='place-items-center' style={{display: 'flex', flexDirection: 'row', gap: '40px', width: '100%'}}>
-            <Avatar
-              isBordered
-              src={(() => {
-                const img = mappedAccount?.image
-                if (!img) return exhibitorIcon.src
-                if (typeof img === 'string') return img
-                if (img?.src) return img.src
-                return exhibitorIcon.src
-              })()}
-              radius="full"
-              color='default'
-              className="w-[223px] h-[223px] text-tiny bg-[#261A54] p-[36px] border border-solid border-violet-300"
-            />
-            <span style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-              <span className='font-bold font-[48px] text-[#ffffff]'>{mappedAccount.brandName}</span>
-              <span className='font-normal font-[22px] text-[#ffffff]'>{mappedAccount.type}</span>
-            </span>
+      {/* Profile header — paddingTop gura sadržaj ispod fixed nava */}
+      <div className="w-full bg-[#261A54]" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
+        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6">
+          <div className="flex items-end gap-6">
+            {/* Avatar — z-10 da bude iznad gray sekcije, marginBottom negativan za prelaz */}
+            <div className="relative z-10 flex-shrink-0" style={{ marginBottom: '-36px' }}>
+              <Avatar
+                isBordered
+                src={avatarSrc || undefined}
+                name={!avatarSrc ? (mappedAccount.brandName || 'U') : undefined}
+                radius="full"
+                className="w-[100px] h-[100px] text-xl bg-[#3d2f7a] border-2 border-violet-300/50"
+              />
+            </div>
+            <div className="flex flex-col gap-1 pb-2">
+              <span className="text-3xl font-bold leading-tight" style={{ color: '#ffffff' }}>{mappedAccount.brandName}</span>
+              <span className="text-base" style={{ color: 'rgba(255,255,255,0.6)' }}>{mappedAccount.type}</span>
+            </div>
           </div>
           <button
-            key={`edit-profile-button`}
-            onClick={() => {}}
-            className='edit-profile-button text-[#ffffff]'
+            onClick={() => router.push('/profil/izmeni')}
+            className="px-6 py-2.5 rounded-full text-sm font-semibold flex-shrink-0 hover:opacity-90 transition mb-2"
+            style={{ color: '#ffffff', backgroundColor: '#56C4CF' }}
           >
-            {'Izmenite profil'}
+            Izmenite profil
           </button>
         </div>
       </div>
 
-      <div className='grid place-items-center w-full pb-48 bg-[#f0f0f0]'>
+      {/* Content area — paddingTop za prostor avatara koji visi */}
+      <div className="w-full bg-[#f0f0f0] pb-24 overflow-hidden" style={{ paddingTop: '36px' }}>
         <Reservations />
-        <AccountData account={mappedAccount} />
-        <ProfileGallery account={mappedAccount} />
+        <div className="max-w-[1400px] mx-auto px-6">
+          <AccountData account={mappedAccount} />
+          <div id="profil-galerija">
+            <ProfileGallery account={mappedAccount} editable={!!user && !account} />
+          </div>
+        </div>
       </div>
     </>
   )
@@ -126,8 +132,8 @@ export default ProfileComponent;
 
 const mockedUser = {
   brandName: 'Krafter',
-  type: 'pivara',
-  image: exhibitorIcon,
+  type: 'Pivara',
+  image: null,
   owner: {
     fullName: 'Marija Marijanović',
     email: 'marijamarijanovic@gmail.com',

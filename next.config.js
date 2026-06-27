@@ -24,6 +24,11 @@ const nextConfig = {
       { protocol: 'https', hostname: 'instagram.fbeg6-1.fna.fbcdn.net' },
       { protocol: 'https', hostname: '**.cdninstagram.com' },
       { protocol: 'https', hostname: '**.fbcdn.net' },
+      { protocol: 'http',  hostname: 'localhost' },
+      { protocol: 'http',  hostname: 'localhost', port: '8000' },
+      { protocol: 'https', hostname: 'localhost' },
+      { protocol: 'https', hostname: 'nocninoctibazar.rs' },
+      { protocol: 'https', hostname: '*.nocninoctibazar.rs' },
     ],
   },
   env: {

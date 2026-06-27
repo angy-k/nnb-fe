@@ -1,21 +1,32 @@
 'use client';
-import PageHeroSection from '@/components/Hero/pageOwl';
 import { Avatar } from "@nextui-org/avatar";
-import exhibitorIcon from '@/icons/exhibitor-icon.svg';
 import MyPreviousReservations from '@/components/CardsLayout/MyPreviousReservations';
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import applicationService from '@/services/applicationService'
+import useUser from '@/data/use-user'
 
-const MyPreviousReservationsComponent = ({
-  account = mockedUser
-}) => {
+const MyPreviousReservationsComponent = () => {
 
-  const router = useRouter()
+  const { user } = useUser()
 
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return ''
+    try {
+      const date = new Date(dateStr)
+      if (isNaN(date.getTime())) return dateStr
+      const d = String(date.getDate()).padStart(2, '0')
+      const m = String(date.getMonth() + 1).padStart(2, '0')
+      const y = date.getFullYear()
+      return `${d}.${m}.${y}.`
+    } catch {
+      return dateStr
+    }
+  }
 
   useEffect(() => {
     let isActive = true
@@ -41,17 +52,19 @@ const MyPreviousReservationsComponent = ({
             const ev = item?.event || {}
             const status = (item?.status ?? '').toString()
 
-            const applicationStatus = status === 'declined'
-              ? 'rejected'
-              : ['paid', 'approved'].includes(status)
-                ? 'approved'
-                : 'waiting'
+            const applicationStatus =
+              ['declined', 'declined_no_payment', 'withdrawn', 'cancelled', 'expired', 'unpaid', 'no_show'].includes(status)
+                ? 'rejected'
+                : status === 'approved'
+                  ? 'approved'
+                  : 'waiting'
 
             return {
               id: item?.id,
               title: (ev?.title || ev?.name || '').toString(),
-              date: (ev?.dateTime || '').toString(),
+              date: formatDate(ev?.dateTime || ''),
               applicationDate: (item?.appliedAt || '').toString(),
+              coverImage: ev?.coverImage || null,
               applicationStatus,
             }
           })
@@ -72,90 +85,59 @@ const MyPreviousReservationsComponent = ({
     }
   }, [])
 
-  function viewActiveReservations() {
-    router.push('/moje-rezervacije')  
-  }
-  function goBackToProfile() {
-    router.push('/profil')
-  }
+  const avatarSrc = user?.profile_photo_url || null
 
   return (
     <>
-      <PageHeroSection 
-          illustration={false}
-      />
-      <div 
-        className="grid place-items-center w-full w-full mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-[48px] md-2xl:pb-[35px]" 
-        style={{ background: 'linear-gradient(to bottom, #261A54 70%, #f0f0f0 70%)'}}
-      >
-        <div className='edit-profile gap-4'>
-          <div className='place-items-center' style={{display: 'flex', flexDirection: 'row', gap: '40px', width: '100%'}}>
-            <Avatar
-             isBordered
-              src={(account && account?.image) ? account.image.src : exhibitorIcon.src}
-              radius="full"
-              color='default'
-              className="w-[223px] h-[223px] text-tiny bg-[#261A54] p-[36px] border border-solid border-violet-300"
-            />
-            <span className='font-bold font-[48px] text-[#ffffff]'>{`Moje rezervacije`}</span>
+      {/* Dark header */}
+      <div className="w-full bg-[#261A54]" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
+        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6">
+          <div className="flex items-end gap-6">
+            <div className="relative z-10 flex-shrink-0" style={{ marginBottom: '-36px' }}>
+              <Avatar
+                isBordered
+                src={avatarSrc || undefined}
+                name={!avatarSrc ? (user?.name || 'U') : undefined}
+                radius="full"
+                className="w-[100px] h-[100px] text-xl bg-[#3d2f7a] border-2 border-violet-300/50"
+              />
+            </div>
+            <div className="flex flex-col gap-1 pb-2">
+              <span className="text-3xl font-bold leading-tight" style={{ color: '#ffffff' }}>Prethodne rezervacije</span>
+            </div>
           </div>
-          <button
-            key={`edit-profile-button`}
-            onClick={goBackToProfile}
-            className='text-[#ffffff]'
-            style={{border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', height: '60px', width: '300px'}}
-          >
-            {'Vrati se na profil'}
-          </button>
-          <button
-            key={`edit-profile-button`}
-            onClick={viewActiveReservations}
-            className='text-[#ffffff]'
-            style={{border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', height: '60px', width: '300px'}}
-          >
-            {'Aktuelne rezervacije'}
-          </button>
-        </div>
-        <div className='w-full grid place-items-center bg-[#f0f0f0]'>
-          <div style={{maxWidth: '1400px'}}>
-            {loading && (
-              <div className='pt-6 text-[#261A54]'>Učitavanje...</div>
-            )}
-            {!loading && error && (
-              <div className='pt-6 text-[#EC4923]'>{error}</div>
-            )}
-            {!loading && !error && events.length === 0 && (
-              <div className='pt-6 text-[#261A54]'>Nemate prethodnih rezervacija.</div>
-            )}
-
-            {!loading && !error && events.length > 0 && <MyPreviousReservations events={events} />}
+          <div className="flex items-end gap-3 pb-2">
+            <Link href="/profil">
+              <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', height: '44px', padding: '10px 24px', color: '#ffffff', display: 'inline-block', cursor: 'pointer' }}>
+                Vrati se na profil
+              </span>
+            </Link>
+            <Link href="/moje-rezervacije">
+              <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', height: '44px', padding: '10px 24px', color: '#ffffff', display: 'inline-block', cursor: 'pointer' }}>
+                Aktuelne rezervacije
+              </span>
+            </Link>
           </div>
         </div>
       </div>
+
+      {/* Sivi sadržaj */}
+      <div className="w-full bg-[#f0f0f0]" style={{ paddingTop: '70px', paddingBottom: '96px' }}>
+        <div className="max-w-[1400px] mx-auto px-6">
+          {loading && (
+            <div className="pt-6 text-[#261A54]">Učitavanje...</div>
+          )}
+          {!loading && error && (
+            <div className="pt-6 text-[#EC4923]">{error}</div>
+          )}
+          {!loading && !error && events.length === 0 && (
+            <div className="pt-6 text-[#261A54]">Nemate prethodnih rezervacija.</div>
+          )}
+          {!loading && !error && events.length > 0 && <MyPreviousReservations events={events} />}
+        </div>
+      </div>
     </>
-    )
+  )
 }
 
 export default MyPreviousReservationsComponent;
-
-const mockedUser = {
-  brandName: 'Krafter',
-  type: 'pivara',
-  image: exhibitorIcon,
-  owner: {
-    fullName: 'Marija Marijanović',
-    email: 'marijamarijanovic@gmail.com',
-    phone: '+381 60 123 45 678',
-    address: 'Vuka Karadžića 55, Novi Sad',
-    dateOfBirth: '01.01.1990.'
-  },
-  company: {
-    name: 'Pivara Krafter',
-    address: 'Vuka Karadžića 55, Novi Sad',
-    mb: '12345678',
-    pib: '12345678987654'
-  },
-  images: [],
-  videos: [],
-  reservations: []
-}

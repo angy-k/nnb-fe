@@ -19,6 +19,7 @@ export type CalendarProps = {
   events?: Event[];
   date?: string | number | Date;
   onEventClick?: (eventId: string) => void;
+  onDayClick?: (date: Date) => void;
 };
 
 export const Calendar: React.FC<CalendarProps> = ({
@@ -26,6 +27,7 @@ export const Calendar: React.FC<CalendarProps> = ({
     events = eventsMock,
     view = "month",
     onEventClick,
+    onDayClick,
 }) => {
     const [curView, setCurView] = useState<View>(view);
     const [curDate, setCurDate] = useState<Date>(new Date(date));
@@ -153,7 +155,7 @@ return (
         </section>
         {curView === "day" && <DayView date={curDate} events={events} onEventClick={onEventClick} />}
         {curView === "week" && <WeekView date={curDate} events={events} onEventClick={onEventClick} />}
-        {curView === "month" && <MonthView date={curDate} events={events} onEventClick={onEventClick} />}
+        {curView === "month" && <MonthView date={curDate} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />}
     </div>
     );
 };

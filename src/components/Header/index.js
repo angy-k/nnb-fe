@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import useUser from '@/data/use-user'
 import Logo from "../Logo";
+import Image from 'next/image';
 import Link from 'next/link';
 import CustomButton from '../Button';
 import LogoDark from '@/../public/logo-dark.svg'
@@ -10,6 +11,9 @@ import AuthModal from '@/components/Auths/AuthModal'
 import authService from '@/services/authService'
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
+import exhibitorIcon from '@/icons/exhibitor-icon.svg'
+import avatarDefaultIcon from '@/icons/avatar-default.svg'
+import calendarIcon from '@/icons/calendar-icon.svg'
 import {
   Modal,
   ModalContent,
@@ -42,7 +46,7 @@ const Header = ({bgColor = '#261A54'}) => {
   const [anchorElUser, setAnchorElUser] = useState(null)
   const [openMenu, setOpenMenu] = useState(false)
   const [sentMail, setSentMail] = useState(true)
-  const [profilePhotoUrl, setProfilePhotoUrl] = useState('static/images/login.svg')
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState(avatarDefaultIcon.src)
   const pathname = usePathname()
   const [display, setDisplay] = useState(true);
 
@@ -120,77 +124,99 @@ const Header = ({bgColor = '#261A54'}) => {
           />
         )}
         <div className="hidden md:flex lg:flex items-center gap-4 md:ml-auto lg:ml-auto">
-          <CustomButton
-            key={`header-reserve-button`}
-            type={'outlined-orange'}
-            name={'Rezervišite tezgu'}
-            onClick={() => {
-              router.push('/dogadjaji')
-            }}
-          />
           {user ? (
-            <Dropdown placement="bottom-end">
-              <DropdownTrigger>
-                <button type="button" aria-label="Profil" className="header-profile-trigger">
-                  <span className="header-profile-name">{brandName}</span>
-                  <Avatar
-                    src={avatarSrc}
-                    radius="full"
-                    isBordered
-                    className="w-10 h-10"
-                  />
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="header-profile-caret"
-                  >
-                    <path
-                      d="M6 9L12 15L18 9"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </DropdownTrigger>
-              <DropdownMenu
-                aria-label="Profil meni"
-                onAction={async (key) => {
-                  if (key === 'profile') {
-                    router.push('/profil')
-                    return
-                  }
+            <>
+              <button
+                className="button-outlined-orange flex items-center gap-2"
+                onClick={() => router.push('/dogadjaji')}
+                aria-label="Rezervišite tezgu"
+              >
+                <Image src={calendarIcon} width={20} height={20} alt="" />
+                <span className="text">Rezervišite tezgu</span>
+              </button>
 
-                  if (key === 'logout') {
-                    await authService.logout()
-                    await mutate()
-                    router.push('/')
-                  }
+              <Dropdown
+                placement="bottom-end"
+                classNames={{
+                  base: 'min-w-[200px]',
+                  content: 'bg-[#261A54] shadow-xl rounded-2xl p-1 border-none',
                 }}
               >
-                <DropdownItem key="user" isDisabled textValue="Korisnik">
-                  <div className="flex flex-col">
-                    <span className="font-semibold">{brandName}</span>
-                    <span className="text-sm opacity-80">{exhibitorFullName}</span>
-                  </div>
-                </DropdownItem>
-                <DropdownItem key="profile" className="header-profile-dropdown-item">Profil</DropdownItem>
-                <DropdownItem key="logout" className="header-profile-dropdown-item header-profile-dropdown-item-logout text-danger" color="danger">
-                  Logout
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+                <DropdownTrigger>
+                  <button type="button" aria-label="Profil" className="header-profile-trigger">
+                    <span className="header-profile-name">{brandName}</span>
+                    {user?.profile_photo_url ? (
+                      <Avatar
+                        src={user.profile_photo_url}
+                        radius="full"
+                        isBordered
+                        className="w-10 h-10"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white" style={{ backgroundColor: '#3ECFCF' }}>
+                        <Image src={avatarDefaultIcon} width={22} height={21} alt="avatar" />
+                      </div>
+                    )}
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="header-profile-caret"
+                    >
+                      <path
+                        d="M6 9L12 15L18 9"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  aria-label="Profil meni"
+                  onAction={async (key) => {
+                    if (key === 'profile') {
+                      router.push('/profil')
+                      return
+                    }
+                    if (key === 'logout') {
+                      await authService.logout()
+                      await mutate()
+                      router.push('/')
+                    }
+                  }}
+                >
+                  <DropdownItem key="user" isDisabled textValue="Korisnik" classNames={{ base: 'opacity-100 cursor-default' }}>
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-white">{brandName}</span>
+                      <span className="text-sm text-[#56C4CF]">{exhibitorFullName}</span>
+                    </div>
+                  </DropdownItem>
+                  <DropdownItem
+                    key="profile"
+                    classNames={{
+                      base: 'data-[hover=true]:bg-transparent',
+                      title: 'text-white/60 data-[hover=true]:text-white transition-colors',
+                    }}
+                  >Profil</DropdownItem>
+                  <DropdownItem
+                    key="logout"
+                    classNames={{
+                      base: 'data-[hover=true]:bg-transparent',
+                      title: 'text-[#EC4923]/70 data-[hover=true]:text-[#EC4923] transition-colors',
+                    }}
+                  >Logout</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </>
           ) : (
             <CustomButton
-              key={`header-button`}
               type={'outlined-light'}
               name={'Postani izlagač'}
               onClick={onOpen}
-              className='header-button'
             />
           )}
         </div>

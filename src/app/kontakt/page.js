@@ -17,8 +17,9 @@ const ContactPage = () => {
         <div className="w-full grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
           
           <Faq />
-          <ContactForm 
+          <ContactForm
             withImage={false}
+            predefinedTitle="Pošaljite nam poruku"
           />
           <ViberCommunity type={'dark'}/>
         </div>

@@ -130,6 +130,31 @@ export const post = async (
   })
 }
 
+export const put = async (
+  path,
+  data = {},
+  { config = {}, withCSRF = false, type = null } = {}
+) => {
+  const isBrowser = typeof window !== 'undefined'
+  const url = `${base_url}${path}`
+
+  if (withCSRF) {
+    await csrf()
+    if (!config.headers) config.headers = {}
+    config.headers['X-XSRF-TOKEN'] = getCSRFValue()
+  }
+
+  const body = type !== 'multipart' ? JSON.stringify(data) : data
+
+  return fetch(url, {
+    method: 'PUT',
+    headers: { ...base_headers(type), ...config.headers },
+    body,
+    credentials: config.credentials ?? 'include',
+    redirect: config.redirect ?? (isBrowser ? 'manual' : 'follow'),
+  })
+}
+
 export const del = async (
   path,
   data = {},

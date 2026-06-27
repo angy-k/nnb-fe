@@ -4,14 +4,18 @@ import PageHeroSection from '@/components/Hero/pageOwl';
 import Button from '@/components/Button';
 import UpcommingEvents from '@/components/UpcommingEvents';
 import useUser from '@/data/use-user'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { add, parse, startOfToday, endOfDay, isWithinInterval } from 'date-fns'
 import eventService from '@/services/eventService'
 import applicationService from '@/services/applicationService'
 import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
 import EventDetailsModal from '@/components/Modal/EventDetailsModal'
 import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
+import DayEventsModal from '@/components/Modal/DayEventsModal'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import EventDark from '@/icons/event-dark.svg'
+import EventLight from '@/icons/event-light.svg'
 
 const CalendarPage = () => {
   const router = useRouter()
@@ -21,6 +25,8 @@ const CalendarPage = () => {
 
   const [isEventModalOpen, setIsEventModalOpen] = useState(false)
   const [selectedEventId, setSelectedEventId] = useState(null)
+  const [isDayModalOpen, setIsDayModalOpen] = useState(false)
+  const [selectedDay, setSelectedDay] = useState(null)
 
   const [isReserveModalOpen, setIsReserveModalOpen] = useState(false)
   const [electricityOption, setElectricityOption] = useState('none')
@@ -30,6 +36,9 @@ const CalendarPage = () => {
   const [isSubmittingReservation, setIsSubmittingReservation] = useState(false)
   const [reservationError, setReservationError] = useState(null)
   const [reservationSuccess, setReservationSuccess] = useState(null)
+  const [sessionSeconds, setSessionSeconds] = useState(null)
+  const sessionIntervalRef = useRef(null)
+  const sessionActiveRef = useRef(false)
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -104,11 +113,19 @@ const CalendarPage = () => {
 
             detailsMap[id] = item
 
+            const activityName = (
+              item?.activity?.name ??
+              item?.activityGroup?.name ??
+              item?.activity_group?.name ??
+              ''
+            ).toString()
+
             return {
               id,
               title: (item?.title ?? item?.name ?? '').toString(),
               start_date: startDate,
               end_date: endDate,
+              variant: /startup/i.test(activityName) ? 'startup' : 'regular',
             }
           })
           .filter(Boolean)
@@ -141,6 +158,11 @@ const CalendarPage = () => {
     setIsEventModalOpen(true)
   }
 
+  const onDayClick = (date) => {
+    setSelectedDay(date)
+    setIsDayModalOpen(true)
+  }
+
   const closeReserveModal = () => {
     setIsReserveModalOpen(false)
   }
@@ -154,11 +176,42 @@ const CalendarPage = () => {
     setIsSubmittingReservation(false)
   }
 
+  const stopSessionTimer = useCallback(() => {
+    if (sessionIntervalRef.current) clearInterval(sessionIntervalRef.current)
+    sessionIntervalRef.current = null
+    sessionActiveRef.current = false
+    setSessionSeconds(null)
+  }, [])
+
+  const startSessionTimer = useCallback(() => {
+    if (sessionActiveRef.current) return
+    sessionActiveRef.current = true
+    setSessionSeconds(60)
+    sessionIntervalRef.current = setInterval(() => {
+      setSessionSeconds((s) => {
+        if (s === null || s <= 1) {
+          clearInterval(sessionIntervalRef.current)
+          sessionIntervalRef.current = null
+          sessionActiveRef.current = false
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+  }, [])
+
+  useEffect(() => {
+    if (sessionSeconds === 0) {
+      closeAllModals()
+    }
+  }, [sessionSeconds])
+
   const closeAllModals = () => {
     setIsConfirmModalOpen(false)
     setIsReserveModalOpen(false)
     setIsEventModalOpen(false)
     setSelectedEventId(null)
+    stopSessionTimer()
     resetReservationState()
   }
 
@@ -169,6 +222,7 @@ const CalendarPage = () => {
 
   const openReserveModal = () => {
     setIsReserveModalOpen(true)
+    startSessionTimer()
   }
 
   const goToReservationMap = async (event) => {
@@ -297,10 +351,16 @@ const CalendarPage = () => {
         />
       <div className="w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-48 bg-[#f0f0f0]">
         <div className="hidden md:block lg:block" style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
-          <Calendar view={'month'} events={events} onEventClick={onEventClick} />
+          <Calendar view={'month'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
         </div>
         <div className="block md:hidden lg:hidden" style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
-          <Calendar view={'day'} events={events} onEventClick={onEventClick} />
+          <Calendar view={'day'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
+        </div>
+
+        {/* Legenda */}
+        <div className="flex items-center gap-4 mt-6 mb-2" style={{width: '100%', maxWidth: '1400px'}}>
+          <Image src={EventDark} width={100} height={41} alt="Novosadski noćni bazar" />
+          <Image src={EventLight} width={100} height={41} alt="Novosadski noćni bazar — startup" />
         </div>
         {!user && (
           <div className="pt-12 flex flex-row justify-between items-center" style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
@@ -355,6 +415,7 @@ const CalendarPage = () => {
           submitLabel="Prijavite se"
           showCancel={true}
           cancelLabel="Otkaži"
+          timeRemaining={sessionSeconds}
         />
 
         <BoothReservationConfirmModal
@@ -371,9 +432,28 @@ const CalendarPage = () => {
             setReservationError(null)
             setReservationSuccess(null)
           }}
+          timeRemaining={sessionSeconds}
         />
       </div>
-      
+
+      <DayEventsModal
+        isOpen={isDayModalOpen}
+        onClose={() => setIsDayModalOpen(false)}
+        date={selectedDay}
+        events={events}
+        eventDetailsById={eventDetailsById}
+        user={user}
+        isPackageUser={isPackageUser}
+        onEventClick={(eventId) => {
+          setIsDayModalOpen(false)
+          onEventClick(eventId)
+        }}
+        onReserve={(eventId) => {
+          setIsDayModalOpen(false)
+          setSelectedEventId(String(eventId))
+          openReserveModal()
+        }}
+      />
     </div>
   )
 }

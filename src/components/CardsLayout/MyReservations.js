@@ -3,7 +3,8 @@ import { formatTitleForUri } from '@/utils/transform-helper';
 import SectionImage from '@/components/SectionImage';
 
 const MyReservations = ({
-  events = []
+  events = [],
+  onCancelClick = null,
 }) => {
 
   function getReservationStatus(status) {
@@ -11,7 +12,7 @@ const MyReservations = ({
       case 'waiting':
         return 'Rezervacija na čekanju';
       case 'approved':
-        return 'Uspešna rezervacija';
+        return 'Uspešno rezervisano';
       case 'rejected':
         return 'Rezervacija odbijena';
     }
@@ -44,8 +45,8 @@ const MyReservations = ({
                   key={`my-reservation-${index}`}
                   style={{backgroundColor: '#ffffff', borderRadius: '30px', minHeight: '859px'}}
                   >
-                  <SectionImage 
-                    imageSrc={'/event-cover.svg'}
+                  <SectionImage
+                    imageSrc={event.coverImage || '/event-cover.svg'}
                     width={465}
                     height={465}
                     radius={'30px 30px 0 0'}
@@ -63,9 +64,9 @@ const MyReservations = ({
                         >
                           {getReservationStatus(event.applicationStatus)}
                         </button>
-                        {['waiting', 'approved'].includes(event.applicationStatus) && <button
+                        {event.applicationStatus === 'waiting' && <button
                           key={`card-component-button-my-reservation`}
-                          onClick={() => {}}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCancelClick && onCancelClick(event); }}
                           style={{ height: '59px', backgroundColor: 'transparent', borderRadius: '30px', color: '#261A54', fontWeight: '600', fontSize: '18px', border: '1px solid #261A54', lineHeight: '24.51px' }}
                         >
                           {`Otkaži rezervaciju`}

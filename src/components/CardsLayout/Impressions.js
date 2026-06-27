@@ -8,7 +8,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalFooter,
   Button,
   useDisclosure
 } from "@nextui-org/react";
@@ -91,9 +90,9 @@ const Impressions = ({
             {!loading && error && <div className="w-full grid place-items-center py-12 text-[#EC4923]">{error}</div>}
             {!loading && !error && (
                 <div className={`immpressions-scroll-content ${isPaused ? 'paused' : ''}`}>
-                {immpressions.map((immpression, index) => (
-                    <CardComponent 
-                        key={`impression-card-${immpression.id ?? index}`}
+                {[...immpressions, ...immpressions].map((immpression, index) => (
+                    <CardComponent
+                        key={`impression-card-${index}`}
                         isDark={!!(index%2)}
                         sectionType={`impression`}
                         author={immpression.author}
@@ -214,8 +213,6 @@ const Impressions = ({
                                 </div>
                             </div>
                             </ModalBody>
-                            <ModalFooter className="justify-center">
-                            </ModalFooter>
                         </>
                     )}
                 </ModalContent>

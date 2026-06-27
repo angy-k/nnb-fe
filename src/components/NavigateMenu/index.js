@@ -12,6 +12,7 @@ import {
   DropdownMenu,
   DropdownItem
 } from "@nextui-org/react";
+import avatarDefaultIcon from '@/icons/avatar-default.svg'
 import FacebookIcon from '../../icons/facebook-icon-light.svg'
 import InstagramIcon from '../../icons/instagram-icon-light.svg'
 import YouTubeIcon from '../../icons/youtube-icon-light.svg'
@@ -22,7 +23,7 @@ const NavigateMenu = ({
   onBecomeExhibitor
 }) => {
   const router = useRouter()
-  const { user, mutate } = useUser()
+  const { user, loading, mutate } = useUser()
 
   const headerItems = (() => {
     const raw = process.env.headerItems
@@ -60,30 +61,39 @@ const NavigateMenu = ({
           ))}
         </div>
 
-        <div className="mt-6">
-          <Button
-            keyValue="mobile-reserve"
-            type={'outlined-orange'}
-            name={'Rezervišite tezgu'}
-            onClick={() => {
-              router.push('/dogadjaji')
-              if (typeof onClick === 'function') onClick()
-            }}
-          />
-        </div>
+        {user && (
+          <div className="mt-6">
+            <Button
+              keyValue="mobile-reserve"
+              type={'outlined-orange'}
+              name={'Rezervišite tezgu'}
+              onClick={() => {
+                router.push('/dogadjaji')
+                if (typeof onClick === 'function') onClick()
+              }}
+            />
+          </div>
+        )}
 
         {user ? (
           <div className="mt-6 flex flex-col gap-4">
-            <Dropdown placement="bottom-start">
+            <Dropdown
+              placement="bottom-start"
+              classNames={{
+                base: 'min-w-[200px]',
+                content: 'bg-[#261A54] shadow-xl rounded-2xl p-1 border-none',
+              }}
+            >
               <DropdownTrigger>
                 <button type="button" aria-label="Profil" className="header-profile-trigger">
                   <span className="header-profile-name">{brandName}</span>
-                  <Avatar
-                    src={avatarSrc}
-                    radius="full"
-                    isBordered
-                    className="w-10 h-10"
-                  />
+                  {user?.profile_photo_url ? (
+                    <Avatar src={user.profile_photo_url} radius="full" isBordered className="w-10 h-10" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white" style={{ backgroundColor: '#3ECFCF' }}>
+                      <Image src={avatarDefaultIcon} width={22} height={21} alt="avatar" />
+                    </div>
+                  )}
                   <svg
                     width="18"
                     height="18"
@@ -119,14 +129,14 @@ const NavigateMenu = ({
                   }
                 }}
               >
-                <DropdownItem key="user" isDisabled textValue="Korisnik">
+                <DropdownItem key="user" isDisabled textValue="Korisnik" classNames={{ base: 'opacity-100 cursor-default' }}>
                   <div className="flex flex-col">
-                    <span className="font-semibold">{brandName}</span>
-                    <span className="text-sm opacity-80">{exhibitorFullName}</span>
+                    <span className="font-semibold text-white">{brandName}</span>
+                    <span className="text-sm text-[#56C4CF]">{exhibitorFullName}</span>
                   </div>
                 </DropdownItem>
-                <DropdownItem key="profile" className="header-profile-dropdown-item">Profil</DropdownItem>
-                <DropdownItem key="logout" className="header-profile-dropdown-item header-profile-dropdown-item-logout text-danger" color="danger">
+                <DropdownItem key="profile" classNames={{ base: 'data-[hover=true]:bg-transparent', title: 'text-white/60 data-[hover=true]:text-white transition-colors' }}>Profil</DropdownItem>
+                <DropdownItem key="logout" classNames={{ base: 'data-[hover=true]:bg-transparent', title: 'text-[#EC4923]/70 data-[hover=true]:text-[#EC4923] transition-colors' }}>
                   Logout
                 </DropdownItem>
               </DropdownMenu>
@@ -135,14 +145,12 @@ const NavigateMenu = ({
         ) : (
           <div className="mt-6">
             <Button
-              key={`header-button`}
               type={'outlined-light'}
               name={'Postani izlagač'}
               onClick={() => {
                 if (typeof onBecomeExhibitor === 'function') onBecomeExhibitor()
                 if (typeof onClick === 'function') onClick()
               }}
-              className='header-button'
             />
           </div>
         )}

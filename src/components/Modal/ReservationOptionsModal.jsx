@@ -2,6 +2,44 @@
 
 import { Modal, ModalContent, ModalBody } from '@nextui-org/modal'
 
+const RadioOption = ({ name, value, checked, onChange, label }) => (
+  <label className="flex items-center gap-3 cursor-pointer" onClick={() => onChange(value)}>
+    <div
+      className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+      style={{
+        borderColor: checked ? '#56C4CF' : '#d1d5db',
+        backgroundColor: checked ? '#56C4CF' : 'transparent',
+      }}
+    >
+      {checked && <div className="w-2 h-2 rounded-full bg-white" />}
+    </div>
+    <span className="text-sm text-[#261A54]">{label}</span>
+  </label>
+)
+
+const formatTime = (seconds) => {
+  if (seconds === null || seconds === undefined) return null
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+const TimerChip = ({ timeRemaining }) => {
+  if (timeRemaining === null || timeRemaining === undefined) return null
+  const formatted = formatTime(timeRemaining)
+  const color = timeRemaining <= 15 ? '#EC4923' : timeRemaining <= 30 ? '#FACE06' : '#56C4CF'
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: '6px',
+      padding: '4px 14px', borderRadius: '20px', border: `1.5px solid ${color}`,
+      color, fontWeight: '600', fontSize: '14px', marginBottom: '16px',
+    }}>
+      <span>⏱</span>
+      <span>Sesija ističe za {formatted}</span>
+    </div>
+  )
+}
+
 const ReservationOptionsModal = ({
   isOpen,
   onClose,
@@ -13,6 +51,7 @@ const ReservationOptionsModal = ({
   submitLabel = 'Prijavite se',
   showCancel = false,
   cancelLabel = 'Otkaži',
+  timeRemaining = null,
 }) => {
   return (
     <Modal
@@ -21,118 +60,108 @@ const ReservationOptionsModal = ({
       size="2xl"
       backdrop="blur"
       placement="center"
+      hideCloseButton
       classNames={{
         backdrop: 'nnb-modal-backdrop',
         wrapper: 'nnb-modal-wrapper items-center justify-center',
-        base: 'bg-white shadow-2xl w-[calc(100vw-2rem)] max-w-[1066px] max-h-[923px]',
-        body: 'bg-white p-0 overflow-y-auto max-h-[923px]',
+        base: 'bg-white shadow-2xl w-[calc(100vw-2rem)] max-w-[1066px]',
+        body: 'p-0',
       }}
     >
-      <ModalContent className="bg-white rounded-2xl overflow-hidden max-h-[923px]">
+      <ModalContent className="rounded-2xl overflow-hidden">
         {(modalOnClose) => (
-          <>
-            <ModalBody className="bg-white p-0 overflow-y-auto max-h-[923px]">
-              <div className="p-10">
-                <h2 className="text-center text-[#261A54] text-xl font-semibold mb-6 max-w-[760px] mx-auto">
-                  Da li Vam je osim osvetljenja potreban
-                  <br />
-                  strujni priključak za određeni uređaj
-                  <br />
-                  neophodan za izlaganje?
+          <ModalBody className="p-0">
+            <div
+              className="relative flex flex-col"
+              style={{ background: 'linear-gradient(to bottom, #ffffff 65%, #dff4f5 100%)' }}
+            >
+              {/* X close */}
+              <button
+                type="button"
+                onClick={modalOnClose}
+                className="absolute top-4 right-4 z-20 text-[#261A54] text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition"
+                aria-label="Zatvori"
+              >
+                ×
+              </button>
+
+              <div className="p-10 pb-12">
+                <TimerChip timeRemaining={timeRemaining} />
+                <h2 className="text-center text-[#261A54] text-xl font-semibold mb-8 max-w-[760px] mx-auto">
+                  Da li Vam je osim osvetljenja potreban strujni priključak za
+                  određeni uređaj neophodan za izlaganje?
                 </h2>
 
-                <div className="space-y-3 mb-8">
-                  <label className="flex items-center gap-3 text-[#261A54]">
-                    <input
-                      type="radio"
-                      name="electricity"
-                      value="kw_xx"
-                      checked={electricityOption === 'kw_xx'}
-                      onChange={() => setElectricityOption('kw_xx')}
-                    />
-                    <span className="text-sm">Da, potreban nam je strujni priključak od XX kW</span>
-                  </label>
-                  <label className="flex items-center gap-3 text-[#261A54]">
-                    <input
-                      type="radio"
-                      name="electricity"
-                      value="kw_yy"
-                      checked={electricityOption === 'kw_yy'}
-                      onChange={() => setElectricityOption('kw_yy')}
-                    />
-                    <span className="text-sm">Da, potreban nam je strujni priključak od YY kW</span>
-                  </label>
-                  <label className="flex items-center gap-3 text-[#261A54]">
-                    <input
-                      type="radio"
-                      name="electricity"
-                      value="kw_zz"
-                      checked={electricityOption === 'kw_zz'}
-                      onChange={() => setElectricityOption('kw_zz')}
-                    />
-                    <span className="text-sm">Da, potreban nam je strujni priključak od ZZ kW</span>
-                  </label>
-                  <label className="flex items-center gap-3 text-[#261A54]">
-                    <input
-                      type="radio"
-                      name="electricity"
-                      value="none"
-                      checked={electricityOption === 'none'}
-                      onChange={() => setElectricityOption('none')}
-                    />
-                    <span className="text-sm">Ne, strujni priključak nam nije potreban</span>
-                  </label>
+                <div className="space-y-4 mb-10">
+                  <RadioOption
+                    name="electricity"
+                    value="kw_xx"
+                    checked={electricityOption === 'kw_xx'}
+                    onChange={setElectricityOption}
+                    label="Da, potreban nam je strujni priključak od XX kW"
+                  />
+                  <RadioOption
+                    name="electricity"
+                    value="kw_yy"
+                    checked={electricityOption === 'kw_yy'}
+                    onChange={setElectricityOption}
+                    label="Da, potreban nam je strujni priključak od YY kW"
+                  />
+                  <RadioOption
+                    name="electricity"
+                    value="kw_zz"
+                    checked={electricityOption === 'kw_zz'}
+                    onChange={setElectricityOption}
+                    label="Da, potreban nam je strujni priključak od ZZ kW"
+                  />
+                  <RadioOption
+                    name="electricity"
+                    value="none"
+                    checked={electricityOption === 'none'}
+                    onChange={setElectricityOption}
+                    label="Ne, strujni priključak nam nije potreban"
+                  />
                 </div>
 
-                <h3 className="text-[#261A54] text-lg font-semibold mb-4">Da li vam je potrebna reklama?</h3>
+                <h3 className="text-[#261A54] text-lg font-semibold mb-5">
+                  Da li vam je potrebna reklama?
+                </h3>
 
-                <div className="space-y-3 mb-8">
-                  <label className="flex items-center gap-3 text-[#261A54]">
-                    <input
-                      type="radio"
-                      name="marketing"
-                      value="instagram"
-                      checked={marketingOption === 'instagram'}
-                      onChange={() => setMarketingOption('instagram')}
-                    />
-                    <span className="text-sm">Da, potrebna nam je na instagramu</span>
-                  </label>
-                  <label className="flex items-center gap-3 text-[#261A54]">
-                    <input
-                      type="radio"
-                      name="marketing"
-                      value="facebook"
-                      checked={marketingOption === 'facebook'}
-                      onChange={() => setMarketingOption('facebook')}
-                    />
-                    <span className="text-sm">Da, potrebna nam je na fejsbuku</span>
-                  </label>
-                  <label className="flex items-center gap-3 text-[#261A54]">
-                    <input
-                      type="radio"
-                      name="marketing"
-                      value="instagram_facebook"
-                      checked={marketingOption === 'instagram_facebook'}
-                      onChange={() => setMarketingOption('instagram_facebook')}
-                    />
-                    <span className="text-sm">Da, potrebna nam je na instagramu i fejsbuku</span>
-                  </label>
-                  <label className="flex items-center gap-3 text-[#261A54]">
-                    <input
-                      type="radio"
-                      name="marketing"
-                      value="none"
-                      checked={marketingOption === 'none'}
-                      onChange={() => setMarketingOption('none')}
-                    />
-                    <span className="text-sm">Ne, nije nam potrebna reklama</span>
-                  </label>
+                <div className="space-y-4 mb-10">
+                  <RadioOption
+                    name="marketing"
+                    value="instagram"
+                    checked={marketingOption === 'instagram'}
+                    onChange={setMarketingOption}
+                    label="Da, potrebna nam je na instagramu"
+                  />
+                  <RadioOption
+                    name="marketing"
+                    value="facebook"
+                    checked={marketingOption === 'facebook'}
+                    onChange={setMarketingOption}
+                    label="Da, potrebna nam je na fejsbuku"
+                  />
+                  <RadioOption
+                    name="marketing"
+                    value="instagram_facebook"
+                    checked={marketingOption === 'instagram_facebook'}
+                    onChange={setMarketingOption}
+                    label="Da, potrebna nam je na instagramu i fejsbuku"
+                  />
+                  <RadioOption
+                    name="marketing"
+                    value="none"
+                    checked={marketingOption === 'none'}
+                    onChange={setMarketingOption}
+                    label="Ne, nije nam potrebna reklama"
+                  />
                 </div>
 
-                <div className="flex justify-start">
+                <div className="flex items-center gap-4">
                   <button
                     onClick={() => onSubmit?.()}
-                    className="bg-[#56C4CF] hover:opacity-90 text-white px-8 py-3 rounded-full font-semibold transition"
+                    className="bg-[#56C4CF] hover:opacity-90 text-white px-10 py-3 rounded-full font-semibold transition text-sm"
                     type="button"
                   >
                     {submitLabel}
@@ -141,7 +170,7 @@ const ReservationOptionsModal = ({
                   {showCancel && (
                     <button
                       onClick={modalOnClose}
-                      className="ml-4 text-[#261A54] px-8 py-3 rounded-full font-semibold border border-[#261A54]"
+                      className="text-[#261A54] px-8 py-3 rounded-full font-semibold border border-[#261A54] hover:opacity-80 transition text-sm"
                       type="button"
                     >
                       {cancelLabel}
@@ -149,8 +178,8 @@ const ReservationOptionsModal = ({
                   )}
                 </div>
               </div>
-            </ModalBody>
-          </>
+            </div>
+          </ModalBody>
         )}
       </ModalContent>
     </Modal>

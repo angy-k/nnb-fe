@@ -5,13 +5,15 @@ import Button from "../Button";
 import { formatTitleForUri } from '@/utils/transform-helper';
 import { useRouter } from 'next/navigation'
 import PageHeroSection from '@/components/Hero/pageOwl';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { parse, startOfToday, endOfDay, isWithinInterval } from 'date-fns';
 import eventService from '@/services/eventService';
 import useUser from '@/data/use-user'
 import applicationService from '@/services/applicationService'
 import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
 import EventDetailsModal from '@/components/Modal/EventDetailsModal'
 import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
+import GalleryWarningModal from '@/components/Modal/GalleryWarningModal'
 
 const Events = ({
   title,
@@ -36,6 +38,10 @@ const Events = ({
   const [isSubmittingReservation, setIsSubmittingReservation] = useState(false)
   const [reservationError, setReservationError] = useState(null)
   const [reservationSuccess, setReservationSuccess] = useState(null)
+  const [isGalleryWarningOpen, setIsGalleryWarningOpen] = useState(false)
+  const [sessionSeconds, setSessionSeconds] = useState(null)
+  const sessionIntervalRef = useRef(null)
+  const sessionActiveRef = useRef(false)
 
   useEffect(() => {
     // Only fetch from API if no events were passed as props
@@ -90,6 +96,58 @@ const Events = ({
     setSelectedEvent(null)
   }
 
+  const parseDateOnly = (value) => {
+    const v = (value ?? '').toString().trim()
+    if (!v) return null
+    const formats = ['d MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy']
+    for (const fmt of formats) {
+      const d = parse(v, fmt, new Date())
+      if (!Number.isNaN(d?.getTime?.())) return d
+    }
+    return null
+  }
+
+  const canApply = (event) => {
+    if (!user) return false
+    const today = startOfToday()
+    const isPackageUser = !!user?.active_package
+    const rawStart = isPackageUser ? event?.preApplicationStartDate : event?.applicationStartDate
+    const applicationStart = parseDateOnly(rawStart)
+    const applicationEnd = parseDateOnly(event?.applicationEndDate)
+    if (!applicationStart || !applicationEnd) return false
+    return isWithinInterval(today, { start: applicationStart, end: endOfDay(applicationEnd) })
+  }
+
+  const stopSessionTimer = useCallback(() => {
+    if (sessionIntervalRef.current) clearInterval(sessionIntervalRef.current)
+    sessionIntervalRef.current = null
+    sessionActiveRef.current = false
+    setSessionSeconds(null)
+  }, [])
+
+  const startSessionTimer = useCallback(() => {
+    if (sessionActiveRef.current) return
+    sessionActiveRef.current = true
+    setSessionSeconds(60)
+    sessionIntervalRef.current = setInterval(() => {
+      setSessionSeconds((s) => {
+        if (s === null || s <= 1) {
+          clearInterval(sessionIntervalRef.current)
+          sessionIntervalRef.current = null
+          sessionActiveRef.current = false
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+  }, [])
+
+  useEffect(() => {
+    if (sessionSeconds === 0) {
+      closeAllModals()
+    }
+  }, [sessionSeconds])
+
   const resetReservationState = () => {
     setElectricityOption('none')
     setMarketingOption('none')
@@ -104,6 +162,7 @@ const Events = ({
     setIsReserveModalOpen(false)
     setIsModalOpen(false)
     setSelectedEvent(null)
+    stopSessionTimer()
     resetReservationState()
   }
 
@@ -118,6 +177,7 @@ const Events = ({
 
   function openReserveModal() {
     setIsReserveModalOpen(true)
+    startSessionTimer()
   }
 
   const goToReservationMap = async (event) => {
@@ -157,13 +217,15 @@ const Events = ({
   }
 
   function submitReservationOptions() {
-    const eventId = selectedEvent?.id
-
-    if (loggedOut || !user) {
-      setConfirmCosts(computeConfirmCosts(selectedEvent, electricityOption, marketingOption))
-      closeReserveModal()
-      setIsConfirmModalOpen(true)
-      return
+    // Ako je odabrana reklama, a korisnik nema fotografija u galeriji — prikaži upozorenje
+    if (marketingOption !== 'none' && user) {
+      const hasGallery =
+        (Array.isArray(user?.gallery_images) && user.gallery_images.length > 0) ||
+        (Array.isArray(user?.gallery_videos) && user.gallery_videos.length > 0)
+      if (!hasGallery) {
+        setIsGalleryWarningOpen(true)
+        return
+      }
     }
 
     setConfirmCosts(computeConfirmCosts(selectedEvent, electricityOption, marketingOption))
@@ -206,7 +268,7 @@ const Events = ({
       const data = contentType.includes('application/json') ? await res.json() : null
 
       if (res.ok && data?.success) {
-        setReservationSuccess('Prijava je uspešno poslata.')
+        setReservationSuccess('Prijava je uspešno poslata! Uskoro ćete dobiti potvrdu.')
         setTimeout(() => {
           closeAllModals()
         }, 1200)
@@ -214,11 +276,11 @@ const Events = ({
       }
 
       if (res.status === 409) {
-        setReservationError(data?.message || 'Već ste poslali prijavu za ovaj događaj.')
+        setReservationError('Već ste poslali prijavu za ovaj događaj.')
         return
       }
 
-      setReservationError(data?.message || 'Greška prilikom slanja prijave.')
+      setReservationError('Greška prilikom slanja prijave.')
     } catch (e) {
       setReservationError('Greška prilikom slanja prijave.')
     } finally {
@@ -306,7 +368,7 @@ const Events = ({
         isOpen={isModalOpen}
         onClose={closeModal}
         event={selectedEvent}
-        showReserveButton={true}
+        showReserveButton={!user || canApply(selectedEvent)}
         reserveLabel="Rezerviši mesto"
         onReserve={() => {
           ;(async () => {
@@ -317,6 +379,8 @@ const Events = ({
               hideModal()
               return
             }
+
+            if (!canApply(selectedEvent)) return
 
             const navigated = await goToReservationMap(selectedEvent)
             if (navigated) {
@@ -340,6 +404,7 @@ const Events = ({
         setMarketingOption={setMarketingOption}
         onSubmit={submitReservationOptions}
         submitLabel="Prijavite se"
+        timeRemaining={sessionSeconds}
       />
 
       <BoothReservationConfirmModal
@@ -356,6 +421,12 @@ const Events = ({
           setReservationError(null)
           setReservationSuccess(null)
         }}
+        timeRemaining={sessionSeconds}
+      />
+
+      <GalleryWarningModal
+        isOpen={isGalleryWarningOpen}
+        onClose={() => setIsGalleryWarningOpen(false)}
       />
     </>
   )

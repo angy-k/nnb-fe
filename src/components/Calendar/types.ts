@@ -3,4 +3,5 @@ export type Event = {
     title: string;
     start_date: Date;
     end_date: Date;
+    variant?: 'regular' | 'startup';
   };

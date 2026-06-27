@@ -64,7 +64,10 @@ const Faq = ({
       <div className="faq-container place-items-center p-5 w-full mx-auto lg:w-1440 2xl:max-w-screen-2xl 2xl:mx-auto">
         {loading && <div className="w-full grid place-items-center py-12">Učitavanje...</div>}
         {!loading && error && <div className="w-full grid place-items-center py-12 text-[#EC4923]">{error}</div>}
-        {!loading && !error && faq && <Accordion variant="light">
+        {!loading && !error && faq.length === 0 && (
+          <div className="w-full grid place-items-center py-12 text-[#A4A4A4]">Nema dostupnih pitanja.</div>
+        )}
+        {!loading && !error && faq.length > 0 && <Accordion variant="light">
             {faq.map((item, index) => (
                 <AccordionItem 
                   key={`faq-item-${item?.id ?? index}`} 

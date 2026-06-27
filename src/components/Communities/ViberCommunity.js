@@ -18,8 +18,8 @@ const ViberCommunity = ({
   wrapperStyle,
 }) => {
   function joinCommunity() {
-    //TODO: join viber community
-    window.open('https://invite.viber.com/?g2=AQBR%2B5ef5lKUX1MxICpe2OAUY8lYMdQcNtmvse9JE0D1fZBOi8mWfzr3nMxcOCSU', '_blank');
+    const url = process.env.NEXT_PUBLIC_VIBER_INVITE_URL;
+    if (url) window.open(url, '_blank');
   }
 
   const handleCtaClick = onCtaClick || (() => joinCommunity())

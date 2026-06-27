@@ -24,14 +24,14 @@ const HomeBlogSection = () => {
         const response = await blogService.getBlogs()
         if (!response.ok) {
           setBlogs([])
-          setError('Failed to fetch blogs')
+          setError('Greška pri učitavanju blog objava.')
           return
         }
 
         const data = await response.json().catch(() => null)
         if (!data?.success) {
           setBlogs([])
-          setError(data?.message || 'Failed to fetch blogs')
+          setError(data?.message || 'Greška pri učitavanju blog objava.')
           return
         }
 
@@ -44,7 +44,7 @@ const HomeBlogSection = () => {
         setBlogs(items)
       } catch (e) {
         setBlogs([])
-        setError('Failed to fetch blogs')
+        setError('Greška pri učitavanju blog objava.')
       } finally {
         setLoading(false)
       }
@@ -77,7 +77,7 @@ const HomeBlogSection = () => {
         <Divider className="section-divider" />
       </div>
 
-      {loading && <div className="text-center pt-24">Loading blogs...</div>}
+      {loading && <div className="text-center pt-24">Učitavanje...</div>}
 
       {!loading && error && (
         <div className="text-[#EC4923] text-center pt-24">{error}</div>

@@ -48,15 +48,22 @@ const ReservationMapPage = () => {
   const isPackageUser = !!user?.active_package
 
   const [sessionExpired, setSessionExpired] = useState(false)
+  const [sessionSecondsLeft, setSessionSecondsLeft] = useState(120)
   const sessionStartedAtRef = useRef(null)
   const sessionTimeoutRef = useRef(null)
+  const sessionDisplayIntervalRef = useRef(null)
 
   useEffect(() => {
     sessionStartedAtRef.current = null
     setSessionExpired(false)
+    setSessionSecondsLeft(120)
     if (sessionTimeoutRef.current) {
       clearTimeout(sessionTimeoutRef.current)
       sessionTimeoutRef.current = null
+    }
+    if (sessionDisplayIntervalRef.current) {
+      clearInterval(sessionDisplayIntervalRef.current)
+      sessionDisplayIntervalRef.current = null
     }
   }, [eventId, user?.id])
 
@@ -325,6 +332,34 @@ const ReservationMapPage = () => {
     return () => {
       if (sessionTimeoutRef.current) {
         clearTimeout(sessionTimeoutRef.current)
+      }
+    }
+  }, [user?.id, eventId, isPackageUser, sessionExpired])
+
+  useEffect(() => {
+    if (!user || !eventId || isPackageUser || sessionExpired) return
+
+    const tick = () => {
+      if (sessionStartedAtRef.current === null) return
+      const elapsed = Math.floor((Date.now() - sessionStartedAtRef.current) / 1000)
+      const remaining = Math.max(0, 120 - elapsed)
+      setSessionSecondsLeft(remaining)
+    }
+
+    // Start counting once session is initialized (after first render with user)
+    const initDelay = setTimeout(() => {
+      if (sessionStartedAtRef.current === null) {
+        sessionStartedAtRef.current = Date.now()
+      }
+      tick()
+      sessionDisplayIntervalRef.current = setInterval(tick, 1000)
+    }, 100)
+
+    return () => {
+      clearTimeout(initDelay)
+      if (sessionDisplayIntervalRef.current) {
+        clearInterval(sessionDisplayIntervalRef.current)
+        sessionDisplayIntervalRef.current = null
       }
     }
   }, [user?.id, eventId, isPackageUser, sessionExpired])
@@ -656,9 +691,24 @@ const ReservationMapPage = () => {
                 {isPackageUser ? (
                   <div>Imate aktivan paket. Mesto se dodeljuje automatski.</div>
                 ) : (
-                  <div>
-                    Izabrano mesto: <span className="font-semibold">{selectedStand || '-'}</span>
-                  </div>
+                  <>
+                    <div>
+                      Izabrano mesto: <span className="font-semibold">{selectedStand || '-'}</span>
+                    </div>
+                    {!sessionExpired && (
+                      <div style={{
+                        marginTop: '6px',
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        padding: '3px 12px', borderRadius: '20px',
+                        border: `1.5px solid ${sessionSecondsLeft <= 15 ? '#EC4923' : sessionSecondsLeft <= 30 ? '#FACE06' : '#56C4CF'}`,
+                        color: sessionSecondsLeft <= 15 ? '#EC4923' : sessionSecondsLeft <= 30 ? '#FACE06' : '#56C4CF',
+                        fontWeight: '600', fontSize: '13px',
+                      }}>
+                        <span>⏱</span>
+                        <span>Sesija ističe za {Math.floor(sessionSecondsLeft / 60)}:{(sessionSecondsLeft % 60).toString().padStart(2, '0')}</span>
+                      </div>
+                    )}
+                  </>
                 )}
                 {reservationError && <div className="text-red-600 mt-2">{reservationError}</div>}
               </div>
@@ -699,6 +749,7 @@ const ReservationMapPage = () => {
         submitLabel="Nastavi"
         showCancel={true}
         cancelLabel="Otkaži"
+        timeRemaining={!isPackageUser && !sessionExpired ? sessionSecondsLeft : null}
       />
 
       <BoothReservationConfirmModal
@@ -715,6 +766,7 @@ const ReservationMapPage = () => {
           setReservationError(null)
           setReservationSuccess(null)
         }}
+        timeRemaining={!isPackageUser && !sessionExpired ? sessionSecondsLeft : null}
       />
     </div>
   )

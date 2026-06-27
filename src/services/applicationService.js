@@ -35,7 +35,14 @@ const getMyApplications = async ({ active = true, past = false } = {}) => {
   })
 }
 
+const cancelApplication = (id) => post(
+  `/api/v1/applications/${id}/withdraw`,
+  {},
+  { withCSRF: true },
+)
+
 export default {
   submitApplication,
   getMyApplications,
+  cancelApplication,
 }

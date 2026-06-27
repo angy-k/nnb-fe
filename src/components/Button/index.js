@@ -11,7 +11,8 @@ const Button = ({
   description,
   disabled,
   onClick,
-  customStyle
+  customStyle,
+  className,
 }) => {
   const setStyle = (buttonType) => {
     switch (buttonType) {
@@ -44,7 +45,7 @@ const Button = ({
   return (
     <button
       key={keyValue}
-      className={`${setStyle(type) + (color ? (+ ' ' + setStyle(type) + '__' + color) : '')}`}
+      className={`${setStyle(type)}${color ? (' ' + setStyle(type) + '__' + color) : ''}${className ? (' ' + className) : ''}`}
       disabled={disabled}
       onClick={onClick}
     >

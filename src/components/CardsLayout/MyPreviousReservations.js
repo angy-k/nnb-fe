@@ -10,7 +10,7 @@ const MyPreviousReservations = ({
         case 'waiting':
           return 'Rezervacija na čekanju';
         case 'approved':
-          return 'Uspešna rezervacija';
+          return 'Uspešno rezervisano';
         case 'rejected':
           return 'Rezervacija odbijena';
       }
@@ -37,8 +37,8 @@ const MyPreviousReservations = ({
                   className={"previous-reservations-item"} 
                   key={`my-reservation-${index}`}
                 >
-                  <SectionImage 
-                    imageSrc={'/card-component-default-image.png'}
+                  <SectionImage
+                    imageSrc={event.coverImage || '/card-component-default-image.png'}
                     isGrey={true}
                     width={490}
                     height={223}
@@ -67,8 +67,8 @@ const MyPreviousReservations = ({
                   key={`my-reservation-${index}`}
                   style={{backgroundColor: '#ffffff', borderRadius: '30px', minHeight: '859px'}}
                 >
-                  <SectionImage 
-                    imageSrc={'/card-component-default-image.png'}
+                  <SectionImage
+                    imageSrc={event.coverImage || '/card-component-default-image.png'}
                     isGrey={true}
                     width={465}
                     height={465}
