@@ -19,7 +19,7 @@ const Blogs = ({
 }) => {
   const router = useRouter()
   const [blogs, setBlogs] = useState(propBlogs || [])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(!propBlogs)
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -73,11 +73,11 @@ const Blogs = ({
   if (loading) {
     return (
       <>
-        {showHero && <PageHeroSection 
+        {showHero && <PageHeroSection
           title={`Blog`}
         />}
         <div className="w-full blogs-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
-          <div className="text-center">Loading blogs...</div>
+          <div className="text-center text-[#261A54]">Učitavanje objava...</div>
         </div>
       </>
     )
@@ -98,9 +98,10 @@ const Blogs = ({
           </>
         )}
         {error && (
-          <div className="text-red-500 text-center mb-4">
-            Error loading blogs: {error}
-          </div>
+          <div className="text-[#EC4923] text-center mb-4">Greška prilikom učitavanja objava.</div>
+        )}
+        {!loading && !error && limitedBlogs.length === 0 && (
+          <p className="text-[#261A54] our-team-title">Objave uskoro stižu.</p>
         )}
         {title && <span className="blog-title">{title}</span>}
         {title && <Button

@@ -18,7 +18,7 @@ const Projects = ({
 }) => {
   const router = useRouter()
   const [projects, setProjects] = useState(propProjects || [])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(!propProjects)
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -64,12 +64,13 @@ const Projects = ({
       />
       <div className="w-full blogs-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
         {loading && (
-          <div className="text-center">Loading projects...</div>
+          <div className="text-center text-[#261A54]">Učitavanje projekata...</div>
         )}
-        {error && (
-          <div className="text-red-500 text-center mb-4">
-            Error loading projects: {error}
-          </div>
+        {!loading && error && (
+          <div className="text-[#EC4923] text-center mb-4">Greška prilikom učitavanja projekata.</div>
+        )}
+        {!loading && !error && limitedProjects.length === 0 && (
+          <p className="text-[#261A54] our-team-title">Projekti uskoro stižu.</p>
         )}
         {title && <span className="blog-title">{title}</span>}
         {title && <Button

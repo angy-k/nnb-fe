@@ -26,7 +26,7 @@ const Events = ({
   const router = useRouter()
   const { user, loggedOut } = useUser()
   const [events, setEvents] = useState(propEvents || [])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(!propEvents)
   const [error, setError] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState(null)
@@ -302,11 +302,11 @@ const Events = ({
   if (loading) {
     return (
       <>
-        {showHero && <PageHeroSection 
+        {showHero && <PageHeroSection
           title={`Događaji`}
         />}
         <div className="w-full events-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
-          <div className="text-center">Loading events...</div>
+          <div className="text-center text-[#261A54]">Učitavanje događaja...</div>
         </div>
       </>
     )
@@ -327,9 +327,10 @@ const Events = ({
           </>
         )}
         {error && (
-          <div className="text-red-500 text-center mb-4">
-            Error loading events: {error}
-          </div>
+          <div className="text-[#EC4923] text-center mb-4">Greška prilikom učitavanja događaja.</div>
+        )}
+        {!loading && !error && limitedEvents.length === 0 && (
+          <p className="text-[#261A54] our-team-title">Događaji uskoro stižu.</p>
         )}
         {title && <span className="event-title">{title}</span>}
         {title && <Button

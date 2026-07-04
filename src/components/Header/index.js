@@ -30,6 +30,12 @@ import { Avatar } from "@nextui-org/avatar";
 const Header = ({bgColor = '#261A54'}) => {
   const router = useRouter()
   const {isOpen, onOpen, onOpenChange, onClose} = useDisclosure();
+  const [initialAuthTab, setInitialAuthTab] = useState('login')
+
+  const openAuthModal = (tab = 'login') => {
+    setInitialAuthTab(tab)
+    onOpen()
+  }
 
   const headerItems = (() => {
     const raw = process.env.headerItems
@@ -61,7 +67,9 @@ const Header = ({bgColor = '#261A54'}) => {
   }, [pathname])
 
   useEffect(() => {
-    const handleOpenAuthModal = () => {
+    const handleOpenAuthModal = (e) => {
+      const tab = e?.detail?.tab || 'login'
+      setInitialAuthTab(tab)
       onOpen()
     }
 
@@ -118,9 +126,9 @@ const Header = ({bgColor = '#261A54'}) => {
         </div>
         {openMenu && (
           // responsive navigation menu
-          <NavigateMenu 
+          <NavigateMenu
            onClick={() => setOpenMenu(false)}
-           onBecomeExhibitor={onOpen}
+           onBecomeExhibitor={() => openAuthModal('login')}
           />
         )}
         <div className="hidden md:flex lg:flex items-center gap-4 md:ml-auto lg:ml-auto">
@@ -216,7 +224,7 @@ const Header = ({bgColor = '#261A54'}) => {
             <CustomButton
               type={'outlined-light'}
               name={'Postani izlagač'}
-              onClick={onOpen}
+              onClick={() => openAuthModal('login')}
             />
           )}
         </div>
@@ -234,10 +242,10 @@ const Header = ({bgColor = '#261A54'}) => {
       classNames={{
         wrapper: 'nnb-modal-wrapper items-center justify-center',
         backdrop: 'nnb-modal-backdrop',
-        base: 'w-[min(1440px,calc(100vw-2rem))] h-[min(1092px,calc(100vh-2rem))] mx-4 bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20 rounded-[16px]',
+        base: 'nnb-modal-base',
       }}
     >
-      <ModalContent style={{ zIndex: 1051 }} className="relative rounded-[16px] overflow-hidden h-full flex flex-col">
+      <ModalContent style={{ zIndex: 1051, borderRadius: 'var(--nnb-modal-radius)' }} className="relative overflow-hidden h-full flex flex-col">
         {(onClose) => (
           <>
             <ModalHeader className="p-0 h-0 min-h-0">
@@ -250,12 +258,13 @@ const Header = ({bgColor = '#261A54'}) => {
                 ×
               </button>
             </ModalHeader>
-            <ModalBody className="p-0 flex-1 min-h-0 flex !overflow-hidden">
+            <ModalBody className="p-0 flex-1 min-h-0 flex overflow-y-auto">
               <AuthModal
                 onClose={onClose}
                 onSuccess={() => {
                   router.push('/profil')
                 }}
+                initialTab={initialAuthTab}
               />
             </ModalBody>
           </>

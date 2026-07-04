@@ -1,19 +1,69 @@
 'use client';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import EventIcon from '@/icons/event-icon.svg';
 import MarketIcon from '@/icons/market-icon.svg';
 import UsersGroupIcon from '@/icons/users-group-icon.svg';
 
+// "300.000+" → { num: 300000, suffix: '+' }
+const parseStat = (str) => {
+  const match = str.match(/^([\d.]+)(.*)$/);
+  if (!match) return { num: 0, suffix: str };
+  return { num: parseInt(match[1].replace(/\./g, ''), 10), suffix: match[2] };
+};
+
+// plain number, no thousands separator
+const formatNum = (n) => Math.floor(n).toString();
+
 const HomeHero = ({
   nextEventName = null,
   nextEventDate = null,
   slogan = 'Zajedno smo veliki!',
   subtitle = 'Noćna tržnica umetničkih, zanatskih i kreativnih proizvoda — mesto gde kreativnost susreće zajednicu.',
-  eventsCount = '11+',
-  visitorsCount = '300.000+',
-  exhibitorsCount = '3.000+',
+  eventsCount = '114+',
+  visitorsCount = '300000+',
+  exhibitorsCount = '2000+',
 }) => {
+  const ev = parseStat(eventsCount);
+  const vi = parseStat(visitorsCount);
+  const ex = parseStat(exhibitorsCount);
+
+  const gridRef = useRef(null);
+  const animated = useRef(false);
+  const [counts, setCounts] = useState({ events: 0, visitors: 0, exhibitors: 0 });
+
+  useEffect(() => {
+    const section = gridRef.current;
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !animated.current) {
+          animated.current = true;
+          const duration = 2000;
+          const start = performance.now();
+          const tick = (now) => {
+            const elapsed = now - start;
+            const p = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+            setCounts({
+              events: Math.floor(eased * ev.num),
+              visitors: Math.floor(eased * vi.num),
+              exhibitors: Math.floor(eased * ex.num),
+            });
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [ev.num, vi.num, ex.num]);
+
   return (
     <div className="home-hero-wrapper">
       <div className="home-hero-container">
@@ -43,26 +93,26 @@ const HomeHero = ({
 
       {/* Stats section — centered, below hero content, alternating cards/icons */}
       <div className="home-hero-stats-section">
-        <div className="home-hero-stats-grid">
+        <div className="home-hero-stats-grid" ref={gridRef}>
           {/* Row 1: card | icon | card */}
           <div className="home-hero-stat-card" style={{ gridColumn: 1, gridRow: 1 }}>
-            <span className="home-hero-stat-card-value">{eventsCount}</span>
-            <span className="home-hero-stat-card-label">Bazara</span>
+            <span className="home-hero-stat-card-value">{formatNum(counts.events)}{ev.suffix}</span>
+            <span className="home-hero-stat-card-label">Događaja</span>
           </div>
           <div className="home-hero-stat-circle home-hero-stat-circle--teal" style={{ gridColumn: 2, gridRow: 1 }}>
-            <Image src={MarketIcon} width={56} height={56} alt="Izlagači" />
+            <Image src={MarketIcon} width={56} height={56} alt="Tržnica" />
           </div>
           <div className="home-hero-stat-card" style={{ gridColumn: 3, gridRow: 1 }}>
-            <span className="home-hero-stat-card-value">{visitorsCount}</span>
+            <span className="home-hero-stat-card-value">{formatNum(counts.visitors)}{vi.suffix}</span>
             <span className="home-hero-stat-card-label">Posetilaca</span>
           </div>
 
           {/* Row 2: icon | card | icon */}
           <div className="home-hero-stat-circle home-hero-stat-circle--orange" style={{ gridColumn: 1, gridRow: 2 }}>
-            <Image src={EventIcon} width={56} height={56} alt="Bazara" style={{ filter: 'brightness(0) invert(1)' }} />
+            <Image src={EventIcon} width={56} height={56} alt="Događaji" style={{ filter: 'brightness(0) invert(1)' }} />
           </div>
           <div className="home-hero-stat-card" style={{ gridColumn: 2, gridRow: 2 }}>
-            <span className="home-hero-stat-card-value">{exhibitorsCount}</span>
+            <span className="home-hero-stat-card-value">{formatNum(counts.exhibitors)}{ex.suffix}</span>
             <span className="home-hero-stat-card-label">Izlagača</span>
           </div>
           <div className="home-hero-stat-circle home-hero-stat-circle--yellow" style={{ gridColumn: 3, gridRow: 2 }}>

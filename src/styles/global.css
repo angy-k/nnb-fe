@@ -103,6 +103,16 @@ body {
   rgb(var(--background-start-rgb));
 }
 
+ /* ---- Shared modal dimensions (auth modal + welcome modal) ----
+    Figma: 1440×982px modal on 1920px viewport, radius 50px
+    → width = 75vw (max 1440px), height = min(982px, 100vh − 8rem)
+ ---- */
+ :root {
+   --nnb-modal-w: min(1440px, calc(100vw - 2rem));
+   --nnb-modal-h: min(982px, calc(100vh - 8rem));
+   --nnb-modal-radius: 50px;
+ }
+
  .nnb-modal-wrapper {
    z-index: 10000 !important;
  }
@@ -112,6 +122,17 @@ body {
    backdrop-filter: blur(12px) !important;
    -webkit-backdrop-filter: blur(12px) !important;
    background: rgba(0, 0, 0, 0.3) !important;
+ }
+
+ /* NextUI modal base — same frame as WelcomeModal */
+ .nnb-modal-base {
+   width: var(--nnb-modal-w) !important;
+   height: var(--nnb-modal-h) !important;
+   max-width: none !important;
+   margin: 0 !important;
+   background: linear-gradient(to top, rgb(24 24 27), rgba(24, 24, 27, 0.1)) !important;
+   backdrop-filter: blur(2px) !important;
+   border-radius: var(--nnb-modal-radius) !important;
  }
 
  .auth-modal input,
@@ -158,6 +179,42 @@ body {
 
  .auth-modal select {
    padding: 8px 16px;
+ }
+
+ /* File upload button — matches Figma: border #261A54@30%, radius 20px, padding 34/41 */
+ .file-upload-btn {
+   width: 100%;
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   padding: 20px 41px;
+   border: 1px solid rgba(38, 26, 84, 0.30);
+   border-radius: 20px;
+   background: transparent;
+   cursor: pointer;
+   transition: background 0.15s ease, border-color 0.2s ease;
+   text-align: left;
+
+   &:hover {
+     background: rgba(38, 26, 84, 0.04);
+     border-color: rgba(38, 26, 84, 0.5);
+   }
+
+   &:focus-visible {
+     outline: 2px solid #56C4CF;
+     outline-offset: 2px;
+   }
+ }
+
+ .file-upload-btn__label {
+   font-family: 'Open Sans', sans-serif;
+   font-size: 16px;
+   font-weight: 400;
+   color: #261A54;
+   opacity: 0.7;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
  }
 h1 {
   font-family: 'MADE GoodTime Script', sans-serif;
@@ -2088,4 +2145,269 @@ h6 {
   &:hover {
     text-decoration: underline;
   }
+}
+
+/* ── Stats section ─────────────────────────────────── */
+.home-hero-stats-section {
+  width: 100%;
+  padding: 48px 80px 72px 80px;
+  display: flex;
+  justify-content: center;
+  @media screen and (max-width: 1299px) {
+    padding: 40px 40px 64px 40px;
+  }
+  @media screen and (max-width: 599px) {
+    padding: 32px 24px 56px 24px;
+  }
+}
+
+.home-hero-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 20px 32px;
+  align-items: center;
+  justify-items: stretch;
+  max-width: 1000px;
+  width: 100%;
+  @media screen and (max-width: 599px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 16px;
+  }
+}
+
+.home-hero-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 18px 40px;
+  border-radius: 60px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: 100%;
+  text-align: center;
+  @media screen and (max-width: 1299px) {
+    padding: 16px 28px;
+    border-radius: 52px;
+  }
+  @media screen and (max-width: 599px) {
+    padding: 16px 24px;
+    border-radius: 40px;
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+}
+
+.home-hero-stat-card-value {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  @media screen and (max-width: 1299px) {
+    font-size: 32px;
+  }
+  @media screen and (max-width: 599px) {
+    font-size: 28px;
+  }
+}
+
+.home-hero-stat-card-label {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.home-hero-stat-circle {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  justify-self: center;
+  @media screen and (max-width: 1299px) {
+    width: 100px;
+    height: 100px;
+  }
+  @media screen and (max-width: 599px) {
+    display: none;
+  }
+}
+
+.home-hero-stat-circle--teal {
+  background-color: #56C4CF;
+}
+
+.home-hero-stat-circle--orange {
+  background-color: #F18020;
+}
+
+.home-hero-stat-circle--yellow {
+  background-color: #F4C430;
+}
+
+.home-hero-stat-circle img {
+  width: 56px;
+  height: 56px;
+  filter: brightness(0) invert(1);
+  @media screen and (max-width: 1299px) {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ===================== WELCOME MODAL ===================== */
+.wm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(15, 8, 40, 0.80);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.wm-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: var(--nnb-modal-radius, 50px);
+  width: var(--nnb-modal-w, min(1440px, calc(100vw - 2rem)));
+  height: var(--nnb-modal-h, min(982px, calc(100vh - 8rem)));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 48px 40px 36px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.45);
+
+  @media screen and (max-width: 599px) {
+    padding: 40px 24px 28px;
+  }
+}
+
+.wm-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  font-size: 26px;
+  line-height: 1;
+  color: #261A54;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(38, 26, 84, 0.08);
+  }
+}
+
+.wm-logo {
+  /* centered by flex parent */
+}
+
+.wm-choices {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+
+  @media screen and (max-width: 480px) {
+    flex-direction: column;
+  }
+}
+
+.wm-choice {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 16px 24px;
+  border-radius: 20px;
+  background: #261A54;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+  text-align: center;
+
+  &:hover {
+    border-color: #56C4CF;
+    transform: translateY(-3px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.wm-choice-owl {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wm-choice-title {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.wm-collab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  padding: 20px 24px;
+  border-radius: 20px;
+  background: #261A54;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: #56C4CF;
+  }
+}
+
+.wm-collab-owls {
+  flex-shrink: 0;
+}
+
+.wm-collab-text {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: left;
+}
+
+.wm-hint {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  color: #888;
+  text-align: center;
+  margin: 0;
 }

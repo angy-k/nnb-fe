@@ -20,7 +20,8 @@ import YouTubeIcon from '../../icons/youtube-icon-light.svg'
 const NavigateMenu = ({
   className,
   onClick,
-  onBecomeExhibitor
+  onBecomeExhibitor,
+  onLogin,
 }) => {
   const router = useRouter()
   const { user, loading, mutate } = useUser()
@@ -143,7 +144,7 @@ const NavigateMenu = ({
             </Dropdown>
           </div>
         ) : (
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col gap-3">
             <Button
               type={'outlined-light'}
               name={'Postani izlagač'}

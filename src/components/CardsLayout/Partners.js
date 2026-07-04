@@ -10,7 +10,7 @@ const Partners = ({
   partners: propPartners,
 }) => {
   const [partners, setPartners] = useState(propPartners || [])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(!propPartners)
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -60,12 +60,13 @@ const Partners = ({
       />
       <div className="w-full blogs-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
         {loading && (
-          <div className="text-center">Loading partners...</div>
+          <div className="text-center text-[#261A54]">Učitavanje prijatelja...</div>
         )}
-        {error && (
-          <div className="text-red-500 text-center mb-4">
-            Error loading partners: {error}
-          </div>
+        {!loading && error && (
+          <div className="text-[#EC4923] text-center mb-4">Greška prilikom učitavanja prijatelja.</div>
+        )}
+        {!loading && !error && partners.length === 0 && (
+          <p className="text-[#261A54] our-team-title">Prijatelji uskoro stižu.</p>
         )}
         <div className="blog-container grid sm:grid-template-1 md:grid-template-2">
           {partners.map((partner, index) => (

@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import * as Yup from 'yup'
 import ReCAPTCHA from 'react-google-recaptcha'
-import { Form, Formik } from 'formik'
+import { ErrorMessage, Form, Formik } from 'formik'
 import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from '@nextui-org/react'
 
 import authService from '@/services/authService'
@@ -16,7 +17,82 @@ const DEFAULT_TAB = 'login'
 
 const getAppEnv = () => process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV
 
-const AuthModal = ({ onSuccess, onClose }) => {
+const loginSchema = Yup.object({
+  email: Yup.string()
+    .email('Unesite validnu email adresu.')
+    .required('Email je obavezan.'),
+  password: Yup.string()
+    .min(6, 'Lozinka mora imati najmanje 6 karaktera.')
+    .required('Lozinka je obavezna.'),
+  terms_accepted: Yup.boolean()
+    .oneOf([true], 'Moraš da prihvatiš uslove korišćenja i politiku privatnosti.'),
+})
+
+const registerSchema = Yup.object({
+  brand_name:        Yup.string().required('Naziv brenda je obavezan.'),
+  first_name:        Yup.string().required('Ime je obavezno.'),
+  last_name:         Yup.string().required('Prezime je obavezno.'),
+  email:             Yup.string().email('Unesite validnu email adresu.').required('Email je obavezan.'),
+  password:          Yup.string().min(8, 'Lozinka mora imati najmanje 8 karaktera.').required('Lozinka je obavezna.'),
+  phone_number:      Yup.string().required('Broj telefona je obavezan.'),
+  birth_date:        Yup.string().required('Datum rođenja je obavezan.'),
+  activity_group_id: Yup.string().required('Grupa delatnosti je obavezna.'),
+  activity_name:     Yup.string().required('Delatnost je obavezna.'),
+  address:           Yup.string().required('Adresa je obavezna.'),
+  city:              Yup.string().required('Mesto stanovanja je obavezno.'),
+  terms_accepted:    Yup.boolean().oneOf([true], 'Moraš da prihvatiš uslove korišćenja i politiku privatnosti.'),
+  company_name:      Yup.string().when('is_legal_entity', {
+    is: true, then: s => s.required('Naziv firme je obavezan.'),
+  }),
+  company_address:   Yup.string().when('is_legal_entity', {
+    is: true, then: s => s.required('Adresa firme je obavezna.'),
+  }),
+  mb:  Yup.string().when('is_legal_entity', { is: true, then: s => s.required('Matični broj je obavezan.') }),
+  pib: Yup.string().when('is_legal_entity', { is: true, then: s => s.required('PIB je obavezan.') }),
+})
+
+const UploadIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="#261A54" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <polyline points="17 8 12 3 7 8" stroke="#261A54" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <line x1="12" y1="3" x2="12" y2="15" stroke="#261A54" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+const SpinnerIcon = () => (
+  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+  </svg>
+)
+
+const FileUploadButton = ({ label, accept, multiple, fileName, onChange }) => {
+  const inputRef = useRef(null)
+  return (
+    <div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        className="hidden"
+        onChange={onChange}
+      />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        className="file-upload-btn"
+      >
+        <UploadIcon />
+        <span className="file-upload-btn__label">
+          {fileName || label}
+        </span>
+      </button>
+    </div>
+  )
+}
+
+const AuthModal = ({ onSuccess, onClose, initialTab }) => {
   const { mutate } = useUser()
 
   const {
@@ -27,7 +103,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
   } = useDisclosure()
   const [legalDocsType, setLegalDocsType] = useState('terms')
 
-  const [tab, setTab] = useState(DEFAULT_TAB)
+  const [tab, setTab] = useState(initialTab || DEFAULT_TAB)
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
 
@@ -103,10 +179,6 @@ const AuthModal = ({ onSuccess, onClose }) => {
     setErrors({})
 
     try {
-      if (!values.terms_accepted) {
-        setErrors({ terms_accepted: ['Moraš da prihvatiš uslove korišćenja i politiku privatnosti.'] })
-        return
-      }
 
       const payload = new FormData()
       payload.append('brand_name', values.brand_name || '')
@@ -189,33 +261,27 @@ const AuthModal = ({ onSuccess, onClose }) => {
             style={{ backgroundImage: "url('/about-us-hero-image.png')" }}
           />
 
-          <div className="w-full md:w-1/2 lg:w-1/2 h-full flex flex-col justify-center px-6 md:px-12 lg:px-12 py-10">
-            <h2 className="text-white text-3xl mb-6">Prijavite se</h2>
+          <div className="w-full md:w-1/2 lg:w-1/2 h-full flex flex-col justify-center bg-white px-6 md:px-12 lg:px-12 py-10">
+            <h2 className="text-[#261A54] text-3xl font-bold mb-6">Prijavite se</h2>
 
             <button
               type="button"
               disabled={isLoading}
-              className="w-full px-4 py-3 rounded-full border border-white text-white"
+              className="w-full px-4 py-3 rounded-full border border-gray-300 text-[#261A54] flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
               onClick={handleGoogleLogin}
             >
+              <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
               Prijavite se sa Google nalogom
             </button>
 
-            <div className="my-6 text-white text-center">---- Ulogujte se putem mejla ----</div>
+            <div className="my-5 flex items-center gap-3 text-gray-400 text-sm"><span className="flex-1 h-px bg-gray-200"/><span>ili putem mejla</span><span className="flex-1 h-px bg-gray-200"/></div>
 
             <Formik
-              initialValues={{
-                email: '',
-                password: '',
-                terms_accepted: false,
-              }}
-              onSubmit={async values => {
-                if (!values.terms_accepted) {
-                  setErrors({ terms_accepted: ['Moraš da prihvatiš uslove korišćenja i politiku privatnosti.'] })
-                  return
-                }
-                await handleLogin(values)
-              }}
+              initialValues={{ email: '', password: '', terms_accepted: false }}
+              validationSchema={loginSchema}
+              validateOnChange={false}
+              validateOnBlur={true}
+              onSubmit={handleLogin}
             >
               {({ values, setFieldValue }) => (
                 <Form className="w-full">
@@ -242,7 +308,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
                   </div>
 
                   <div className="mb-3">
-                    <label className="flex items-start gap-2 text-white">
+                    <label className="flex items-start gap-2 text-gray-700">
                       <input
                         type="checkbox"
                         name="terms_accepted"
@@ -254,7 +320,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
                         Slažem se sa{' '}
                         <button
                           type="button"
-                          className="underline"
+                          className="underline text-[#56C4CF]"
                           onClick={() => {
                             setLegalDocsType('terms')
                             onLegalDocsOpen()
@@ -265,7 +331,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
                         i{' '}
                         <button
                           type="button"
-                          className="underline"
+                          className="underline text-[#56C4CF]"
                           onClick={() => {
                             setLegalDocsType('privacy')
                             onLegalDocsOpen()
@@ -284,15 +350,16 @@ const AuthModal = ({ onSuccess, onClose }) => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full px-4 py-3 rounded-full bg-white text-black"
+                    className={`w-full px-4 py-3 rounded-full bg-[#56C4CF] text-white font-semibold transition-colors flex items-center justify-center gap-2 ${isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#3db8c4]'}`}
                   >
-                    Prijavite se
+                    {isLoading && <SpinnerIcon />}
+                    {isLoading ? 'Učitavanje...' : 'Prijavite se'}
                   </button>
 
                   <div className="mt-4 text-center">
                     <button
                       type="button"
-                      className="text-white underline"
+                      className="text-[#56C4CF] underline"
                       onClick={() => {
                         setErrors({})
                         setTab('register')
@@ -305,7 +372,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
                   <div className="mt-3 text-center">
                     <button
                       type="button"
-                      className="text-white underline"
+                      className="text-gray-400 underline"
                       onClick={() => {
                         setLegalDocsType('instructions')
                         onLegalDocsOpen()
@@ -344,26 +411,30 @@ const AuthModal = ({ onSuccess, onClose }) => {
             activity_group_id: '',
             activity_name: '',
           }}
+          validationSchema={registerSchema}
+          validateOnChange={false}
+          validateOnBlur={true}
           onSubmit={handleRegister}
         >
           {({ values, setFieldValue }) => {
             return (
-              <Form className="w-full h-full flex items-center justify-center">
-                <div className="w-full lg:w-[911px] lg:h-[833px] lg:overflow-y-auto lg:mx-auto">
+              <Form className="w-full h-full flex items-center justify-center bg-white">
+                <div className="w-full lg:w-[911px] lg:mx-auto px-6 md:px-12 py-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3">
                     <div>
-                      <h2 className="text-white text-3xl mb-6">Napravite profil</h2>
+                      <h2 className="text-[#261A54] text-3xl font-bold mb-6">Napravite profil</h2>
 
                       <button
                         type="button"
                         disabled={isLoading}
-                        className="w-full px-4 py-3 rounded-full border border-white text-white mb-6"
+                        className="w-full px-4 py-3 rounded-full border border-gray-300 text-[#261A54] flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors mb-6"
                         onClick={handleGoogleLogin}
                       >
+                        <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                         Registrujte se sa Google nalogom
                       </button>
 
-                      <div className="mb-6 text-white text-center">---- Registrujte se putem mejla ----</div>
+                      <div className="mb-5 flex items-center gap-3 text-gray-400 text-sm"><span className="flex-1 h-px bg-gray-200"/><span>ili putem mejla</span><span className="flex-1 h-px bg-gray-200"/></div>
 
                       <div className="mb-3">
                         <MainTextInput
@@ -446,6 +517,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
                     <div>
                       <div className="mb-3">
                         <select
+                          name="activity_group_id"
                           className="w-full rounded-md"
                           value={values.activity_group_id}
                           disabled={loadingActivityGroups}
@@ -463,6 +535,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
                             </option>
                           ))}
                         </select>
+                        <ErrorMessage name="activity_group_id" component="div" className="text-sm text-negative-color mt-1" />
                         <AuthValidationErrors className="mb-1" errors={errors.activity_group_id} />
                       </div>
 
@@ -501,28 +574,28 @@ const AuthModal = ({ onSuccess, onClose }) => {
                       </div>
 
                     <div className="mb-3">
-                      <input
-                        type="file"
+                      <FileUploadButton
+                        label="Dodajte logo"
                         accept="image/*"
+                        fileName={values.brand_logo?.name}
                         onChange={e => setFieldValue('brand_logo', e.currentTarget.files?.[0] || null)}
-                        className="w-full"
                       />
                       <AuthValidationErrors className="mb-1" errors={errors.brand_logo} />
                     </div>
 
                     <div className="mb-3">
-                      <input
-                        type="file"
-                        multiple
+                      <FileUploadButton
+                        label="Dodajte fotografije"
                         accept="image/*"
+                        multiple
+                        fileName={values.gallery_images?.length ? `${values.gallery_images.length} fajl${values.gallery_images.length === 1 ? '' : 'a'} izabrano` : null}
                         onChange={e => setFieldValue('gallery_images', Array.from(e.currentTarget.files || []))}
-                        className="w-full"
                       />
                       <AuthValidationErrors className="mb-1" errors={errors.gallery_images} />
                     </div>
 
                     <div className="mb-3">
-                      <label className="flex items-center gap-2 text-white">
+                      <label className="flex items-center gap-2 text-gray-700">
                         <input
                           type="checkbox"
                           name="is_legal_entity"
@@ -590,7 +663,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
                     )}
 
                     <div className="mb-3">
-                      <label className="flex items-start gap-2 text-white">
+                      <label className="flex items-start gap-2 text-gray-700">
                         <input
                           type="checkbox"
                           name="terms_accepted"
@@ -602,7 +675,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
                           Slažem se sa{' '}
                           <button
                             type="button"
-                            className="underline"
+                            className="underline text-[#56C4CF]"
                             onClick={() => {
                               setLegalDocsType('terms')
                               onLegalDocsOpen()
@@ -613,7 +686,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
                           i{' '}
                           <button
                             type="button"
-                            className="underline"
+                            className="underline text-[#56C4CF]"
                             onClick={() => {
                               setLegalDocsType('privacy')
                               onLegalDocsOpen()
@@ -624,6 +697,7 @@ const AuthModal = ({ onSuccess, onClose }) => {
                           .
                         </span>
                       </label>
+                      <ErrorMessage name="terms_accepted" component="div" className="text-sm text-negative-color mt-1" />
                       <AuthValidationErrors className="mb-1" errors={errors.terms_accepted} />
                     </div>
 
@@ -632,15 +706,16 @@ const AuthModal = ({ onSuccess, onClose }) => {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full px-4 py-3 rounded-full bg-white text-black"
+                      className={`w-full px-4 py-3 rounded-full bg-[#56C4CF] text-white font-semibold transition-colors flex items-center justify-center gap-2 ${isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#3db8c4]'}`}
                     >
-                      Napravite profil
+                      {isLoading && <SpinnerIcon />}
+                      {isLoading ? 'Učitavanje...' : 'Napravite profil'}
                     </button>
 
-                    <div className="mt-3">
+                    <div className="mt-3 text-center">
                       <button
                         type="button"
-                        className="underline text-white"
+                        className="underline text-gray-400"
                         onClick={() => {
                           setLegalDocsType('instructions')
                           onLegalDocsOpen()
