@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import PageHeroSection from "@/components/Hero/pageOwl";
 
 export const metadata = {
