@@ -76,18 +76,6 @@ const verifyEmail = (id, hash) => {
   return get(`/verify-email/${id}/${hash}`)
 }
 
-const sendVerificationCode = values => {
-  return post(`/api/v1/profile/phone/send-verification-code`, values, {
-    withCSRF: true
-  })
-}
-
-const checkVerificationCode = code => {
-  return post(`/api/v1/profile/phone/verify-code`, code, {
-    withCSRF: true
-  })
-}
-
 export default {
   getUser,
   login,
@@ -98,6 +86,4 @@ export default {
   resendEmailVerification,
   resetPassword,
   verifyEmail,
-  sendVerificationCode,
-  checkVerificationCode,
 }

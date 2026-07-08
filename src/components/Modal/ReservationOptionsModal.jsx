@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Modal, ModalContent, ModalBody } from '@nextui-org/modal'
 
 const RadioOption = ({ name, value, checked, onChange, label }) => (
@@ -13,7 +14,7 @@ const RadioOption = ({ name, value, checked, onChange, label }) => (
     >
       {checked && <div className="w-2 h-2 rounded-full bg-white" />}
     </div>
-    <span className="text-sm text-[#261A54]">{label}</span>
+    <span className="text-base text-[#261A54]">{label}</span>
   </label>
 )
 
@@ -52,7 +53,10 @@ const ReservationOptionsModal = ({
   showCancel = false,
   cancelLabel = 'Otkaži',
   timeRemaining = null,
+  termsPdfUrl = null,
 }) => {
+  const [termsAccepted, setTermsAccepted] = useState(false)
+
   return (
     <Modal
       isOpen={isOpen}
@@ -87,7 +91,7 @@ const ReservationOptionsModal = ({
 
               <div className="p-10 pb-12">
                 <TimerChip timeRemaining={timeRemaining} />
-                <h2 className="text-center text-[#261A54] text-xl font-semibold mb-8 max-w-[760px] mx-auto">
+                <h2 className="text-[#261A54] text-xl font-bold mb-8">
                   Da li Vam je osim osvetljenja potreban strujni priključak za
                   određeni uređaj neophodan za izlaganje?
                 </h2>
@@ -123,7 +127,7 @@ const ReservationOptionsModal = ({
                   />
                 </div>
 
-                <h3 className="text-[#261A54] text-lg font-semibold mb-5">
+                <h3 className="text-[#261A54] text-xl font-bold mb-5">
                   Da li vam je potrebna reklama?
                 </h3>
 
@@ -158,10 +162,49 @@ const ReservationOptionsModal = ({
                   />
                 </div>
 
+                {/* T&C checkbox */}
+                <label
+                  className="flex items-start gap-3 cursor-pointer mb-6"
+                  onClick={() => setTermsAccepted(v => !v)}
+                >
+                  <div
+                    className="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors"
+                    style={{
+                      borderColor: termsAccepted ? '#56C4CF' : '#d1d5db',
+                      backgroundColor: termsAccepted ? '#56C4CF' : 'transparent',
+                    }}
+                  >
+                    {termsAccepted && (
+                      <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+                        <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-sm text-[#261A54] leading-snug select-none">
+                    Prihvatam{' '}
+                    {termsPdfUrl ? (
+                      <a
+                        href={termsPdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline text-[#56C4CF]"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        opšte uslove i pravila
+                      </a>
+                    ) : (
+                      <span>opšte uslove i pravila</span>
+                    )}{' '}
+                    učešća na događaju.
+                  </span>
+                </label>
+
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => onSubmit?.()}
+                    disabled={!termsAccepted}
                     className="bg-[#56C4CF] hover:opacity-90 text-white px-10 py-3 rounded-full font-semibold transition text-sm"
+                    style={{ opacity: termsAccepted ? 1 : 0.45, cursor: termsAccepted ? 'pointer' : 'not-allowed' }}
                     type="button"
                   >
                     {submitLabel}

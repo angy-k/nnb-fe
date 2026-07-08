@@ -28,16 +28,16 @@ const submitApplication = async ({
   )
 }
 
-const getMyApplications = async ({ active = true, past = false } = {}) => {
+const getMyApplications = async ({ active = true, past = false, page = 1, perPage = 5 } = {}) => {
   return get('/api/v1/applications', {
-    queryParams: { active: active ? 1 : 0, past: past ? 1 : 0 },
+    queryParams: { active: active ? 1 : 0, past: past ? 1 : 0, page, per_page: perPage },
     cache: 'no-cache',
   })
 }
 
-const cancelApplication = (id) => post(
+const cancelApplication = (id, body = {}) => post(
   `/api/v1/applications/${id}/withdraw`,
-  {},
+  body,
   { withCSRF: true },
 )
 

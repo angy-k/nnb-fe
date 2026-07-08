@@ -15,7 +15,8 @@ import AuthValidationErrors from '@/components/Auths/AuthValidationErrors'
 
 const DEFAULT_TAB = 'login'
 
-const getAppEnv = () => process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV
+const getAppEnv = () => process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV || ''
+const isDevEnv = () => ['development', 'dev', 'testing', 'test', 'local'].includes(getAppEnv())
 
 const loginSchema = Yup.object({
   email: Yup.string()
@@ -39,7 +40,7 @@ const registerSchema = Yup.object({
   activity_group_id: Yup.string().required('Grupa delatnosti je obavezna.'),
   activity_name:     Yup.string().required('Delatnost je obavezna.'),
   address:           Yup.string().required('Adresa je obavezna.'),
-  city:              Yup.string().required('Mesto stanovanja je obavezno.'),
+  city:              Yup.string(),
   terms_accepted:    Yup.boolean().oneOf([true], 'Moraš da prihvatiš uslove korišćenja i politiku privatnosti.'),
   company_name:      Yup.string().when('is_legal_entity', {
     is: true, then: s => s.required('Naziv firme je obavezan.'),
@@ -111,6 +112,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
   const [loadingActivityGroups, setLoadingActivityGroups] = useState(true)
 
   const recaptchaRef = useRef(null)
+  const setFieldValueRef = useRef(null) // bridge Formik setFieldValue outside form scope
 
   useEffect(() => {
     let cancelled = false
@@ -193,7 +195,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
       payload.append('activity_name', values.activity_name || '')
 
       payload.append('address', values.address || '')
-      payload.append('city', values.city || '')
+      payload.append('city', values.city || values.address || '')
 
       payload.append('is_legal_entity', values.is_legal_entity ? '1' : '0')
       payload.append('terms_accepted', values.terms_accepted ? '1' : '0')
@@ -203,6 +205,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
         payload.append('company_address', values.company_address || '')
         payload.append('mb', values.mb || '')
         payload.append('pib', values.pib || '')
+        payload.append('is_sef_user', values.is_sef_user ? '1' : '0')
       }
 
       if (values.brand_logo instanceof File) {
@@ -217,8 +220,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
         })
       }
 
-      const appEnv = getAppEnv()
-      if (!['development', 'testing'].includes(appEnv)) {
+      if (!isDevEnv()) {
         payload.append('recaptcha_token', (await recaptchaRef.current?.getValue()) || '')
       }
 
@@ -239,8 +241,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
       setErrors({ failed: ['Došlo je do greške. Pokušaj ponovo.'] })
     } finally {
       setIsLoading(false)
-      const appEnv = getAppEnv()
-      if (!['development', 'testing'].includes(appEnv)) {
+      if (!isDevEnv()) {
         recaptchaRef.current?.reset?.()
       }
     }
@@ -261,20 +262,21 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
             style={{ backgroundImage: "url('/about-us-hero-image.png')" }}
           />
 
-          <div className="w-full md:w-1/2 lg:w-1/2 h-full flex flex-col justify-center bg-white px-6 md:px-12 lg:px-12 py-10">
-            <h2 className="text-[#261A54] text-3xl font-bold mb-6">Prijavite se</h2>
+          <div className="w-full md:w-1/2 lg:w-1/2 h-full flex flex-col justify-center bg-white px-6 md:px-12 lg:px-12 py-10 overflow-y-auto">
+            <h2 className="text-[#261A54] font-bold mb-1" style={{ fontSize: '32px', lineHeight: 1.2 }}>Prijavite se</h2>
+            <p className="text-gray-400 text-sm mb-6">Prijavite se na vaš nalog</p>
 
             <button
               type="button"
               disabled={isLoading}
-              className="w-full px-4 py-3 rounded-full border border-gray-300 text-[#261A54] flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
+              className="w-full px-4 py-3 rounded-full border border-gray-200 text-[#261A54] flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors mb-5"
               onClick={handleGoogleLogin}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
               Prijavite se sa Google nalogom
             </button>
 
-            <div className="my-5 flex items-center gap-3 text-gray-400 text-sm"><span className="flex-1 h-px bg-gray-200"/><span>ili putem mejla</span><span className="flex-1 h-px bg-gray-200"/></div>
+            <div className="flex items-center gap-3 text-gray-300 text-sm mb-5"><span className="flex-1 h-px bg-gray-200"/><span className="text-gray-400 whitespace-nowrap">Ulogujte se putem mejla</span><span className="flex-1 h-px bg-gray-200"/></div>
 
             <Formik
               initialValues={{ email: '', password: '', terms_accepted: false }}
@@ -356,10 +358,10 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                     {isLoading ? 'Učitavanje...' : 'Prijavite se'}
                   </button>
 
-                  <div className="mt-4 text-center">
+                  <div className="mt-5 text-center">
                     <button
                       type="button"
-                      className="text-[#56C4CF] underline"
+                      className="text-[#261A54] font-bold text-[15px] hover:underline"
                       onClick={() => {
                         setErrors({})
                         setTab('register')
@@ -372,13 +374,13 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                   <div className="mt-3 text-center">
                     <button
                       type="button"
-                      className="text-gray-400 underline"
+                      className="text-gray-400 underline text-sm"
                       onClick={() => {
                         setLegalDocsType('instructions')
                         onLegalDocsOpen()
                       }}
                     >
-                      Pogledajte instrukcije za registraciju
+                      Pogledajte instrukcije za registraciju.
                     </button>
                   </div>
                 </Form>
@@ -400,6 +402,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
             is_legal_entity: false,
             mb: '',
             pib: '',
+            is_sef_user: false,
             company_name: '',
             company_address: '',
             phone_number: '',
@@ -417,24 +420,29 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
           onSubmit={handleRegister}
         >
           {({ values, setFieldValue }) => {
+            setFieldValueRef.current = setFieldValue
             return (
-              <Form className="w-full h-full flex items-center justify-center bg-white">
-                <div className="w-full lg:w-[911px] lg:mx-auto px-6 md:px-12 py-10">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3">
+              <Form
+                className="w-full h-full flex items-center justify-center overflow-y-auto"
+                style={{ background: 'linear-gradient(145deg, #deedf7 0%, #f4faff 30%, #ffffff 50%, #eef5fb 70%, #deedf7 100%)' }}
+              >
+                <div className="w-full lg:w-[960px] lg:mx-auto px-6 md:px-12 py-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-8 gap-y-3">
                     <div>
-                      <h2 className="text-[#261A54] text-3xl font-bold mb-6">Napravite profil</h2>
+                      <h2 className="text-[#261A54] font-bold mb-1" style={{ fontSize: '32px', lineHeight: 1.2 }}>Napravite profil</h2>
+                      <p className="text-gray-400 text-sm mb-5">Registrujte se kao izlagač</p>
 
                       <button
                         type="button"
                         disabled={isLoading}
-                        className="w-full px-4 py-3 rounded-full border border-gray-300 text-[#261A54] flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors mb-6"
+                        className="w-full px-4 py-3 rounded-full border border-gray-200 text-[#261A54] flex items-center justify-center gap-2 hover:bg-white/60 transition-colors mb-4"
                         onClick={handleGoogleLogin}
                       >
                         <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                        Registrujte se sa Google nalogom
+                        Prijavite se sa Google nalogom
                       </button>
 
-                      <div className="mb-5 flex items-center gap-3 text-gray-400 text-sm"><span className="flex-1 h-px bg-gray-200"/><span>ili putem mejla</span><span className="flex-1 h-px bg-gray-200"/></div>
+                      <div className="flex items-center gap-3 text-gray-300 text-sm mb-4"><span className="flex-1 h-px bg-gray-200"/><span className="text-gray-400 whitespace-nowrap">Registrujte se putem mejla</span><span className="flex-1 h-px bg-gray-200"/></div>
 
                       <div className="mb-3">
                         <MainTextInput
@@ -514,11 +522,12 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                       </div>
                     </div>
 
-                    <div>
-                      <div className="mb-3">
+                    <div className="flex flex-col gap-3">
+                      {/* Grupa delatnosti — styled select */}
+                      <div>
                         <select
                           name="activity_group_id"
-                          className="w-full rounded-md"
+                          className="auth-select"
                           value={values.activity_group_id}
                           disabled={loadingActivityGroups}
                           onChange={e => {
@@ -526,20 +535,19 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                             setFieldValue('activity_name', '')
                           }}
                         >
-                          <option value="" disabled>
-                            Grupa delatnosti
+                          <option value="">
+                            {loadingActivityGroups ? 'Učitavanje...' : 'Grupa delatnosti'}
                           </option>
                           {activityGroups.map(g => (
-                            <option key={g.id} value={g.id}>
-                              {g.name}
-                            </option>
+                            <option key={g.id} value={g.id}>{g.name}</option>
                           ))}
                         </select>
                         <ErrorMessage name="activity_group_id" component="div" className="text-sm text-negative-color mt-1" />
                         <AuthValidationErrors className="mb-1" errors={errors.activity_group_id} />
                       </div>
 
-                      <div className="mb-3">
+                      {/* Delatnost — free text */}
+                      <div>
                         <MainTextInput
                           name="activity_name"
                           type="text"
@@ -551,181 +559,178 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                         />
                       </div>
 
-                      <div className="mb-3">
+                      {/* Adresa i mesto stanovanja — combined */}
+                      <div>
                         <MainTextInput
                           name="address"
                           type="text"
                           error={errors.address}
                           setErrors={setErrors}
-                          placeholder="Adresa"
+                          placeholder="Adresa i mesto stanovanja"
                           className="line-flex w-full"
                         />
                       </div>
 
-                      <div className="mb-3">
-                        <MainTextInput
-                          name="city"
-                          type="text"
-                          error={errors.city}
-                          setErrors={setErrors}
-                          placeholder="Mesto stanovanja"
-                          className="line-flex w-full"
+                      {/* Logo upload */}
+                      <div>
+                        <FileUploadButton
+                          label="Dodajte logo"
+                          accept="image/*"
+                          fileName={values.brand_logo?.name}
+                          onChange={e => setFieldValue('brand_logo', e.currentTarget.files?.[0] || null)}
                         />
+                        <AuthValidationErrors className="mb-1" errors={errors.brand_logo} />
                       </div>
 
-                    <div className="mb-3">
-                      <FileUploadButton
-                        label="Dodajte logo"
-                        accept="image/*"
-                        fileName={values.brand_logo?.name}
-                        onChange={e => setFieldValue('brand_logo', e.currentTarget.files?.[0] || null)}
-                      />
-                      <AuthValidationErrors className="mb-1" errors={errors.brand_logo} />
-                    </div>
-
-                    <div className="mb-3">
-                      <FileUploadButton
-                        label="Dodajte fotografije"
-                        accept="image/*"
-                        multiple
-                        fileName={values.gallery_images?.length ? `${values.gallery_images.length} fajl${values.gallery_images.length === 1 ? '' : 'a'} izabrano` : null}
-                        onChange={e => setFieldValue('gallery_images', Array.from(e.currentTarget.files || []))}
-                      />
-                      <AuthValidationErrors className="mb-1" errors={errors.gallery_images} />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="flex items-center gap-2 text-gray-700">
-                        <input
-                          type="checkbox"
-                          name="is_legal_entity"
-                          className="auth-legal-entity-checkbox"
-                          checked={!!values.is_legal_entity}
-                          onChange={e => setFieldValue('is_legal_entity', e.target.checked)}
+                      {/* Gallery images upload */}
+                      <div>
+                        <FileUploadButton
+                          label="Dodajte fotografije"
+                          accept="image/*"
+                          multiple
+                          fileName={values.gallery_images?.length ? `${values.gallery_images.length} fajl${values.gallery_images.length === 1 ? '' : 'a'} izabrano` : null}
+                          onChange={e => setFieldValue('gallery_images', Array.from(e.currentTarget.files || []))}
                         />
-                        Pravno lice
-                      </label>
-                    </div>
-
-                    {values.is_legal_entity && (
-                      <>
-                        <div className="mb-3">
-                          <MainTextInput
-                            name="company_name"
-                            type="text"
-                            error={errors.company_name}
-                            setErrors={setErrors}
-                            placeholder="Naziv firme"
-                            className="line-flex w-full"
-                          />
-                        </div>
-
-                        <div className="mb-3">
-                          <MainTextInput
-                            name="company_address"
-                            type="text"
-                            error={errors.company_address}
-                            setErrors={setErrors}
-                            placeholder="Adresa firme"
-                            className="line-flex w-full"
-                          />
-                        </div>
-
-                        <div className="mb-3">
-                          <MainTextInput
-                            name="mb"
-                            type="text"
-                            error={errors.mb}
-                            setErrors={setErrors}
-                            placeholder="Matični broj"
-                            className="line-flex w-full"
-                          />
-                        </div>
-
-                        <div className="mb-3">
-                          <MainTextInput
-                            name="pib"
-                            type="text"
-                            error={errors.pib}
-                            setErrors={setErrors}
-                            placeholder="PIB"
-                            className="line-flex w-full"
-                          />
-                        </div>
-                      </>
-                    )}
-
-                    {!['development', 'testing'].includes(getAppEnv()) && (
-                      <div className="mb-4">
-                        <ReCAPTCHA sitekey={process.env.RECAPTCHA_SITE_KEY} ref={recaptchaRef} />
-                        <AuthValidationErrors className="mb-1" errors={errors.recaptcha_token} />
+                        <AuthValidationErrors className="mb-1" errors={errors.gallery_images} />
                       </div>
-                    )}
 
-                    <div className="mb-3">
-                      <label className="flex items-start gap-2 text-gray-700">
-                        <input
-                          type="checkbox"
-                          name="terms_accepted"
-                          className="auth-legal-entity-checkbox"
-                          checked={!!values.terms_accepted}
-                          onChange={e => setFieldValue('terms_accepted', e.target.checked)}
-                        />
-                        <span>
-                          Slažem se sa{' '}
-                          <button
-                            type="button"
-                            className="underline text-[#56C4CF]"
-                            onClick={() => {
-                              setLegalDocsType('terms')
-                              onLegalDocsOpen()
-                            }}
-                          >
-                            uslovima korišćenja
-                          </button>{' '}
-                          i{' '}
-                          <button
-                            type="button"
-                            className="underline text-[#56C4CF]"
-                            onClick={() => {
-                              setLegalDocsType('privacy')
-                              onLegalDocsOpen()
-                            }}
-                          >
-                            politikom privatnosti
-                          </button>
-                          .
-                        </span>
-                      </label>
-                      <ErrorMessage name="terms_accepted" component="div" className="text-sm text-negative-color mt-1" />
-                      <AuthValidationErrors className="mb-1" errors={errors.terms_accepted} />
-                    </div>
+                      {/* Legal entity toggle */}
+                      <div>
+                        <label className="flex items-center gap-2 text-[#261A54] text-sm cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="is_legal_entity"
+                            className="auth-legal-entity-checkbox"
+                            checked={!!values.is_legal_entity}
+                            onChange={e => setFieldValue('is_legal_entity', e.target.checked)}
+                          />
+                          Prijavljujem se kao pravno lice.
+                        </label>
+                      </div>
 
-                    <AuthValidationErrors className="mb-3" errors={errors.failed} />
+                      {/* Legal entity fields */}
+                      {values.is_legal_entity && (
+                        <>
+                          <div>
+                            <MainTextInput
+                              name="company_name"
+                              type="text"
+                              error={errors.company_name}
+                              setErrors={setErrors}
+                              placeholder="Naziv firme"
+                              className="line-flex w-full"
+                            />
+                          </div>
+                          <div>
+                            <MainTextInput
+                              name="company_address"
+                              type="text"
+                              error={errors.company_address}
+                              setErrors={setErrors}
+                              placeholder="Sedište"
+                              className="line-flex w-full"
+                            />
+                          </div>
+                          <div>
+                            <MainTextInput
+                              name="mb"
+                              type="text"
+                              error={errors.mb}
+                              setErrors={setErrors}
+                              placeholder="Matični broj"
+                              className="line-flex w-full"
+                            />
+                          </div>
+                          <div>
+                            <MainTextInput
+                              name="pib"
+                              type="text"
+                              error={errors.pib}
+                              setErrors={setErrors}
+                              placeholder="PIB"
+                              className="line-flex w-full"
+                            />
+                          </div>
+                          <div>
+                            <label className="flex items-center gap-2 text-[#261A54] text-sm cursor-pointer">
+                              <input
+                                type="checkbox"
+                                name="is_sef_user"
+                                className="auth-legal-entity-checkbox"
+                                checked={!!values.is_sef_user}
+                                onChange={e => setFieldValue('is_sef_user', e.target.checked)}
+                              />
+                              Korisnik sam SEF-a (Sistem elektronskih faktura).
+                            </label>
+                          </div>
+                        </>
+                      )}
 
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className={`w-full px-4 py-3 rounded-full bg-[#56C4CF] text-white font-semibold transition-colors flex items-center justify-center gap-2 ${isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#3db8c4]'}`}
-                    >
-                      {isLoading && <SpinnerIcon />}
-                      {isLoading ? 'Učitavanje...' : 'Napravite profil'}
-                    </button>
+                      {/* ReCAPTCHA */}
+                      {!isDevEnv() && (
+                        <div>
+                          <ReCAPTCHA sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY} ref={recaptchaRef} />
+                          <AuthValidationErrors className="mb-1" errors={errors.recaptcha_token} />
+                        </div>
+                      )}
 
-                    <div className="mt-3 text-center">
+                      {/* Terms */}
+                      <div>
+                        <label className="flex items-start gap-2 text-[#261A54] text-sm cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="terms_accepted"
+                            className="auth-legal-entity-checkbox mt-0.5"
+                            checked={!!values.terms_accepted}
+                            onChange={e => setFieldValue('terms_accepted', e.target.checked)}
+                          />
+                          <span>
+                            Slažem se sa{' '}
+                            <button
+                              type="button"
+                              className="underline text-[#56C4CF]"
+                              onClick={() => { setLegalDocsType('terms'); onLegalDocsOpen() }}
+                            >
+                              uslovima korišćenja
+                            </button>{' '}
+                            i{' '}
+                            <button
+                              type="button"
+                              className="underline text-[#56C4CF]"
+                              onClick={() => { setLegalDocsType('privacy'); onLegalDocsOpen() }}
+                            >
+                              politikom privatnosti
+                            </button>
+                            .
+                          </span>
+                        </label>
+                        <ErrorMessage name="terms_accepted" component="div" className="text-sm text-negative-color mt-1" />
+                        <AuthValidationErrors className="mb-1" errors={errors.terms_accepted} />
+                      </div>
+
+                      <AuthValidationErrors className="mb-1" errors={errors.failed} />
+
+                      {/* Submit */}
                       <button
-                        type="button"
-                        className="underline text-gray-400"
-                        onClick={() => {
-                          setLegalDocsType('instructions')
-                          onLegalDocsOpen()
-                        }}
+                        type="submit"
+                        disabled={isLoading}
+                        className={`w-full px-4 py-3 rounded-full bg-[#56C4CF] text-white font-semibold transition-colors flex items-center justify-center gap-2 ${isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#3db8c4]'}`}
                       >
-                        Pogledajte instrukcije za registraciju
+                        {isLoading && <SpinnerIcon />}
+                        {isLoading ? 'Učitavanje...' : 'Napravite profil'}
                       </button>
+
+                      <div className="text-center">
+                        <button
+                          type="button"
+                          className="underline text-gray-400 text-sm"
+                          onClick={() => { setLegalDocsType('instructions'); onLegalDocsOpen() }}
+                        >
+                          Pogledajte instrukcije za registraciju.
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
                 </div>
               </Form>
             )
@@ -739,32 +744,82 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
         onClose={onLegalDocsClose}
         size="lg"
         backdrop="blur"
+        scrollBehavior="inside"
         classNames={{
           wrapper: 'nnb-modal-wrapper items-center justify-center',
           backdrop: 'nnb-modal-backdrop',
+          base: 'rounded-[32px] bg-white',
         }}
       >
         <ModalContent>
-          {onClose => (
+          {(onClose) => (
             <>
-              <ModalHeader>
-                {legalDocsType === 'terms'
-                  ? 'Uslovi korišćenja'
-                  : legalDocsType === 'privacy'
-                    ? 'Politika privatnosti'
-                    : 'Instrukcije za registraciju'}
-              </ModalHeader>
-              <ModalBody>
-                <div className="text-black">
-                  {legalDocsType === 'terms'
-                    ? 'Uslovi korišćenja će biti dodati ovde.'
-                    : legalDocsType === 'privacy'
-                      ? 'Politika privatnosti će biti dodata ovde.'
-                      : 'Instrukcije za registraciju će biti dodate ovde.'}
-                </div>
-                <button type="button" onClick={onClose} className="w-full px-4 py-3 rounded-full bg-black text-white">
-                  Zatvori
+              <ModalHeader className="p-0 h-0 min-h-0 relative">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="absolute right-4 top-4 w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-700 text-xl z-10"
+                  aria-label="Zatvori"
+                >
+                  ×
                 </button>
+              </ModalHeader>
+              <ModalBody className="px-10 py-10">
+                {legalDocsType === 'instructions' ? (
+                  <>
+                    <h2 className="text-[#261A54] text-2xl font-bold mb-4">Instrukcije za registraciju</h2>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-6">
+                      Instrukcije za registraciju će biti dodate ovde.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="px-8 py-3 rounded-full bg-[#56C4CF] text-white font-semibold text-sm hover:bg-[#3db8c4] transition-colors"
+                    >
+                      Zatvori
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Uslovi korišćenja */}
+                    <h2 className="text-[#261A54] text-2xl font-bold mb-3">Uslovi korišćenja</h2>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Molestie nunc non blandit massa enim. Molestie ac feugiat sed lectus. Mauris cursus mattis molestie a iaculis at. Volutpat am. Est ullamcorper eget nulla facilisi etiam dignissim diam quis. Aliquam sem fringilla ut morbi. Adipiscing commodo elit at...
+                    </p>
+                    <button
+                      type="button"
+                      className="text-[#56C4CF] underline text-sm mb-8"
+                      onClick={() => {}}
+                    >
+                      pročitaj više
+                    </button>
+
+                    {/* Politika privatnosti */}
+                    <h2 className="text-[#261A54] text-2xl font-bold mb-3">Politika privatnosti</h2>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Molestie nunc non blandit massa enim. Molestie ac feugiat sed lectus. Mauris cursus mattis molestie a iaculis at. Volutpat am. Est ullamcorper eget nulla facilisi etiam dignissim diam quis. Aliquam sem fringilla ut morbi. Adipiscing commodo elit at...
+                    </p>
+                    <button
+                      type="button"
+                      className="text-[#56C4CF] underline text-sm mb-8"
+                      onClick={() => {}}
+                    >
+                      pročitaj više
+                    </button>
+
+                    {/* Slažem se — auto-checks terms_accepted in the form */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFieldValueRef.current?.('terms_accepted', true)
+                        onClose()
+                      }}
+                      className="px-8 py-3 rounded-full bg-[#56C4CF] text-white font-semibold text-sm hover:bg-[#3db8c4] transition-colors"
+                    >
+                      Slažem se
+                    </button>
+                  </>
+                )}
               </ModalBody>
             </>
           )}

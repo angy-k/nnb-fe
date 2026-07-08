@@ -6,16 +6,14 @@ import Faq from '@/components/FaQ'
 
 const ContactPage = () => {
     return (
-      <div className="grid place-items-center w-full pt-80">
-        <PageHeroSection 
+      <>
+        <PageHeroSection
           title={`Kontakt`}
           type="description"
           icons={false}
-          description={`Ukoliko imate bilo kakvo pitanje, sugestiju, kritiku, ili samo želite da se dodatno informišete o našim dešavanjima, 
-              osećajte se slobodni da nam pišete u svako doba dana, odgovorićemo Vam u najbržem roku.`}
+          description={`Ukoliko imate bilo kakvo pitanje, sugestiju, kritiku, ili samo želite da se dodatno informišete o našim dešavanjima, osećajte se slobodni da nam pišete u svako doba dana, odgovorićemo Vam u najbržem roku.`}
         />
         <div className="w-full grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
-          
           <Faq />
           <ContactForm
             withImage={false}
@@ -23,7 +21,7 @@ const ContactPage = () => {
           />
           <ViberCommunity type={'dark'}/>
         </div>
-      </div>
+      </>
     );
 }
 

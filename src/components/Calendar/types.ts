@@ -4,4 +4,5 @@ export type Event = {
     start_date: Date;
     end_date: Date;
     variant?: 'regular' | 'startup';
+    isPast?: boolean;
   };

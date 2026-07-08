@@ -1,11 +1,11 @@
 'use client';
 import Image from "next/image";
 import Link from "next/link";
-import { Avatar } from "@nextui-org/avatar";
 import aboutUsIcon from '@/icons/about-us-event-icon.svg';
 import photoGaleryIcon from '@/icons/photo-galery-icon.svg';
 import videoGaleryIcon from '@/icons/video-galery-icon.svg';
 import { cn } from '@/utils';
+import HeroOwlWithEyes from '@/components/Hero/HeroOwlWithEyes';
 
 const PageHiroSection = ({
   title,
@@ -65,11 +65,12 @@ const PageHiroSection = ({
       <div className="w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto page-hero-section"
       >
         <HeroLeft
-          title={title} 
+          title={title}
           description={description}
-          icons={icons} 
+          icons={icons}
         />
-        <HeroRight 
+        <HeroRight
+          illustration={illustration}
           description={description}
         />
       </div>
@@ -130,8 +131,8 @@ export default PageHiroSection
 
 const HeroLeft = ({ title, description, icons }) => {
   return (
-    <div 
-      className="flex-1 w-full md:w-6/12 lg:w-6/12 xl:w-6/12 2xl:w-6/12 pt-0 md:pt-[40px]" 
+    <div
+      className="flex-1 w-full md:w-6/12 lg:w-6/12 xl:w-6/12 2xl:w-6/12 pt-0 md:pt-[120px]"
       style={{alignSelf: 'flex-start'}}
     >
       {title && <div 
@@ -147,29 +148,37 @@ const HeroLeft = ({ title, description, icons }) => {
             <Link
               prefetch={false}
               href={"/galerija/fotografije"}
-              className="items-center" 
-              style={{display: 'flex', flexDirection: 'column', gap: '20px'}}
-              >
-              <Avatar
-                src={photoGaleryIcon.src}
-                icon
-                radius="full"
-                className="w-[140px] h-[140px] text-tiny bg-[#56C4CF] p-[36px]"
-              />
+              className="items-center"
+              style={{display: 'flex', flexDirection: 'column', gap: '20px', textDecoration: 'none', color: 'inherit'}}
+            >
+              <div style={{
+                width: 140, height: 140,
+                borderRadius: '50%',
+                background: '#56C4CF',
+                padding: 36,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <img src={photoGaleryIcon.src} alt="Fotografije" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
               <span>{`Fotografije`}</span>
             </Link>
             <Link
               prefetch={false}
               href={"/galerija/video"}
-              className="items-center" 
-              style={{display: 'flex', flexDirection: 'column', gap: '20px'}}
+              className="items-center"
+              style={{display: 'flex', flexDirection: 'column', gap: '20px', textDecoration: 'none', color: 'inherit'}}
             >
-              <Avatar
-                src={videoGaleryIcon.src}
-                icon
-                radius="full"
-                className="w-[140px] h-[140px] text-[65px] bg-[#F18020] p-[36px]"
-              />
+              <div style={{
+                width: 140, height: 140,
+                borderRadius: '50%',
+                background: '#F18020',
+                padding: 36,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <img src={videoGaleryIcon.src} alt="Video zapisi" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
               <span>{`Video zapisi`}</span>
             </Link>
         </div>}
@@ -184,19 +193,11 @@ const HeroLeft = ({ title, description, icons }) => {
 }
 
 const HeroRight = ({ description, illustration }) => (
-  <div 
-    className={
-      cn("flex-1 w-full md:w-6/12 lg:w-6/12 xl:w-6/12 2xl:w-6/12", description ? 'pt-[40px]' : 'pt-[40px]')
-    }
+  <div
+    className="flex-1 w-full md:w-6/12 lg:w-6/12 xl:w-6/12 2xl:w-6/12"
+    style={{ alignSelf: 'flex-start', paddingTop: '208px' }}
   >
-    {illustration && <Image 
-      maxwidth={'660px'}
-      width={660}
-      maxheight={'914px'}
-      height={914}
-      src='/hero-owl.svg'
-      alt="hero-owl"
-    />}
+    {illustration && <HeroOwlWithEyes />}
   </div>
 )
 

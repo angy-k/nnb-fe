@@ -38,12 +38,12 @@ export const WeekEvent: React.FC<WeekEventProps> = ({
 
   return (
     <div
-      style={definedStyle}
-      className={cn("h-full px-2 absolute z-10 bg-blue-400 rounded cursor-pointer", Number(event.id)%2 ? 'bg-[#56C4CF]' : 'bg-[#261A54]')}
-      onClick={() => onEventClick?.(String(event.id))}
+      style={{ ...definedStyle, ...(event.isPast ? { opacity: 0.35, filter: 'grayscale(0.5) blur(1px)' } : {}) }}
+      className={cn("h-full px-2 absolute z-10 rounded", event.isPast ? 'cursor-default' : 'cursor-pointer', event.variant === 'startup' ? 'bg-[#56C4CF]' : 'bg-[#261A54]')}
+      onClick={() => { if (!event.isPast) onEventClick?.(String(event.id)) }}
     >
-      <Image 
-        src={Number(event.id)%2 ? SingleEventLight : SingleEventDark}
+      <Image
+        src={event.variant === 'startup' ? SingleEventLight : SingleEventDark}
         width={126}
         height={52}
         alt='single-event'

@@ -13,8 +13,9 @@ const Projects = ({
   title,
   numberForDisplay,
   projects: propProjects,
-  pagination = false, 
-  sectionType = 'project'
+  pagination = false,
+  sectionType = 'project',
+  showHero = true
 }) => {
   const router = useRouter()
   const [projects, setProjects] = useState(propProjects || [])
@@ -38,11 +39,16 @@ const Projects = ({
       }
 
       const data = await response.json()
-      if (!data.success) {
+      if (data.success) {
+        const items = Array.isArray(data.data)
+          ? data.data
+          : Array.isArray(data.data?.data)
+            ? data.data.data
+            : []
+        setProjects(items)
+      } else {
         throw new Error(data.message || 'Failed to fetch projects')
       }
-
-      setProjects(Array.isArray(data.data) ? data.data : [])
     } catch (err) {
       console.error('Error fetching projects:', err)
       setError(err.message)
@@ -52,21 +58,44 @@ const Projects = ({
     }
   }
 
-  function previewAllProjects() {
-    console.log('preview all project posts')
+  function goToSingleProject(project) {
+    router.push(`/projekti/${formatTitleForUri(project.title)}`)
   }
 
-  let limitedProjects = numberForDisplay ? projects.slice(0,numberForDisplay) : projects
+  function previewAllProjects() {
+    console.log('preview all projects')
+  }
+
+  let limitedProjects = numberForDisplay ? projects.slice(0, numberForDisplay) : projects
+
+  if (loading) {
+    return (
+      <>
+        {showHero && <PageHeroSection
+          title={`Projekti`}
+        />}
+        <div className="w-full blogs-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
+          <div className="text-center text-[#261A54]">Učitavanje projekata...</div>
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
-      <PageHeroSection 
+      {showHero && <PageHeroSection
         title={`Projekti`}
-      />
+      />}
       <div className="w-full blogs-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
-        {loading && (
-          <div className="text-center text-[#261A54]">Učitavanje projekata...</div>
+        {!showHero && (
+          <>
+            <Divider className="section-divider w-1440" style={{marginBottom: '35px'}}/>
+            <div className="flex justify-start">
+              <span className="blog-title text-start">Pogledaj još projekata</span>
+            </div>
+          </>
         )}
-        {!loading && error && (
+        {error && (
           <div className="text-[#EC4923] text-center mb-4">Greška prilikom učitavanja projekata.</div>
         )}
         {!loading && !error && limitedProjects.length === 0 && (
@@ -83,45 +112,25 @@ const Projects = ({
         <div className="blog-container grid  sm:grid-template-1 md:grid-template-2">
           {limitedProjects.map((project, index) => (
             <div className="blog-card" key={`project-card-${index}`}>
-              <div
-                role="link"
-                tabIndex={0}
-                onClick={() => {
-                  const href = `/projekti/${formatTitleForUri(project.title)}`
-                  router.push(href)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    const href = `/projekti/${formatTitleForUri(project.title)}`
-                    router.push(href)
-                  }
-                }}
-                className="cursor-pointer"
-              >
-                <CardComponent
-                  key={`project-card-${index}`}
-                  {...(project.coverImage && { imageSrc: project.coverImage })}
-                  imageWidth={438}
-                  imageHeight={344}
-                  imageRadius={"30px"}
-                  imageAltText={`Project post - ${project.title}`}
-                  sectionType={'project'}
-                  author={project.author}
-                  title={project.title}
-                  creationDate={project.creationDate}
-                  buttonAction={() => {
-                    const href = `/projekti/${formatTitleForUri(project.title)}`
-                    router.push(href)
-                  }}
-                  buttonText="Pročitaj više"
-                />
-              </div>
+              <CardComponent
+                key={`project-card-${index}`}
+                {...(project.coverImage && { imageSrc: project.coverImage })}
+                imageWidth={438}
+                imageHeight={344}
+                imageRadius={"30px"}
+                imageAltText={`Projekat - ${project.title}`}
+                sectionType={'project'}
+                author={project.author}
+                title={project.title}
+                creationDate={project.creationDate}
+                buttonAction={() => goToSingleProject(project)}
+                buttonText="Pročitaj više"
+              />
             </div>
           ))}
         </div>
         {/* pagination */}
-        {pagination && <Divider className="section-divider w-1440" style={{marginTop: '35px'}}/>}
-        {/* {pagination && <PaginationComponent />} */}
+        {(pagination && projects.length > 6) && <Divider className="section-divider w-1440" style={{marginTop: '35px'}}/>}
       </div>
     </>
   )

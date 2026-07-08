@@ -7,6 +7,7 @@ import eventService from '@/services/eventService'
 import applicationService from '@/services/applicationService'
 import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
 import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
+import GalleryWarningModal from '@/components/Modal/GalleryWarningModal'
 import Button from '@/components/Button'
 
 const ReservationMapPage = () => {
@@ -44,6 +45,7 @@ const ReservationMapPage = () => {
   const [isSubmittingReservation, setIsSubmittingReservation] = useState(false)
   const [reservationError, setReservationError] = useState(null)
   const [reservationSuccess, setReservationSuccess] = useState(null)
+  const [isGalleryWarningOpen, setIsGalleryWarningOpen] = useState(false)
 
   const isPackageUser = !!user?.active_package
 
@@ -111,7 +113,9 @@ const ReservationMapPage = () => {
     electricityExtensionCoasts: 0,
     fbMarketingCoasts: 0,
     ingMarketingCoasts: 0,
+    termsPdfUrl: null,
   })
+  const [eventName, setEventName] = useState('')
 
   const computeConfirmCosts = (electricityOpt, marketingOpt) => {
     const cotization = Number(eventDetails?.downPayment) || 0
@@ -266,7 +270,9 @@ const ReservationMapPage = () => {
           electricityExtensionCoasts: Number(found?.electricityExtensionCoasts) || 0,
           fbMarketingCoasts: Number(found?.fbMarketingCoasts) || 0,
           ingMarketingCoasts: Number(found?.ingMarketingCoasts) || 0,
+          termsPdfUrl: found?.termsPdfUrl || null,
         })
+        setEventName((found?.title || found?.name || '').toString())
       } catch {
         return
       }
@@ -451,6 +457,17 @@ const ReservationMapPage = () => {
       return
     }
 
+    // Ako je odabrana reklama, a korisnik nema fotografija — prikaži upozorenje
+    if (marketingOption !== 'none' && user) {
+      const hasGallery =
+        (Array.isArray(user?.gallery_images) && user.gallery_images.length > 0) ||
+        (Array.isArray(user?.gallery_videos) && user.gallery_videos.length > 0)
+      if (!hasGallery) {
+        setIsGalleryWarningOpen(true)
+        return
+      }
+    }
+
     setConfirmCosts(computeConfirmCosts(electricityOption, marketingOption))
     setIsOptionsOpen(false)
 
@@ -493,9 +510,6 @@ const ReservationMapPage = () => {
 
       if (res.ok && data?.success) {
         setReservationSuccess('Prijava je uspešno poslata.')
-        setTimeout(() => {
-          router.push('/moje-rezervacije')
-        }, 1200)
         return
       }
 
@@ -750,13 +764,19 @@ const ReservationMapPage = () => {
         showCancel={true}
         cancelLabel="Otkaži"
         timeRemaining={!isPackageUser && !sessionExpired ? sessionSecondsLeft : null}
+        termsPdfUrl={eventDetails.termsPdfUrl}
+      />
+
+      <GalleryWarningModal
+        isOpen={isGalleryWarningOpen}
+        onClose={() => setIsGalleryWarningOpen(false)}
       />
 
       <BoothReservationConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
-        costs={confirmCosts}
-        selections={{ electricityOption, marketingOption }}
+        title={selectedStand ? `Da li želite da rezervišete tezgu ${selectedStand}?` : 'Da li želite da rezervišete tezgu?'}
+        eventName={eventName}
         onConfirm={confirmReservation}
         onCancel={() => setIsConfirmModalOpen(false)}
         isLoading={isSubmittingReservation}

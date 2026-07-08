@@ -3,10 +3,27 @@
 import { Modal, ModalContent, ModalBody } from '@nextui-org/modal'
 import { isSameDay, endOfDay, isWithinInterval, parse } from 'date-fns'
 import { startOfToday } from 'date-fns'
-import Image from 'next/image'
-import EventDark from '@/icons/event-dark.svg'
-import EventLight from '@/icons/event-light.svg'
 
+// ── Styled event title: "68. noćni bazar u Novom Sadu" ────────────────────────
+const StyledEventTitle = ({ title = '' }) => {
+  const match = title.match(/^(\d+\.\s*)(noćni)(\s+bazar)(.*)$/i)
+  if (match) {
+    const [, num, nocni, bazar, rest] = match
+    return (
+      <span style={{ fontSize: '20px', lineHeight: '1.2' }}>
+        <span style={{ color: '#ffffff', fontWeight: '700' }}>{num}</span>
+        <span style={{ color: '#56C4CF', fontWeight: '700' }}>{nocni}</span>
+        <span style={{ color: '#EC4923', fontWeight: '700' }}>{bazar}</span>
+        <span style={{ color: '#ffffff', fontFamily: "'MADE GoodTime Script', cursive", fontWeight: '400', fontSize: '22px' }}>
+          {rest}
+        </span>
+      </span>
+    )
+  }
+  return <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '20px' }}>{title}</span>
+}
+
+// ── DayEventsModal ─────────────────────────────────────────────────────────────
 const DayEventsModal = ({
   isOpen,
   onClose,
@@ -20,7 +37,6 @@ const DayEventsModal = ({
 }) => {
   if (!date) return null
 
-  // Format: "Subota, 8. jun 2025."
   const formattedDate = date.toLocaleDateString('sr-Latn', {
     weekday: 'long',
     day: 'numeric',
@@ -29,7 +45,6 @@ const DayEventsModal = ({
   })
 
   const dayEvents = events.filter((ev) => isSameDay(ev.start_date, date))
-
   const today = startOfToday()
 
   const parseDateOnly = (value) => {
@@ -66,111 +81,110 @@ const DayEventsModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size="md"
+      size="xl"
       backdrop="blur"
       placement="center"
       hideCloseButton
       classNames={{
         backdrop: 'nnb-modal-backdrop',
         wrapper: 'nnb-modal-wrapper items-center justify-center',
-        base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[480px]',
+        base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[700px]',
         body: 'p-0',
       }}
     >
       <ModalContent
         className="rounded-2xl overflow-hidden"
-        style={{ background: 'linear-gradient(to bottom, #ffffff 65%, #dff4f5 100%)' }}
+        style={{ background: '#ffffff' }}
       >
         {(modalOnClose) => (
           <ModalBody className="p-0">
-            <div className="relative px-8 pt-8 pb-10">
+            <div className="relative px-10 pt-10 pb-12">
               {/* X close */}
               <button
                 type="button"
                 onClick={modalOnClose}
-                className="absolute top-4 right-4 z-20 text-[#261A54] text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition"
+                className="absolute top-5 right-6 z-20 text-[#555] text-xl font-light w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 transition"
                 aria-label="Zatvori"
               >
-                ×
+                ✕
               </button>
 
               {/* Date header */}
-              <h2 className="text-[#261A54] text-xl font-bold capitalize mb-6 pr-10">
+              <h2 className="text-[#1B1B1B] text-[22px] font-bold capitalize mb-8 pr-10">
                 {formattedDate}
               </h2>
 
               {dayEvents.length === 0 ? (
-                <p className="text-[#1B1B1B] text-sm">Nema događaja za ovaj dan.</p>
+                <p className="text-[#555] text-sm">Nema događaja za ovaj dan.</p>
               ) : (
                 <ul className="flex flex-col gap-4">
                   {dayEvents.map((ev) => {
                     const details = eventDetailsById[ev.id]
                     const { canApply, applicationStart } = getEventState(ev.id)
-                    const isStartup = ev.variant === 'startup'
-
-                    const timeStr = ev.start_date.toLocaleTimeString('sr-Latn', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
-
-                    const dateStr = ev.start_date.toLocaleDateString('sr-Latn', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })
+                    const titleStr = details?.name || details?.title || ev.title || ''
 
                     return (
-                      <li
-                        key={ev.id}
-                        className="bg-white rounded-xl p-4 shadow-sm flex flex-col gap-3 cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => onEventClick?.(ev.id)}
-                      >
-                        {/* Pill badge */}
-                        <Image
-                          src={isStartup ? EventLight : EventDark}
-                          width={80}
-                          height={33}
-                          alt={isStartup ? 'NNB Startup' : 'NNB'}
-                          className="self-start"
-                        />
-
-                        <div className="font-semibold text-[#261A54] text-base leading-snug">
-                          {details?.name || details?.title || ev.title}
-                        </div>
-
-                        <div className="text-sm text-[#555]">
-                          {dateStr} u {timeStr}
-                          {details?.eventAddress && (
-                            <span className="block text-[#555]">{details.eventAddress}</span>
-                          )}
-                        </div>
-
-                        {user && canApply ? (
+                      <li key={ev.id}>
+                        {/* Navy pill row */}
+                        <div
+                          style={{
+                            background: '#261A54',
+                            borderRadius: '60px',
+                            padding: '0 12px 0 28px',
+                            minHeight: '70px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '16px',
+                          }}
+                        >
+                          {/* Title — clickable to open event detail */}
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onReserve?.(ev.id)
-                            }}
-                            className="self-start mt-1 inline-flex items-center px-5 py-2 rounded-full bg-[#56C4CF] text-white text-sm font-semibold hover:opacity-90 transition"
+                            onClick={() => onEventClick?.(ev.id)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', flex: 1, padding: '14px 0' }}
                           >
-                            Rezerviši mesto
+                            <StyledEventTitle title={titleStr} />
                           </button>
-                        ) : user && applicationStart ? (
-                          <span className="self-start mt-1 text-sm text-[#777]">
-                            Prijava počinje{' '}
-                            {applicationStart.toLocaleDateString('sr-Latn', {
-                              day: 'numeric',
-                              month: 'numeric',
-                              year: 'numeric',
-                            })}
-                            .
-                          </span>
-                        ) : !user ? (
-                          <span className="self-start mt-1 text-sm text-[#56C4CF] font-medium">
-                            Prijavite se za rezervaciju
-                          </span>
-                        ) : null}
+
+                          {/* Right side: button or info text */}
+                          <div className="flex-shrink-0">
+                            {user && canApply ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onReserve?.(ev.id)
+                                }}
+                                style={{
+                                  background: '#56C4CF',
+                                  borderRadius: '30px',
+                                  padding: '10px 22px',
+                                  color: '#ffffff',
+                                  fontWeight: '600',
+                                  fontSize: '14px',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                Rezerviši mesto
+                              </button>
+                            ) : user && applicationStart && !canApply ? (
+                              <span style={{ color: '#aaaaaa', fontSize: '14px', whiteSpace: 'nowrap', paddingRight: '8px' }}>
+                                Prijava počinje{' '}
+                                {applicationStart.toLocaleDateString('sr-Latn', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                })}
+                                .
+                              </span>
+                            ) : null
+                            /* If not logged in: no button, no text — user just sees the event */
+                            }
+                          </div>
+                        </div>
                       </li>
                     )
                   })}

@@ -5,17 +5,19 @@ import Button from '@/components/Button';
 import UpcommingEvents from '@/components/UpcommingEvents';
 import useUser from '@/data/use-user'
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { add, parse, startOfToday, endOfDay, isWithinInterval } from 'date-fns'
+import { add, parse, startOfToday, endOfDay, isWithinInterval, isSameDay } from 'date-fns'
 import eventService from '@/services/eventService'
 import applicationService from '@/services/applicationService'
 import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
 import EventDetailsModal from '@/components/Modal/EventDetailsModal'
 import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
 import DayEventsModal from '@/components/Modal/DayEventsModal'
+import GalleryWarningModal from '@/components/Modal/GalleryWarningModal'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import EventDark from '@/icons/event-dark.svg'
 import EventLight from '@/icons/event-light.svg'
+import ExhibitorIcon from '@/icons/exhibitor-icon.svg'
 
 const CalendarPage = () => {
   const router = useRouter()
@@ -37,6 +39,7 @@ const CalendarPage = () => {
   const [reservationError, setReservationError] = useState(null)
   const [reservationSuccess, setReservationSuccess] = useState(null)
   const [sessionSeconds, setSessionSeconds] = useState(null)
+  const [isGalleryWarningOpen, setIsGalleryWarningOpen] = useState(false)
   const sessionIntervalRef = useRef(null)
   const sessionActiveRef = useRef(false)
 
@@ -100,32 +103,25 @@ const CalendarPage = () => {
               : null
 
             const isActiveFromApi = typeof item?.isActive === 'boolean' ? item.isActive : null
-            const isActive = isActiveFromApi !== null
-              ? isActiveFromApi
-              : applicationEndDate
-                ? applicationEndDate >= today
-                : startDate >= today
 
-            if (!isActive) return null
+            // Ako je admin eksplicitno deaktivirao događaj — ne prikazuj ga
+            if (isActiveFromApi === false) return null
 
             const id = (item?.id ?? '').toString()
             if (!id) return null
 
             detailsMap[id] = item
 
-            const activityName = (
-              item?.activity?.name ??
-              item?.activityGroup?.name ??
-              item?.activity_group?.name ??
-              ''
-            ).toString()
+            const title = (item?.title ?? item?.name ?? '').toString()
+            const isPast = startDate < today
 
             return {
               id,
-              title: (item?.title ?? item?.name ?? '').toString(),
+              title,
               start_date: startDate,
               end_date: endDate,
-              variant: /startup/i.test(activityName) ? 'startup' : 'regular',
+              variant: /startup/i.test(title) ? 'startup' : 'regular',
+              isPast,
             }
           })
           .filter(Boolean)
@@ -159,8 +155,15 @@ const CalendarPage = () => {
   }
 
   const onDayClick = (date) => {
-    setSelectedDay(date)
-    setIsDayModalOpen(true)
+    const dayEvs = events.filter((ev) => isSameDay(ev.start_date, date))
+    if (dayEvs.length === 1) {
+      // Jedan događaj — otvori direktno event detail modal
+      onEventClick(dayEvs[0].id)
+    } else {
+      // Više događaja — otvori day events modal
+      setSelectedDay(date)
+      setIsDayModalOpen(true)
+    }
   }
 
   const closeReserveModal = () => {
@@ -264,6 +267,17 @@ const CalendarPage = () => {
   const submitReservationOptions = () => {
     if (!user) return
 
+    // Ako je odabrana reklama, a korisnik nema fotografija — prikaži upozorenje
+    if (marketingOption !== 'none') {
+      const hasGallery =
+        (Array.isArray(user?.gallery_images) && user.gallery_images.length > 0) ||
+        (Array.isArray(user?.gallery_videos) && user.gallery_videos.length > 0)
+      if (!hasGallery) {
+        setIsGalleryWarningOpen(true)
+        return
+      }
+    }
+
     setConfirmCosts(computeConfirmCosts(selectedEvent, electricityOption, marketingOption))
     closeReserveModal()
     setIsConfirmModalOpen(true)
@@ -294,9 +308,6 @@ const CalendarPage = () => {
 
       if (res.ok && data?.success) {
         setReservationSuccess('Prijava je uspešno poslata.')
-        setTimeout(() => {
-          closeAllModals()
-        }, 1200)
         return
       }
 
@@ -344,11 +355,46 @@ const CalendarPage = () => {
     !!applicationEnd &&
     isWithinInterval(today, { start: applicationStart, end: endOfDay(applicationEnd) })
 
+  const brandName = user?.name || ''
+  const avatarSrc = user?.profile_photo_url || null
+
   return (
     <div className="mt-60 grid place-items-center w-full">
-      <PageHeroSection 
-          title={`Kalendar`}
-        />
+      {!user ? (
+        <PageHeroSection title={`Kalendar`} />
+      ) : (
+        /* Logged-in hero — brand logo + "Kalendar događaja" */
+        <div
+          className="w-full bg-[#261A54]"
+          style={{ minHeight: '200px', display: 'flex', alignItems: 'center', padding: '24px 60px' }}
+        >
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '32px', maxWidth: '1400px', width: '100%', margin: '0 auto' }}
+          >
+            {/* Brand avatar */}
+            <div style={{
+              flexShrink: 0, width: '130px', height: '130px',
+              borderRadius: '50%', overflow: 'hidden',
+              background: 'rgba(255,255,255,0.08)',
+              border: '2px solid rgba(255,255,255,0.15)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {avatarSrc ? (
+                <img src={avatarSrc} alt={brandName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <Image src={ExhibitorIcon} width={80} height={90} alt={brandName || 'Izlagač'} />
+              )}
+            </div>
+            {/* Title */}
+            <h1 style={{
+              color: '#ffffff', fontFamily: 'Open Sans', fontWeight: '700',
+              fontSize: 'clamp(28px, 4vw, 48px)', lineHeight: '1.2',
+            }}>
+              Kalendar događaja
+            </h1>
+          </div>
+        </div>
+      )}
       <div className="w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-48 bg-[#f0f0f0]">
         <div className="hidden md:block lg:block" style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
           <Calendar view={'month'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
@@ -357,11 +403,19 @@ const CalendarPage = () => {
           <Calendar view={'day'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
         </div>
 
-        {/* Legenda */}
-        <div className="flex items-center gap-4 mt-6 mb-2" style={{width: '100%', maxWidth: '1400px'}}>
-          <Image src={EventDark} width={100} height={41} alt="Novosadski noćni bazar" />
-          <Image src={EventLight} width={100} height={41} alt="Novosadski noćni bazar — startup" />
-        </div>
+        {/* Legenda — samo za ulogovane korisnike */}
+        {user && (
+          <div className="flex items-center gap-6 mt-6 mb-2 px-4" style={{width: '100%', maxWidth: '1400px'}}>
+            <div className="flex items-center gap-2">
+              <Image src={EventDark} width={100} height={41} alt="Novosadski noćni bazar" />
+              <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Novosadski noćni bazar</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Image src={EventLight} width={100} height={41} alt="Novosadski noćni bazar — startup" />
+              <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Novosadski noćni bazar - startup</span>
+            </div>
+          </div>
+        )}
         {!user && (
           <div className="pt-12 flex flex-row justify-between items-center" style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
             <span className="text-[darkBlue] underline text-[22px]">{`Pogledajte instrukcije za registraciju`}</span>
@@ -374,7 +428,8 @@ const CalendarPage = () => {
             />
           </div>
         )}
-        <UpcommingEvents />
+        {/* "Očekivani događaji" — samo za goste */}
+        {!user && <UpcommingEvents />}
 
         <EventDetailsModal
           isOpen={isEventModalOpen}
@@ -416,13 +471,14 @@ const CalendarPage = () => {
           showCancel={true}
           cancelLabel="Otkaži"
           timeRemaining={sessionSeconds}
+          termsPdfUrl={selectedEvent?.termsPdfUrl || null}
         />
 
         <BoothReservationConfirmModal
           isOpen={isConfirmModalOpen}
           onClose={cancelReservation}
-          costs={confirmCosts}
-          selections={{ electricityOption, marketingOption }}
+          title="Da li želite da pošaljete prijavu?"
+          eventName={(selectedEvent?.title || selectedEvent?.name || '').toString()}
           onConfirm={confirmReservation}
           onCancel={cancelReservation}
           isLoading={isSubmittingReservation}
@@ -448,11 +504,21 @@ const CalendarPage = () => {
           setIsDayModalOpen(false)
           onEventClick(eventId)
         }}
-        onReserve={(eventId) => {
+        onReserve={async (eventId) => {
           setIsDayModalOpen(false)
+          startSessionTimer()
           setSelectedEventId(String(eventId))
-          openReserveModal()
+          const eventDetails = eventDetailsById[String(eventId)]
+          const navigated = await goToReservationMap(eventDetails)
+          if (!navigated) {
+            openReserveModal()
+          }
         }}
+      />
+
+      <GalleryWarningModal
+        isOpen={isGalleryWarningOpen}
+        onClose={() => setIsGalleryWarningOpen(false)}
       />
     </div>
   )

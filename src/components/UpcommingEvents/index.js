@@ -67,19 +67,21 @@ const UpcommingEvents = ({
             return {
               id: (item?.id ?? '').toString(),
               name: (item?.title ?? item?.name ?? '').toString(),
-              location: (item?.location ?? item?.address ?? '').toString(),
+              location: (item?.eventAddress ?? item?.location ?? item?.address ?? '').toString(),
               date: startDate.toLocaleDateString('sr-RS', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',
               }),
-              applicationStart: item?.applicationStart
-                ? new Date(item.applicationStart).toLocaleDateString('sr-RS', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                  })
-                : '—',
+              applicationStart: (() => {
+                const raw = (item?.applicationStartDate ?? '').toString().trim();
+                if (!raw) return '—';
+                const d = parseWithFallbacks(raw, [
+                  'd MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy',
+                ]) ?? new Date(raw);
+                if (!d || isNaN(d.getTime())) return '—';
+                return d.toLocaleDateString('sr-RS', { day: '2-digit', month: '2-digit', year: 'numeric' });
+              })(),
             };
           })
           .filter(Boolean)

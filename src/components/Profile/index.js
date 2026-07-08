@@ -90,13 +90,13 @@ const ProfileComponent = ({
         <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6">
           <div className="flex items-end gap-6">
             {/* Avatar — z-10 da bude iznad gray sekcije, marginBottom negativan za prelaz */}
-            <div className="relative z-10 flex-shrink-0" style={{ marginBottom: '-36px' }}>
+            <div className="relative z-10 flex-shrink-0" style={{ marginBottom: '-56px' }}>
               <Avatar
                 isBordered
                 src={avatarSrc || undefined}
                 name={!avatarSrc ? (mappedAccount.brandName || 'U') : undefined}
                 radius="full"
-                className="w-[100px] h-[100px] text-xl bg-[#3d2f7a] border-2 border-violet-300/50"
+                className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
               />
             </div>
             <div className="flex flex-col gap-1 pb-2">
@@ -115,7 +115,7 @@ const ProfileComponent = ({
       </div>
 
       {/* Content area — paddingTop za prostor avatara koji visi */}
-      <div className="w-full bg-[#f0f0f0] pb-24 overflow-hidden" style={{ paddingTop: '36px' }}>
+      <div className="w-full bg-[#f5f5f5] pb-24 overflow-hidden" style={{ paddingTop: '56px' }}>
         <Reservations />
         <div className="max-w-[1400px] mx-auto px-6">
           <AccountData account={mappedAccount} />

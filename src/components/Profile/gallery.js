@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import galleryService from '@/services/galleryService'
+import MediaUploadModal from './MediaUploadModal'
 
 const MAX_ITEMS = 20
 
@@ -34,21 +35,17 @@ function getYouTubeId(url) {
 const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
   const [images, setImages] = useState(account?.gallery_images || [])
   const [videos, setVideos] = useState(account?.gallery_videos || [])
-  const [videoUrl, setVideoUrl] = useState('')
-  const [videoError, setVideoError] = useState('')
   const [uploading, setUploading] = useState(false)
   const [addingVideo, setAddingVideo] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
-  const fileInputRef = useRef(null)
+  const [imageModalOpen, setImageModalOpen] = useState(false)
+  const [videoModalOpen, setVideoModalOpen] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(null) // { id, type }
 
   const total = images.length + videos.length
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (total >= MAX_ITEMS) return
-
+  const handleImageUpload = async (file) => {
+    if (!file || total >= MAX_ITEMS) return
     setUploading(true)
     try {
       const res = await galleryService.uploadImage(file)
@@ -57,6 +54,7 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
         const updated = [...images, data.item]
         setImages(updated)
         onGalleryChange?.({ images: updated, videos })
+        setImageModalOpen(false)
       } else {
         alert(data.message || 'Greška prilikom otpremanja slike.')
       }
@@ -64,47 +62,41 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
       alert('Greška pri konekciji.')
     } finally {
       setUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
-  const handleAddVideo = async () => {
-    setVideoError('')
-    const trimmed = videoUrl.trim()
-    if (!trimmed) return
-
-    const youtubePattern = /^https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w\-]+/
-    if (!youtubePattern.test(trimmed)) {
-      setVideoError('Unesite validan javni YouTube link.')
-      return
-    }
-
-    if (total >= MAX_ITEMS) {
-      setVideoError('Dostigli ste maksimalan broj medija (20).')
-      return
-    }
-
+  const handleAddVideo = async (url) => {
+    if (total >= MAX_ITEMS) return
     setAddingVideo(true)
     try {
-      const res = await galleryService.addVideo(trimmed)
+      const res = await galleryService.addVideo(url)
       const data = await res.json()
       if (data.success && data.item) {
         const updated = [...videos, data.item]
         setVideos(updated)
-        setVideoUrl('')
         onGalleryChange?.({ images, videos: updated })
+        setVideoModalOpen(false)
       } else {
-        setVideoError(data.message || 'Greška.')
+        alert(data.message || 'Greška.')
       }
     } catch {
-      setVideoError('Greška pri konekciji.')
+      alert('Greška pri konekciji.')
     } finally {
       setAddingVideo(false)
     }
   }
 
-  const handleDelete = async (id, type) => {
+  // Otvara confirm modal umesto direktnog brisanja
+  const handleDelete = (id, type) => {
+    setDeleteConfirm({ id, type })
+  }
+
+  // Poziva se kada korisnik potvrdi brisanje
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return
+    const { id, type } = deleteConfirm
     setDeletingId(id)
+    setDeleteConfirm(null)
     try {
       const res = await galleryService.deleteItem(id)
       if (res.ok) {
@@ -126,36 +118,19 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
   }
 
   return (
-    <div className="w-full pt-24 grid gap-24" style={{ maxWidth: '1400px' }}>
+    <div className="w-full pt-10 grid gap-14" style={{ maxWidth: '1400px' }}>
       {/* ── Fotografije ─────────────────────────────────────── */}
       <div>
-        <div className="flex items-center justify-between mb-8">
-          <span className="edit-profile-subtitle">Galerija fotografija</span>
+        <div className="flex items-center justify-between mb-4">
+          <span className="edit-profile-subtitle">
+            {editable ? 'Galerija' : 'Galerija fotografija'}
+          </span>
           {editable && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-[#261A54]/60">
-                {total}/{MAX_ITEMS} medija
-              </span>
-              <button
-                type="button"
-                disabled={uploading || total >= MAX_ITEMS}
-                onClick={() => fileInputRef.current?.click()}
-                className="bg-[#56C4CF] hover:opacity-90 disabled:opacity-40 text-white px-5 py-2 rounded-full text-sm font-semibold transition"
-              >
-                {uploading ? 'Otpremanje...' : '+ Dodaj fotografiju'}
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/gif,image/webp"
-                className="hidden"
-                onChange={handleImageUpload}
-              />
-            </div>
+            <span className="text-sm text-[#261A54]/50">{total}/{MAX_ITEMS} medija</span>
           )}
         </div>
 
-        <div className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-4">
+        <div className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-2">
           {images.map((img) => (
             <div key={img.id} className="relative group rounded-[20px] overflow-hidden aspect-square bg-gray-100">
               <Image
@@ -179,7 +154,31 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
             </div>
           ))}
 
-          {images.length === 0 && (
+          {/* Upload slot kao grid ćelija (edit mode) */}
+          {editable && total < MAX_ITEMS && (
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => setImageModalOpen(true)}
+              className="rounded-[20px] aspect-square flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#261A54]/20 text-[#261A54]/50 hover:border-[#56C4CF] hover:text-[#56C4CF] transition disabled:opacity-40"
+            >
+              {uploading ? (
+                <span className="text-xs">Otpremanje...</span>
+              ) : (
+                <>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span className="text-xs font-medium text-center leading-tight px-2">Dodajte još fotografija</span>
+                  <span className="text-[11px] opacity-70">Prevucite ovde</span>
+                </>
+              )}
+            </button>
+          )}
+
+          {images.length === 0 && !editable && (
             <div
               className="rounded-[20px] opacity-60 aspect-square flex items-center justify-center col-span-1"
               style={{ border: '1px dashed #261A64', minHeight: '140px' }}
@@ -189,48 +188,20 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
           )}
         </div>
 
-        {images.length > 4 && (
-          <span className="edit-profile-about flex justify-end text-sm text-[#261A54]/60 mt-2">
-            Prikazano {images.length} fotografija
-          </span>
+
+        {images.length > 0 && (
+          <span className="edit-profile-about flex justify-end mt-2">Vidi više...</span>
         )}
       </div>
 
       {/* ── Video galerija ──────────────────────────────────── */}
       <div>
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <span className="edit-profile-subtitle">Video galerija</span>
         </div>
 
-        {editable && (
-          <div className="flex flex-col gap-2 mb-6">
-            <div className="flex gap-3">
-              <input
-                type="url"
-                value={videoUrl}
-                onChange={(e) => { setVideoUrl(e.target.value); setVideoError('') }}
-                placeholder="https://youtube.com/watch?v=..."
-                className="flex-1 border border-[#d1d5db] rounded-full px-4 py-2 text-sm text-[#261A54] outline-none focus:border-[#56C4CF] transition"
-              />
-              <button
-                type="button"
-                disabled={addingVideo || !videoUrl.trim() || total >= MAX_ITEMS}
-                onClick={handleAddVideo}
-                className="bg-[#56C4CF] hover:opacity-90 disabled:opacity-40 text-white px-5 py-2 rounded-full text-sm font-semibold transition whitespace-nowrap"
-              >
-                {addingVideo ? 'Dodavanje...' : '+ Dodaj video'}
-              </button>
-            </div>
-            {videoError && (
-              <p className="text-xs text-[#EC4923] pl-4">{videoError}</p>
-            )}
-            <p className="text-xs text-[#261A54]/50 pl-4">
-              Dodajte javni YouTube link (npr. youtube.com/watch?v=ID ili youtu.be/ID)
-            </p>
-          </div>
-        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-2">
           {videos.map((vid) => {
             const ytId = getYouTubeId(vid.url)
             return (
@@ -268,7 +239,22 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
             )
           })}
 
-          {videos.length === 0 && (
+          {/* Upload slot za video (edit mode) */}
+          {editable && total < MAX_ITEMS && (
+            <div
+              className="rounded-[20px] aspect-video flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#261A54]/20 text-[#261A54]/50 cursor-pointer hover:border-[#56C4CF] hover:text-[#56C4CF] transition"
+              onClick={() => setVideoModalOpen(true)}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <span className="text-xs font-medium text-center leading-tight px-2">Dodajte još video snimaka</span>
+            </div>
+          )}
+
+          {videos.length === 0 && !editable && (
             <div
               className="rounded-[20px] opacity-60 aspect-video flex items-center justify-center col-span-1"
               style={{ border: '1px dashed #261A64', minHeight: '120px' }}
@@ -277,7 +263,123 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
             </div>
           )}
         </div>
+
+        {videos.length > 0 && (
+          <span className="edit-profile-about flex justify-end mt-2">Vidi više...</span>
+        )}
       </div>
+
+      {/* Confirm brisanje modal */}
+      {deleteConfirm && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 400,
+            background: 'rgba(38,26,84,0.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
+          }}
+          onClick={() => setDeleteConfirm(null)}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(145deg, #deedf7 0%, #f8fcff 40%, #ffffff 60%, #eef5fb 100%)',
+              borderRadius: '28px',
+              width: '100%',
+              maxWidth: '680px',
+              padding: '64px 48px 56px',
+              position: 'relative',
+              boxShadow: '0 16px 60px rgba(0,0,0,0.18)',
+              textAlign: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setDeleteConfirm(null)}
+              style={{
+                position: 'absolute', top: '20px', right: '24px',
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: '22px', color: '#261A54', opacity: 0.6, lineHeight: 1,
+              }}
+              aria-label="Zatvori"
+            >
+              ✕
+            </button>
+
+            <p style={{
+              fontSize: '22px', fontWeight: '700', color: '#261A54',
+              marginBottom: '40px', lineHeight: '1.4',
+            }}>
+              Da li želite da obrišete fotografiju/video snimak?
+            </p>
+
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                disabled={!!deletingId}
+                style={{
+                  height: '52px', padding: '0 40px',
+                  borderRadius: '30px', border: 'none',
+                  background: '#56C4CF', color: '#ffffff',
+                  fontSize: '16px', fontWeight: '600',
+                  cursor: deletingId ? 'not-allowed' : 'pointer',
+                  opacity: deletingId ? 0.6 : 1,
+                  transition: 'opacity 0.2s',
+                }}
+              >
+                {deletingId ? 'Brisanje...' : 'Da, želim'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(null)}
+                disabled={!!deletingId}
+                style={{
+                  height: '52px', padding: '0 40px',
+                  borderRadius: '30px', border: 'none',
+                  background: '#EC4923', color: '#ffffff',
+                  fontSize: '16px', fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s',
+                }}
+              >
+                Ne želim
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modali za upload */}
+      <MediaUploadModal
+        isOpen={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        mode="image"
+        onFileUpload={handleImageUpload}
+        uploading={uploading}
+      />
+      <MediaUploadModal
+        isOpen={videoModalOpen}
+        onClose={() => setVideoModalOpen(false)}
+        mode="video"
+        onFileUpload={async (file) => {
+          // Video file upload — ako postoji servis za to
+          setUploading(true)
+          try {
+            const res = await galleryService.uploadImage(file) // ili uploadVideo ako postoji
+            const data = await res.json()
+            if (data.success && data.item) {
+              const updated = [...videos, data.item]
+              setVideos(updated)
+              onGalleryChange?.({ images, videos: updated })
+              setVideoModalOpen(false)
+            }
+          } catch { /* silent */ } finally { setUploading(false) }
+        }}
+        onVideoUrl={handleAddVideo}
+        uploading={uploading}
+        addingVideo={addingVideo}
+      />
     </div>
   )
 }

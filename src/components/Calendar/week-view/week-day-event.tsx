@@ -72,8 +72,8 @@ export const WeekDayEvent: React.FC<WeekDayEventProps> = ({
       />}
       <h1 className="text-white text-xs">
         {`${event.title}, 
-        ${format(event.start_date, "h:mm a")} - 
-        ${format(event.end_date, "h:mm a")}`}
+        ${format(event.start_date, "HH:mm")} - 
+        ${format(event.end_date, "HH:mm")}`}
       </h1>
     </div>
   );

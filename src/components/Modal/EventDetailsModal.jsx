@@ -67,20 +67,20 @@ const EventDetailsModal = ({
                 <button
                   type="button"
                   onClick={modalOnClose}
-                  className="absolute top-4 right-4 z-20 text-[#261A54] text-2xl font-bold w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition"
+                  className="absolute top-5 right-6 z-20 text-[#555] text-xl font-light w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 transition"
                   aria-label="Zatvori"
                 >
-                  ×
+                  ✕
                 </button>
 
                 {/* Tekst */}
                 <div className="flex flex-col gap-4 pr-8">
-                  <h2 className="text-[#261A54] text-2xl md:text-3xl font-bold leading-snug">
+                  <h2 className="text-[#261A54] font-bold leading-snug" style={{ fontSize: '24px' }}>
                     {event?.name || event?.title}
                   </h2>
 
                   {description && (
-                    <p className="text-[#555] text-sm leading-relaxed">
+                    <p className="text-[#555] leading-relaxed" style={{ fontSize: '15px' }}>
                       {description}
                     </p>
                   )}
@@ -92,8 +92,16 @@ const EventDetailsModal = ({
                     <button
                       type="button"
                       onClick={() => onReserve?.()}
-                      className="inline-flex items-center justify-center px-6 py-2.5 rounded-full text-white text-sm font-semibold transition hover:opacity-90"
-                      style={{ backgroundColor: '#EC4923' }}
+                      style={{
+                        backgroundColor: '#EC4923',
+                        borderRadius: '30px',
+                        padding: '10px 28px',
+                        color: '#ffffff',
+                        fontWeight: '600',
+                        fontSize: '15px',
+                        border: 'none',
+                        cursor: 'pointer',
+                      }}
                     >
                       {reserveLabel}
                     </button>

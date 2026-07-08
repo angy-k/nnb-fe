@@ -64,7 +64,7 @@ const HomeBlogSection = () => {
   const limitedBlogs = blogs.slice(0, 3)
 
   return (
-    <div className="w-full blogs-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
+    <div className="w-full blogs-container pt-32 grid place-items-center pb-64 z-1">
       <div className="w-full" style={{ maxWidth: '1400px' }}>
         <div className="flex items-center justify-between gap-6">
           <span className="blog-title">Blog</span>

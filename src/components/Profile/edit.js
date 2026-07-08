@@ -96,6 +96,7 @@ const ProfileEdit = () => {
   const [companyAddress, setCompanyAddress] = useState(user?.legal_entity?.company_address || '')
   const [mb, setMb] = useState(user?.legal_entity?.mb || '')
   const [pib, setPib] = useState(user?.legal_entity?.pib || '')
+  const [isSefUser, setIsSefUser] = useState(!!user?.legal_entity?.is_sef_user)
 
   // Social
   const [facebook, setFacebook] = useState(user?.facebook || '')
@@ -121,6 +122,7 @@ const ProfileEdit = () => {
       setCompanyAddress(prev => prev || user.legal_entity?.company_address || '')
       setMb(prev => prev || user.legal_entity?.mb || '')
       setPib(prev => prev || user.legal_entity?.pib || '')
+      setIsSefUser(!!user.legal_entity?.is_sef_user)
       setFacebook(prev => prev || user.facebook || '')
       setInstagram(prev => prev || user.instagram || '')
     }
@@ -172,6 +174,7 @@ const ProfileEdit = () => {
       if (companyAddress !== (user?.legal_entity?.company_address || '')) payload.company_address = companyAddress
       if (mb !== (user?.legal_entity?.mb || '')) payload.mb = mb
       if (pib !== (user?.legal_entity?.pib || '')) payload.pib = pib
+      if (isSefUser !== !!user?.legal_entity?.is_sef_user) payload.is_sef_user = isSefUser
       if (facebook !== (user?.facebook || '')) payload.facebook = facebook
       if (instagram !== (user?.instagram || '')) payload.instagram = instagram
 
@@ -224,13 +227,13 @@ const ProfileEdit = () => {
           {/* Avatar + brand name */}
           <div className="flex items-end gap-6">
             {/* Avatar with upload overlay */}
-            <div className="relative flex-shrink-0 group z-10" style={{ marginBottom: '-36px' }}>
+            <div className="relative flex-shrink-0 group z-10" style={{ marginBottom: '-56px' }}>
               <Avatar
                 isBordered
                 src={avatarSrc || undefined}
                 name={!avatarSrc ? (user?.name || 'U') : undefined}
                 radius="full"
-                className="w-[100px] h-[100px] text-xl bg-[#3d2f7a] border-2 border-violet-300/50"
+                className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
               />
               <label
                 htmlFor="avatar-upload"
@@ -295,13 +298,13 @@ const ProfileEdit = () => {
       </div>
 
       {/* ── Forma ── */}
-      <div className="w-full bg-[#f0f0f0] pb-24 overflow-hidden" style={{ paddingTop: '36px' }}>
+      <div className="w-full bg-[#f5f5f5] pb-24 overflow-hidden" style={{ paddingTop: '56px' }}>
         {error && (
           <div className="max-w-[1400px] mx-auto px-6 pt-4">
             <p className="text-sm rounded-lg px-4 py-2 bg-red-50" style={{ color: '#EC4923' }}>{error}</p>
           </div>
         )}
-        <div className="max-w-[1400px] mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div className="max-w-[1400px] mx-auto px-6 pt-8 pb-4 grid grid-cols-1 md:grid-cols-2 gap-8">
 
           {/* Podaci o vlasniku */}
           <Section title="Podaci o vlasniku">
@@ -402,6 +405,30 @@ const ProfileEdit = () => {
                 return null
               }}
             />
+            {/* SEF checkbox — pojavljuje se samo ako korisnik ima pravno lice */}
+            {(companyName || mb || pib) && (
+              <label
+                className="flex items-center gap-3 cursor-pointer"
+                onClick={() => setIsSefUser(v => !v)}
+              >
+                <div
+                  className="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+                  style={{
+                    borderColor: isSefUser ? '#56C4CF' : '#d1d5db',
+                    backgroundColor: isSefUser ? '#56C4CF' : 'transparent',
+                  }}
+                >
+                  {isSefUser && (
+                    <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+                      <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </div>
+                <span className="text-sm text-[#261A54] select-none">
+                  Korisnik sam SEF-a (Sistem elektronskih faktura)
+                </span>
+              </label>
+            )}
           </Section>
         </div>
 

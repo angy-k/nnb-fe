@@ -82,10 +82,10 @@ const HomeCalendarSection = () => {
   }, [])
 
   return (
-    <div className="w-full bg-[#f0f0f0]">
+    <div className="w-full">
       <div className="w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto">
         <div
-          className="w-full pt-24"
+          className="w-full pt-32"
           style={{ width: '100%', height: '100%', maxWidth: '1400px' }}
         >
           <span className="our-team-title">Kalendar događaja</span>

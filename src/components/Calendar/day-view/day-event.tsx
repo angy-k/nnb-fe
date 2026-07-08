@@ -66,24 +66,25 @@ export const DayEvent: React.FC<DayEventProps> = ({
   
   return (
     <div
-      style={definedStyle}
+      style={{ ...definedStyle, ...(event.isPast ? { opacity: 0.35, filter: 'grayscale(0.5) blur(1px)' } : {}) }}
       className={cn(
-        "border border-white rounded cursor-pointer absolute flex gap-2",
-        Number(event.id)%2 ? 'bg-[#56C4CF]' : 'bg-[#261A54]',
+        "border border-white rounded absolute flex gap-2",
+        event.isPast ? 'cursor-default' : 'cursor-pointer',
+        event.variant === 'startup' ? 'bg-[#56C4CF]' : 'bg-[#261A54]',
         showLargeIcon ? 'flex-col' : 'items-center'
       )}
-      onClick={() => onEventClick?.(event.id)}
+      onClick={() => { if (!event.isPast) onEventClick?.(event.id) }}
     >
       {showLargeIcon ? (
         <Image
-          src={Number(event.id)%2 ? SingleEventLight : SingleEventDark}
+          src={event.variant === 'startup' ? SingleEventLight : SingleEventDark}
           width={126}
           height={52}
           alt='single-event'
         />
       ) : (
         <Image
-          src={Number(event.id)%2 ? SingleEventLight : SingleEventDark}
+          src={event.variant === 'startup' ? SingleEventLight : SingleEventDark}
           width={20}
           height={20}
           alt='single-event'
@@ -91,8 +92,8 @@ export const DayEvent: React.FC<DayEventProps> = ({
       )}
       <h1 className={cn("text-white text-xs", definedStyle.height > 55 ? 'self-center' : '')}>
         {`${event.title}, 
-        ${format(event.start_date, "h:mm a")} - 
-        ${format(event.end_date, "h:mm a")}`}
+        ${format(event.start_date, "HH:mm")} - 
+        ${format(event.end_date, "HH:mm")}`}
       </h1>
     </div>
   );

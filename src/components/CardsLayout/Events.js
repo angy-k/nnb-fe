@@ -268,10 +268,7 @@ const Events = ({
       const data = contentType.includes('application/json') ? await res.json() : null
 
       if (res.ok && data?.success) {
-        setReservationSuccess('Prijava je uspešno poslata! Uskoro ćete dobiti potvrdu.')
-        setTimeout(() => {
-          closeAllModals()
-        }, 1200)
+        setReservationSuccess('Prijava je uspešno poslata!')
         return
       }
 
@@ -352,7 +349,6 @@ const Events = ({
                 imageAltText={`Događaj - ${event.name || event.title}`}
                 sectionType={'event'}
                 title={event.name || event.title}
-                creationDate={event.dateTime || event.createdAt}
                 buttonAction={() => goToSingleEvent(event)}
                 buttonText="Detaljnije"
               />
@@ -406,13 +402,14 @@ const Events = ({
         onSubmit={submitReservationOptions}
         submitLabel="Prijavite se"
         timeRemaining={sessionSeconds}
+        termsPdfUrl={selectedEvent?.termsPdfUrl || null}
       />
 
       <BoothReservationConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={cancelReservation}
-        costs={confirmCosts}
-        selections={{ electricityOption, marketingOption }}
+        title="Da li želite da pošaljete prijavu?"
+        eventName={(selectedEvent?.title || selectedEvent?.name || '').toString()}
         onConfirm={confirmReservation}
         onCancel={cancelReservation}
         isLoading={isSubmittingReservation}

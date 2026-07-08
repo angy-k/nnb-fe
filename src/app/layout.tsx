@@ -6,6 +6,7 @@ import Footer from '@/components/Footer'
 import GoogleAnalytics from '@/components/GoogleAnalytics/GoogleAnalytics'
 import Providers from './providers'
 import WelcomeModal from '@/components/WelcomeModal'
+import ProfileCompletionModal from '@/components/ProfileCompletionModal'
 
 // const opensans = OpenSans({ subsets: ['latin'] })
 
@@ -64,6 +65,7 @@ export default function RootLayout({
             <Footer />
           </div>
           <WelcomeModal />
+          <ProfileCompletionModal />
         </Providers>
         
       </body>

@@ -13,6 +13,9 @@ const MyPreviousReservationsComponent = () => {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const PER_PAGE = 5
 
   const formatDate = (dateStr) => {
     if (!dateStr) return ''
@@ -36,7 +39,7 @@ const MyPreviousReservationsComponent = () => {
         setLoading(true)
         setError(null)
 
-        const res = await applicationService.getMyApplications({ past: true, active: false })
+        const res = await applicationService.getMyApplications({ past: true, active: false, page, perPage: PER_PAGE })
         const contentType = res.headers.get('content-type') || ''
         const data = contentType.includes('application/json') ? await res.json() : null
 
@@ -70,7 +73,12 @@ const MyPreviousReservationsComponent = () => {
           })
           .filter((x) => x?.title)
 
-        if (isActive) setEvents(mapped)
+        if (isActive) {
+          setEvents(mapped)
+          // Podrška za Laravel paginaciju (data.meta.last_page) ili custom total
+          const lastPage = data?.meta?.last_page || data?.last_page || Math.ceil((data?.total || items.length) / PER_PAGE) || 1
+          setTotalPages(Math.max(1, lastPage))
+        }
       } catch (e) {
         if (isActive) setError('Greška prilikom učitavanja rezervacija.')
         if (isActive) setEvents([])
@@ -80,10 +88,8 @@ const MyPreviousReservationsComponent = () => {
     }
 
     load()
-    return () => {
-      isActive = false
-    }
-  }, [])
+    return () => { isActive = false }
+  }, [page])
 
   const avatarSrc = user?.profile_photo_url || null
 
@@ -93,13 +99,13 @@ const MyPreviousReservationsComponent = () => {
       <div className="w-full bg-[#261A54]" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
         <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6">
           <div className="flex items-end gap-6">
-            <div className="relative z-10 flex-shrink-0" style={{ marginBottom: '-36px' }}>
+            <div className="relative z-10 flex-shrink-0" style={{ marginBottom: '-56px' }}>
               <Avatar
                 isBordered
                 src={avatarSrc || undefined}
                 name={!avatarSrc ? (user?.name || 'U') : undefined}
                 radius="full"
-                className="w-[100px] h-[100px] text-xl bg-[#3d2f7a] border-2 border-violet-300/50"
+                className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
               />
             </div>
             <div className="flex flex-col gap-1 pb-2">
@@ -122,7 +128,7 @@ const MyPreviousReservationsComponent = () => {
       </div>
 
       {/* Sivi sadržaj */}
-      <div className="w-full bg-[#f0f0f0]" style={{ paddingTop: '70px', paddingBottom: '96px' }}>
+      <div className="w-full bg-[#f5f5f5]" style={{ paddingTop: '70px', paddingBottom: '96px' }}>
         <div className="max-w-[1400px] mx-auto px-6">
           {loading && (
             <div className="pt-6 text-[#261A54]">Učitavanje...</div>
@@ -133,7 +139,14 @@ const MyPreviousReservationsComponent = () => {
           {!loading && !error && events.length === 0 && (
             <div className="pt-6 text-[#261A54]">Nemate prethodnih rezervacija.</div>
           )}
-          {!loading && !error && events.length > 0 && <MyPreviousReservations events={events} />}
+          {!loading && !error && events.length > 0 && (
+            <MyPreviousReservations
+              events={events}
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          )}
         </div>
       </div>
     </>

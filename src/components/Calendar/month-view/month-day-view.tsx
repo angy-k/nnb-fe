@@ -62,9 +62,10 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                onEventClick?.(event.id);
+                if (!event.isPast) onEventClick?.(event.id);
               }}
-              className="inline-flex items-center justify-center rounded-full hover:opacity-80 transition-opacity"
+              className="inline-flex items-center justify-center rounded-full transition-opacity"
+              style={event.isPast ? { opacity: 0.35, cursor: 'default', filter: 'grayscale(0.5) blur(1px)' } : { cursor: 'pointer' }}
               aria-label={isStartup ? 'NNB Startup event' : 'NNB event'}
             >
               <Image

@@ -9,11 +9,82 @@ import { useState, useEffect } from 'react';
 import blogService from '@/services/blogService';
 
 
+// ── Pagination ─────────────────────────────────────────────────────────────────
+const BlogPagination = ({ page, totalPages, onPageChange }) => {
+  if (totalPages <= 1) return null
+
+  const getPages = () => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1)
+    }
+    const around = [page - 1, page, page + 1].filter(p => p > 3 && p < totalPages - 1)
+    const core = Array.from(new Set([1, 2, 3, ...around, totalPages - 1, totalPages])).sort((a, b) => a - b)
+    const result = []
+    let prev = null
+    for (const p of core) {
+      if (prev && p - prev > 1) result.push('...')
+      result.push(p)
+      prev = p
+    }
+    return result
+  }
+
+  const btnBase = {
+    minWidth: '36px', height: '36px', borderRadius: '50%', border: 'none',
+    fontSize: '15px', fontWeight: '500', cursor: 'pointer', transition: 'background 0.15s',
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', paddingTop: '48px' }}>
+      <button
+        type="button"
+        onClick={() => onPageChange(page - 1)}
+        disabled={page === 1}
+        style={{ ...btnBase, background: 'transparent', color: page === 1 ? '#ccc' : '#261A54', fontSize: '20px' }}
+        aria-label="Prethodna"
+      >
+        ‹
+      </button>
+
+      {getPages().map((p, i) =>
+        p === '...'
+          ? <span key={`ellipsis-${i}`} style={{ padding: '0 4px', color: '#261A54' }}>...</span>
+          : (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onPageChange(p)}
+              style={{
+                ...btnBase,
+                background: p === page ? '#261A54' : 'transparent',
+                color: p === page ? '#ffffff' : '#261A54',
+              }}
+            >
+              {p}
+            </button>
+          )
+      )}
+
+      <button
+        type="button"
+        onClick={() => onPageChange(page + 1)}
+        disabled={page === totalPages}
+        style={{ ...btnBase, background: 'transparent', color: page === totalPages ? '#ccc' : '#261A54', fontSize: '20px' }}
+        aria-label="Sledeća"
+      >
+        ›
+      </button>
+    </div>
+  )
+}
+
+
 const Blogs = ({
   title,
   numberForDisplay,
   blogs: propBlogs,
-  pagination = false, 
+  pagination = false,
   sectionType = 'blog',
   showHero = true
 }) => {
@@ -21,9 +92,11 @@ const Blogs = ({
   const [blogs, setBlogs] = useState(propBlogs || [])
   const [loading, setLoading] = useState(!propBlogs)
   const [error, setError] = useState(null)
+  const [page, setPage] = useState(1)
+
+  const POSTS_PER_PAGE = numberForDisplay || 6
 
   useEffect(() => {
-    // Only fetch from API if no blogs were passed as props
     if (!propBlogs) {
       fetchBlogs()
     }
@@ -34,7 +107,7 @@ const Blogs = ({
       setLoading(true)
       setError(null)
       const response = await blogService.getBlogs()
-      
+
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
@@ -44,6 +117,7 @@ const Blogs = ({
               ? data.data.data
               : []
           setBlogs(items)
+          setPage(1)
         } else {
           throw new Error(data.message || 'Failed to fetch blogs')
         }
@@ -60,7 +134,6 @@ const Blogs = ({
   }
 
   function goToSingleBlog(blog) {
-    console.log('preview single blog post: ', blog.title)
     router.push(`/blog/${formatTitleForUri(blog.title)}`)
   }
 
@@ -68,8 +141,11 @@ const Blogs = ({
     console.log('preview all blog posts')
   }
 
-  let limitedBlogs = numberForDisplay ? blogs.slice(0,numberForDisplay) : blogs
-  
+  const totalPages = pagination ? Math.ceil(blogs.length / POSTS_PER_PAGE) : 1
+  const limitedBlogs = pagination
+    ? blogs.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE)
+    : (numberForDisplay ? blogs.slice(0, numberForDisplay) : blogs)
+
   if (loading) {
     return (
       <>
@@ -85,7 +161,7 @@ const Blogs = ({
 
   return (
     <>
-      {showHero && <PageHeroSection 
+      {showHero && <PageHeroSection
         title={`Blog`}
       />}
       <div className="w-full blogs-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
@@ -131,9 +207,19 @@ const Blogs = ({
             </div>
           ))}
         </div>
-        {/* pagination */}
-        {(pagination && blogs.length > 6) && <Divider className="section-divider w-1440" style={{marginTop: '35px'}}/>}
-        {/* {(pagination || blogs.length > 6) && <PaginationComponent />} */}
+        {pagination && (
+          <>
+            <Divider className="section-divider w-1440" style={{marginTop: '35px'}}/>
+            <BlogPagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(p) => {
+                setPage(p)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+            />
+          </>
+        )}
       </div>
     </>
   )

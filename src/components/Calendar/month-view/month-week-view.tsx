@@ -57,7 +57,7 @@ export const MonthWeekView: React.FC<MonthWeekViewProps> = ({
           const variant = isToday(day) ? "today" : "default";
           const size = isStartOfMonth ? "startOfMonth" : "default";
           const text = isStartOfMonth
-            ? format(day, "d, MMM")
+            ? format(day, "d. MMM")
             : format(day, "d");
 
           const className = cn(dayLabelVariants({ variant, size }));
