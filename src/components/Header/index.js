@@ -192,11 +192,7 @@ const Header = ({bgColor = '#261A54'}) => {
                     }
                     if (key === 'logout') {
                       await authService.logout()
-                      try {
-                        await mutate()
-                      } catch {
-                        // Expected: getUser() throws 401 after successful logout
-                      }
+                      mutate(undefined, { revalidate: false })
                       router.push('/')
                     }
                   }}

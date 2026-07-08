@@ -21,7 +21,7 @@ const NotFoundPage = () => {
       {/* Logo */}
       <div style={{ paddingTop: '48px', paddingBottom: '0' }}>
         <Image
-          src="/logo-light.svg"
+          src="/logo-dark.svg"
           alt="Novosadski noćni bazar"
           width={220}
           height={70}
