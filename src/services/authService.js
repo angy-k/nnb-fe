@@ -52,7 +52,12 @@ const forgotPassword = async values => {
 }
 
 const logout = async () => {
-  await post('/logout', {}, { withCSRF: true })
+  let res = await post('/logout', {}, { withCSRF: true })
+  // If CSRF token mismatch (e.g. after OAuth redirect), refresh and retry once
+  if (res && res.status === 419) {
+    res = await post('/logout', {}, { withCSRF: true })
+  }
+  // 401 means the session is already invalid — treat as logged out
   clearXSRFToken()
 }
 
