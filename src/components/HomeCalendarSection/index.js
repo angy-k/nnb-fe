@@ -58,16 +58,24 @@ const HomeCalendarSection = () => {
             ])
 
             if (!startDate) return null
-            if (startDate < today) return null
+
+            // Ako je admin eksplicitno deaktivirao događaj — ne prikazuj ga
+            const isActiveFromApi = typeof item?.isActive === 'boolean' ? item.isActive : null
+            if (isActiveFromApi === false) return null
 
             const id = (item?.id ?? '').toString()
             if (!id) return null
 
+            const title = (item?.title ?? item?.name ?? '').toString()
+            const isPast = startDate < today
+
             return {
               id,
-              title: (item?.title ?? item?.name ?? '').toString(),
+              title,
               start_date: startDate,
               end_date: add(startDate, { hours: 1 }),
+              variant: /startup/i.test(title) ? 'startup' : 'regular',
+              isPast,
             }
           })
           .filter(Boolean)
