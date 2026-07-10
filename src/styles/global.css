@@ -287,7 +287,7 @@ h6 {
   gap: 0px;
   border-radius: 30.5px;
   border: 1px solid #ffffff;
-  opacity: 0px;
+
   .text {
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
@@ -307,7 +307,7 @@ h6 {
   gap: 0px;
   border-radius: 36.5px;
   border: 1px solid #FFFFFF;
-  opacity: 0px;
+
   background: #261A54;
   box-shadow: 0px 0px 15px 0px #56C4CF;
   .text {
@@ -321,7 +321,7 @@ h6 {
   gap: 0px;
   border-radius: 36.5px;
   border: 1px solid #56C4CF;
-  opacity: 0px;
+
   background: #56C4CF;
   .text {
       color: #FFFFFF;
@@ -335,7 +335,6 @@ h6 {
 .button-outlined-light {
   background: #261A54;
   border: 1px solid #ffffff;
-  opacity: 0px;
   .text {
       color: #ffffff;
   }
@@ -395,7 +394,7 @@ h6 {
 .button-outlined-white {
   border: 1px solid #ffffff;
   background-color: #FFFFFF;
-  opacity: 0px;
+
   .text {
       color: #261A54;
   }
@@ -465,7 +464,7 @@ h6 {
   width: 204px;
   height: 204px;
   gap: 0px;
-  opacity: 0px;
+
 
   &__orange {
       background: #F18020;
@@ -492,7 +491,7 @@ h6 {
   gap: 0px;
   border-radius: 102px 0px 0px 0px;
   border: 1px  solid #ffffff;
-  opacity: 0px;
+
   &__orange:hover {
     background-color: #F18020;
     color: #261A54;
@@ -928,7 +927,7 @@ h6 {
   width: 204px;
   height: 204px;
   gap: 0px;
-  opacity: 0px;
+
 
   &__orange {
       background: #F18020;
@@ -955,7 +954,7 @@ h6 {
   gap: 0px;
   border-radius: 102px 0px 0px 0px;
   border: 1px  solid #ffffff;
-  opacity: 0px;
+
   &__orange:hover {
     background-color: #F18020;
     color: #261A54;
@@ -1578,7 +1577,7 @@ h6 {
 .calendar-buttons {
   border-radius: 24px;
   border: 1px solid #1B1B1B;
-  opacity: 0px;
+
   gap: 0;
   .buttons-divider {
     background: #1B1B1B;
@@ -1859,7 +1858,7 @@ h6 {
     border: 1px solid #56C4CF;
     background-color: #56C4CF;
     border-radius: 36.5px;
-    opacity: 0px;
+  
     color: #ffffff;
   
     :active,
