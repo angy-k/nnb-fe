@@ -365,7 +365,7 @@ const Events = ({
         isOpen={isModalOpen}
         onClose={closeModal}
         event={selectedEvent}
-        showReserveButton={!user || canApply(selectedEvent)}
+        showReserveButton={!!user && canApply(selectedEvent)}
         reserveLabel="Rezerviši mesto"
         onReserve={() => {
           ;(async () => {

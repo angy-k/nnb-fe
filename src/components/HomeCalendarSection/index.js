@@ -1,15 +1,25 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { add, parse, startOfToday } from 'date-fns'
+import { add, parse, startOfToday, isSameDay } from 'date-fns'
 import { Divider } from '@nextui-org/divider'
 
 import { Calendar } from '@/components/Calendar'
 import UpcommingEvents from '@/components/UpcommingEvents'
+import EventDetailsModal from '@/components/Modal/EventDetailsModal'
+import DayEventsModal from '@/components/Modal/DayEventsModal'
 import eventService from '@/services/eventService'
+import useUser from '@/data/use-user'
 
 const HomeCalendarSection = () => {
+  const { user } = useUser()
   const [events, setEvents] = useState([])
+  const [eventDetailsById, setEventDetailsById] = useState({})
+
+  const [selectedEventId, setSelectedEventId] = useState(null)
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false)
+  const [selectedDay, setSelectedDay] = useState(null)
+  const [isDayModalOpen, setIsDayModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -45,6 +55,7 @@ const HomeCalendarSection = () => {
           return null
         }
 
+        const detailsMap = {}
         const mapped = items
           .map((item) => {
             const rawStart = (item?.dateTime ?? '').toString().trim()
@@ -59,12 +70,13 @@ const HomeCalendarSection = () => {
 
             if (!startDate) return null
 
-            // Ako je admin eksplicitno deaktivirao događaj — ne prikazuj ga
             const isActiveFromApi = typeof item?.isActive === 'boolean' ? item.isActive : null
             if (isActiveFromApi === false) return null
 
             const id = (item?.id ?? '').toString()
             if (!id) return null
+
+            detailsMap[id] = item
 
             const title = (item?.title ?? item?.name ?? '').toString()
             const isPast = startDate < today
@@ -81,13 +93,51 @@ const HomeCalendarSection = () => {
           .filter(Boolean)
 
         setEvents(mapped)
+        setEventDetailsById(detailsMap)
       } catch (e) {
         setEvents([])
+        setEventDetailsById({})
       }
     }
 
     fetchEvents()
   }, [])
+
+  const selectedEvent = selectedEventId ? eventDetailsById?.[selectedEventId] : null
+
+  const onEventClick = (eventId) => {
+    if (!eventId) return
+    setSelectedEventId(String(eventId))
+    setIsEventModalOpen(true)
+  }
+
+  const onDayClick = (date) => {
+    const dayEvs = events.filter((ev) => isSameDay(ev.start_date, date))
+    if (dayEvs.length === 1) {
+      onEventClick(dayEvs[0].id)
+    } else {
+      setSelectedDay(date)
+      setIsDayModalOpen(true)
+    }
+  }
+
+  const closeEventModal = () => {
+    setIsEventModalOpen(false)
+    setSelectedEventId(null)
+  }
+
+  const handleReserve = () => {
+    closeEventModal()
+    if (!user) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('nnb:open-auth-modal'))
+      }
+    } else {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/kalendar-dogadjaja'
+      }
+    }
+  }
 
   return (
     <div className="w-full">
@@ -101,14 +151,42 @@ const HomeCalendarSection = () => {
         </div>
 
         <div className="hidden md:block lg:block" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
-          <Calendar view={'month'} events={events} />
+          <Calendar view={'month'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
         </div>
         <div className="block md:hidden lg:hidden" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
-          <Calendar view={'day'} events={events} />
+          <Calendar view={'day'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
         </div>
 
         <UpcommingEvents />
       </div>
+
+      <EventDetailsModal
+        isOpen={isEventModalOpen}
+        onClose={closeEventModal}
+        event={selectedEvent}
+        showReserveButton={true}
+        reserveLabel={user ? 'Rezerviši mesto' : 'Postani izlagač'}
+        onReserve={handleReserve}
+      />
+
+      <DayEventsModal
+        isOpen={isDayModalOpen}
+        onClose={() => setIsDayModalOpen(false)}
+        date={selectedDay}
+        events={events}
+        eventDetailsById={eventDetailsById}
+        user={user}
+        isPackageUser={!!user?.active_package}
+        onEventClick={(eventId) => {
+          setIsDayModalOpen(false)
+          onEventClick(eventId)
+        }}
+        onReserve={(eventId) => {
+          setIsDayModalOpen(false)
+          setSelectedEventId(String(eventId))
+          setIsEventModalOpen(true)
+        }}
+      />
     </div>
   )
 }
