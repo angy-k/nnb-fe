@@ -295,10 +295,6 @@ h6 {
     line-height: 24.51px;
     text-align: left;
   }
-  :hover {
-    background-color: #FFFFFF;
-    color: #261A54;
-  }
 }
 
 .button-dark {
@@ -327,7 +323,7 @@ h6 {
       color: #FFFFFF;
   }
 
-  :hover {
+  &:hover {
       background-color: #261A54;
   }
 }
@@ -338,8 +334,8 @@ h6 {
   .text {
       color: #ffffff;
   }
-  :hover,
-  :active {
+  &:hover,
+  &:active {
     background: #FFFFFF;
     border: 1px solid #ffffff;
     .text {
@@ -399,7 +395,7 @@ h6 {
       color: #261A54;
   }
 
-  :hover {
+  &:hover {
       background-color: #FFFFFF;
       color: #261A54;
   }
@@ -412,21 +408,19 @@ h6 {
       color: #FFFFFF;
   }
 
-  :hover {
+  &:hover {
       background-color: #56C4CF;
       border-color: #56C4CF;
   }
 }
 .button-outlined-orange {
   background-color: #EC4923;
-  ;
   border: 1px solid #ffffff;
   .text {
     color: #ffffff;
   }
-  :hover {
+  &:hover {
     background-color: #EC4923;
-    ;
     color: #ffffff;
   }
 }
@@ -1861,8 +1855,8 @@ h6 {
   
     color: #ffffff;
   
-    :active,
-    :hover {
+    &:active,
+    &:hover {
       background-color: #56C4CF;
       color: #ffffff;
     }
