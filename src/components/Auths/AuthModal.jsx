@@ -26,7 +26,7 @@ const loginSchema = Yup.object({
     .min(6, 'Lozinka mora imati najmanje 6 karaktera.')
     .required('Lozinka je obavezna.'),
   terms_accepted: Yup.boolean()
-    .oneOf([true], 'Moraš da prihvatiš uslove korišćenja i politiku privatnosti.'),
+    .oneOf([true], 'Moraš da prihvatiš politiku privatnosti.'),
 })
 
 const registerSchema = Yup.object({
@@ -41,7 +41,7 @@ const registerSchema = Yup.object({
   activity_name:     Yup.string().required('Delatnost je obavezna.'),
   address:           Yup.string().required('Adresa je obavezna.'),
   city:              Yup.string(),
-  terms_accepted:    Yup.boolean().oneOf([true], 'Moraš da prihvatiš uslove korišćenja i politiku privatnosti.'),
+  terms_accepted:    Yup.boolean().oneOf([true], 'Moraš da prihvatiš politiku privatnosti.'),
   company_name:      Yup.string().when('is_legal_entity', {
     is: true, then: s => s.required('Naziv firme je obavezan.'),
   }),
@@ -224,7 +224,11 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
         payload.append('recaptcha_token', (await recaptchaRef.current?.getValue()) || '')
       }
 
-      const res = await authService.registerMultipart(payload)
+      let res = await authService.registerMultipart(payload)
+      // CSRF token mismatch — refresh and retry once
+      if (res && res.status === 419) {
+        res = await authService.registerMultipart(payload)
+      }
       if (res.ok) {
         await mutate()
         onSuccess?.()
@@ -285,8 +289,10 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
               validateOnBlur={true}
               onSubmit={handleLogin}
             >
-              {({ values, setFieldValue }) => (
-                <Form className="w-full">
+              {({ values, setFieldValue }) => {
+                setFieldValueRef.current = setFieldValue
+                return (
+                  <Form className="w-full">
                   <div className="mb-3">
                     <MainTextInput
                       name="email"
@@ -310,7 +316,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                   </div>
 
                   <div className="mb-3">
-                    <label className="flex items-start gap-2 text-gray-700">
+                    <label className="flex items-center gap-2 text-gray-700">
                       <input
                         type="checkbox"
                         name="terms_accepted"
@@ -320,17 +326,6 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                       />
                       <span>
                         Slažem se sa{' '}
-                        <button
-                          type="button"
-                          className="underline text-[#56C4CF]"
-                          onClick={() => {
-                            setLegalDocsType('terms')
-                            onLegalDocsOpen()
-                          }}
-                        >
-                          uslovima korišćenja
-                        </button>{' '}
-                        i{' '}
                         <button
                           type="button"
                           className="underline text-[#56C4CF]"
@@ -374,7 +369,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                   <div className="mt-3 text-center">
                     <button
                       type="button"
-                      className="text-gray-400 underline text-sm"
+                      className="text-[#56C4CF] underline text-sm"
                       onClick={() => {
                         setLegalDocsType('instructions')
                         onLegalDocsOpen()
@@ -384,7 +379,8 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                     </button>
                   </div>
                 </Form>
-              )}
+              )
+            }}
             </Formik>
           </div>
         </div>
@@ -423,7 +419,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
             setFieldValueRef.current = setFieldValue
             return (
               <Form
-                className="w-full h-full flex items-center justify-center overflow-y-auto"
+                className="w-full h-full overflow-y-auto"
                 style={{ background: 'linear-gradient(145deg, #deedf7 0%, #f4faff 30%, #ffffff 50%, #eef5fb 70%, #deedf7 100%)' }}
               >
                 <div className="w-full lg:w-[960px] lg:mx-auto px-6 md:px-12 py-10">
@@ -676,24 +672,16 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
 
                       {/* Terms */}
                       <div>
-                        <label className="flex items-start gap-2 text-[#261A54] text-sm cursor-pointer">
+                        <label className="flex items-center gap-2 text-[#261A54] text-sm cursor-pointer">
                           <input
                             type="checkbox"
                             name="terms_accepted"
-                            className="auth-legal-entity-checkbox mt-0.5"
+                            className="auth-legal-entity-checkbox"
                             checked={!!values.terms_accepted}
                             onChange={e => setFieldValue('terms_accepted', e.target.checked)}
                           />
                           <span>
                             Slažem se sa{' '}
-                            <button
-                              type="button"
-                              className="underline text-[#56C4CF]"
-                              onClick={() => { setLegalDocsType('terms'); onLegalDocsOpen() }}
-                            >
-                              uslovima korišćenja
-                            </button>{' '}
-                            i{' '}
                             <button
                               type="button"
                               className="underline text-[#56C4CF]"
@@ -723,7 +711,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                       <div className="text-center">
                         <button
                           type="button"
-                          className="underline text-gray-400 text-sm"
+                          className="underline text-[#56C4CF] text-sm"
                           onClick={() => { setLegalDocsType('instructions'); onLegalDocsOpen() }}
                         >
                           Pogledajte instrukcije za registraciju.
@@ -781,33 +769,43 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                   </>
                 ) : (
                   <>
-                    {/* Uslovi korišćenja */}
-                    <h2 className="text-[#261A54] text-2xl font-bold mb-3">Uslovi korišćenja</h2>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Molestie nunc non blandit massa enim. Molestie ac feugiat sed lectus. Mauris cursus mattis molestie a iaculis at. Volutpat am. Est ullamcorper eget nulla facilisi etiam dignissim diam quis. Aliquam sem fringilla ut morbi. Adipiscing commodo elit at...
-                    </p>
-                    <button
-                      type="button"
-                      className="text-[#56C4CF] underline text-sm mb-8"
-                      onClick={() => {}}
-                    >
-                      pročitaj više
-                    </button>
+                    <h2 className="text-[#261A54] text-2xl font-bold mb-4">Politika privatnosti</h2>
 
-                    {/* Politika privatnosti */}
-                    <h2 className="text-[#261A54] text-2xl font-bold mb-3">Politika privatnosti</h2>
+                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Šta su podaci o ličnosti?</h3>
                     <p className="text-gray-600 text-sm leading-relaxed mb-2">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Molestie nunc non blandit massa enim. Molestie ac feugiat sed lectus. Mauris cursus mattis molestie a iaculis at. Volutpat am. Est ullamcorper eget nulla facilisi etiam dignissim diam quis. Aliquam sem fringilla ut morbi. Adipiscing commodo elit at...
+                      Podatak o ličnosti je svaki podatak koji se odnosi na fizičko lice čiji je identitet određen ili odrediv, neposredno ili posredno. Obrada podataka o ličnosti odnosi se na bilo koju radnju koja se vrši sa podacima o ličnosti kao što su prikupljanje, beleženje, prepisivanje, umnožavanje, kopiranje, prenošenje, čuvanje, prilagođavanje, brisanje.
                     </p>
-                    <button
-                      type="button"
-                      className="text-[#56C4CF] underline text-sm mb-8"
-                      onClick={() => {}}
-                    >
-                      pročitaj više
-                    </button>
 
-                    {/* Slažem se — auto-checks terms_accepted in the form */}
+                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Rukovalac podacima</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                      Rukovalac podacima za obradu podataka je Udruženje Novosadski noćni bazar, Novi Sad, Vase Stajića br. 20b/38 (u daljem tekstu: NNB).
+                    </p>
+
+                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Razlozi zbog kojih prikupljamo podatke</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-1"><span className="font-medium">Internet sajt:</span> Prikupljanjem podataka na web stranici nocnibazar.rs nudimo vam mogućnost preciznije i lakše pretrage, kao i newsletter prijavu.</p>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-1"><span className="font-medium">Izlagači:</span> Kako biste postali deo NNB-a kao izlagač, potrebno je da ostavite podatke na osnovu kojih možemo da vas kontaktiramo i izvršimo rezervaciju tezge.</p>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-2"><span className="font-medium">Kolačići:</span> Radi boljeg funkcionisanja sajta koristimo kolačiće i Google Analytics. Možete onemogućiti kolačiće putem podešavanja pretraživača.</p>
+
+                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Pravni osnov obrade podataka</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                      Vaše lične podatke obrađujemo na osnovu vašeg pristanka, ugovornog odnosa ili legitimnog interesa. Pristanak možete u bilo kom momentu povući, što za posledicu ima prestanak dalje obrade, ali ne utiče na legalnost prethodne obrade.
+                    </p>
+
+                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Pravo na korišćenje</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                      Pristup vašim podacima imaju samo članovi tima NNB-a kojima su potrebni za ispunjenje vaših zahteva. Naši eksterni partneri su obavezani ugovorom na čuvanje podataka u tajnosti i ne mogu ih koristiti za sopstvene svrhe.
+                    </p>
+
+                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Trajnost podataka</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                      Podatke čuvamo samo onoliko koliko su nam potrebni da bismo ostvarili svrhu za koju ste nam ih dali, ili do vašeg opoziva. Vaši podaci se ne iznose u druge države.
+                    </p>
+
+                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Vaša prava</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-6">
+                      Imate pravo na pristup, ispravku, brisanje i prenosivost vaših podataka, kao i pravo na prigovor i ograničenje obrade. Za sva pitanja stojimo vam na raspolaganju putem kontakt obrasca na sajtu.
+                    </p>
+
                     <button
                       type="button"
                       onClick={() => {
