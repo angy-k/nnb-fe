@@ -59,6 +59,13 @@
   transform: translateY(65px);
 }
 
+/* NextUI Avatar: data-[loaded=true]:opacity-100 klasa se ne generiše u
+   Tailwind buildu jer NextUI dodaje klasu dinamički na runtime.
+   Ovaj override osigurava da se slika prikaže kada je učitana. */
+img[data-loaded="true"] {
+  opacity: 1;
+}
+
 .profile-hero-avatar {
   width: 223px;
   height: 223px;
