@@ -156,6 +156,8 @@ const Header = ({bgColor = '#261A54'}) => {
                     {user?.profile_photo_url ? (
                       <Avatar
                         src={user.profile_photo_url}
+                        name={brandName || 'U'}
+                        showFallback
                         radius="full"
                         isBordered
                         className="w-10 h-10"

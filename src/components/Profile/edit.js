@@ -107,6 +107,7 @@ const ProfileEdit = () => {
   const [success, setSuccess] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarError, setAvatarError] = useState(null)
   const fileInputRef = useRef(null)
 
   // Sync state kada user učita podatke (SWR async)
@@ -138,23 +139,28 @@ const ProfileEdit = () => {
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
+    setAvatarError(null)
     setAvatarPreview(URL.createObjectURL(file))
     setAvatarUploading(true)
     try {
       const res = await profileService.uploadAvatar(file)
       if (res.ok) {
         const data = await res.json()
-        setAvatarPreview(data.profile_photo_url)
+        setAvatarPreview(data.profile_photo_url || null)
         await mutate?.()
       } else {
-        setError('Greška pri upload-u slike. Pokušajte ponovo.')
+        const errData = await res.json().catch(() => null)
+        const msg = errData?.message || 'Greška pri upload-u slike. Pokušajte ponovo.'
+        setAvatarError(msg)
         setAvatarPreview(null)
       }
     } catch {
-      setError('Greška pri upload-u slike. Pokušajte ponovo.')
+      setAvatarError('Greška pri upload-u slike. Pokušajte ponovo.')
       setAvatarPreview(null)
     } finally {
       setAvatarUploading(false)
+      // Reset file input so the same file can be re-selected after error
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -227,38 +233,56 @@ const ProfileEdit = () => {
           {/* Avatar + brand name */}
           <div className="flex items-end gap-6">
             {/* Avatar with upload overlay */}
-            <div className="relative flex-shrink-0 group z-10" style={{ marginBottom: '-56px' }}>
-              <Avatar
-                isBordered
-                src={avatarSrc || undefined}
-                name={!avatarSrc ? (user?.name || 'U') : undefined}
-                radius="full"
-                className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
-              />
-              <label
-                htmlFor="avatar-upload"
-                className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-black/50 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                {avatarUploading ? (
-                  <span className="text-white text-[10px] font-medium">Učitava...</span>
-                ) : (
-                  <>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                      <circle cx="12" cy="13" r="4"/>
-                    </svg>
-                    <span className="text-white text-[10px] mt-1 font-medium">Dodajte logo</span>
-                  </>
-                )}
-              </label>
-              <input
-                id="avatar-upload"
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarChange}
-              />
+            <div className="flex flex-col items-center gap-2" style={{ marginBottom: '-56px' }}>
+              <div className="relative flex-shrink-0 group z-10">
+                <Avatar
+                  isBordered
+                  showFallback
+                  src={avatarSrc || undefined}
+                  name={user?.name || 'U'}
+                  radius="full"
+                  className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
+                />
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-black/40 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  {avatarUploading ? (
+                    <span className="text-white text-[10px] font-medium">Učitava...</span>
+                  ) : (
+                    <>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                      </svg>
+                      <span className="text-white text-[10px] mt-1 font-medium">Dodajte logo</span>
+                    </>
+                  )}
+                </label>
+                {/* Visible camera badge so user knows avatar is clickable */}
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute bottom-1 right-1 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer group-hover:opacity-0 transition-opacity"
+                  style={{ background: '#56C4CF' }}
+                  title="Promenite profilnu sliku"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                </label>
+                <input
+                  id="avatar-upload"
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                />
+              </div>
+              {avatarError && (
+                <p className="text-[11px] text-center max-w-[160px]" style={{ color: '#EC4923' }}>{avatarError}</p>
+              )}
             </div>
 
             {/* Inline editable brand name */}

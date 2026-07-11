@@ -93,8 +93,9 @@ const ProfileComponent = ({
             <div className="relative z-10 flex-shrink-0" style={{ marginBottom: '-56px' }}>
               <Avatar
                 isBordered
+                showFallback
                 src={avatarSrc || undefined}
-                name={!avatarSrc ? (mappedAccount.brandName || 'U') : undefined}
+                name={mappedAccount.brandName || 'U'}
                 radius="full"
                 className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
               />
