@@ -110,11 +110,11 @@ export const post = async (
   }
 
   if (withCSRF) {
-    await csrf()
+    const csrfToken = await csrf()
     if (!config.headers) {
       config.headers = {}
     }
-    config.headers['X-XSRF-TOKEN'] = getCSRFValue()
+    config.headers['X-XSRF-TOKEN'] = csrfToken
   }
 
   if (type !== 'multipart') {
@@ -139,9 +139,9 @@ export const put = async (
   const url = `${base_url}${path}`
 
   if (withCSRF) {
-    await csrf()
+    const csrfToken = await csrf()
     if (!config.headers) config.headers = {}
-    config.headers['X-XSRF-TOKEN'] = getCSRFValue()
+    config.headers['X-XSRF-TOKEN'] = csrfToken
   }
 
   const body = type !== 'multipart' ? JSON.stringify(data) : data
@@ -180,11 +180,11 @@ export const del = async (
   }
 
   if (withCSRF) {
-    await get('/sanctum/csrf-cookie')
+    const csrfToken = await csrf()
     if (!config.headers) {
       config.headers = {}
     }
-    config.headers['X-XSRF-TOKEN'] = getCSRFValue()
+    config.headers['X-XSRF-TOKEN'] = csrfToken
   }
 
   return fetch(url, {
