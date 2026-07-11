@@ -1,30 +1,7 @@
-'use client'
-import { useEffect, useState } from 'react'
 import CardComponent from "../CardComponent"
 import { Divider } from "@nextui-org/divider"
 
-const OurTeam = ({ title = 'Naš tim' }) => {
-  const [members, setMembers] = useState([])
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/index/about-us`,
-          { cache: 'no-store' }
-        )
-        if (!res.ok) return
-        const data = await res.json()
-        if (data?.success && Array.isArray(data?.data?.team)) {
-          setMembers(data.data.team)
-        }
-      } catch {
-        // tihо ne prikazujemo grešku — sekcija jednostavno ostaje prazna
-      }
-    }
-    load()
-  }, [])
-
+const OurTeam = ({ members = [], title = 'Naš tim' }) => {
   if (members.length === 0) return null
 
   return (

@@ -1,5 +1,3 @@
-'use client';
-import { useEffect, useState } from 'react';
 import PageHeroSection from "@/components/Hero/pageOwl";
 import OurTeam from '@/components/CardsLayout/OurTeam';
 import OrganizerWord from "@/components/Organizer";
@@ -13,27 +11,25 @@ import AboutUsShoppingImage from '@/../public/about-us-shopping-image.png';
 import AboutUsPeopleImage from '@/../public/about-us-people-image.png';
 import { Divider } from "@nextui-org/divider";
 
-const AboutUsPage = () => {
-    const [settings, setSettings] = useState({});
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/index/about-us`,
-                    { cache: 'no-store' }
-                );
-                if (!res.ok) return;
-                const data = await res.json();
-                if (data?.success && data?.data?.settings) {
-                    setSettings(data.data.settings);
-                }
-            } catch {}
+async function getAboutUsData() {
+    try {
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/index/about-us`,
+            { next: { revalidate: 3600, tags: ['about-us'] } }
+        );
+        if (!res.ok) return { team: [], settings: {} };
+        const data = await res.json();
+        return {
+            team:     data?.data?.team     ?? [],
+            settings: data?.data?.settings ?? {},
         };
-        load();
-    }, []);
+    } catch {
+        return { team: [], settings: {} };
+    }
+}
 
-    const s = settings;
+const AboutUsPage = async () => {
+    const { team, settings: s } = await getAboutUsData();
 
     return (
         <div className="grid place-items-center w-full">
@@ -140,7 +136,7 @@ const AboutUsPage = () => {
             quoteSub={s.organizer_quote_sub || undefined}
             bio={s.organizer_bio || null}
           />
-          <OurTeam />
+          <OurTeam members={team} />
         </div>
       </div>
     );
