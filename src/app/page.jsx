@@ -1,4 +1,5 @@
 import '@/styles/global.css'
+import { parseDate, formatDate } from '@/utils/dateHelpers'
 import { homepage } from '@/constants/schemas'
 import Newsletter from '@/components/Newsletter'
 import Faq from '@/components/FaQ'
@@ -34,14 +35,12 @@ async function getEventsData() {
         : []
 
     const upcoming = activeItems
-      .filter(e => e.dateTime && new Date(e.dateTime) >= now)
-      .sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime))
+      .filter(e => e.dateTime && (parseDate(e.dateTime) ?? new Date(0)) >= now)
+      .sort((a, b) => (parseDate(a.dateTime) ?? 0) - (parseDate(b.dateTime) ?? 0))
 
     const tickerEvents = upcoming.map(e => ({
       name: e?.title ?? e?.name ?? '',
-      date: new Date(e.dateTime).toLocaleDateString('sr-RS', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-      }),
+      date: formatDate(e.dateTime),
     }))
 
     return {
@@ -57,13 +56,7 @@ export default async function Home() {
   const { nextEvent, tickerEvents } = await getEventsData()
 
   const nextEventName = nextEvent?.title ?? nextEvent?.name ?? null
-  const nextEventDate = nextEvent?.dateTime
-    ? new Date(nextEvent.dateTime).toLocaleDateString('sr-RS', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      })
-    : null
+  const nextEventDate = nextEvent?.dateTime ? formatDate(nextEvent.dateTime) : null
 
   return (
     <div className='min-h-screen'>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import applicationService from '@/services/applicationService'
 import useUser from '@/data/use-user'
+import { formatDate } from '@/utils/dateHelpers'
 
 // ── Sad face SVG ──────────────────────────────────────────────────────────────
 const SadFaceIcon = () => (
@@ -37,20 +38,6 @@ const MyReservationsComponent = () => {
   const [cancelForm, setCancelForm] = useState({ brandName: '', firstName: '', lastName: '', email: '', reason: '' })
   const [cancelling, setCancelling] = useState(false)
   const [cancelError, setCancelError] = useState(null)
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return ''
-    try {
-      const date = new Date(dateStr)
-      if (isNaN(date.getTime())) return dateStr
-      const d = String(date.getDate()).padStart(2, '0')
-      const m = String(date.getMonth() + 1).padStart(2, '0')
-      const y = date.getFullYear()
-      return `${d}.${m}.${y}.`
-    } catch {
-      return dateStr
-    }
-  }
 
   const loadEvents = async (signal) => {
     try {

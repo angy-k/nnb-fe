@@ -5,6 +5,7 @@ import Reservations from '@/components/Reservations/Reservations';
 import AccountData from './accountData';
 import ProfileGallery from './gallery';
 import useUser from '@/data/use-user'
+import { formatDate } from '@/utils/dateHelpers'
 
 const ProfileComponent = ({
   account,
@@ -58,7 +59,7 @@ const ProfileComponent = ({
         email: user.email || '-',
         phone: user.phone_number || '-',
         address: user.address || '-',
-        dateOfBirth: user.date_of_birth || '-',
+        dateOfBirth: user.date_of_birth ? formatDate(user.date_of_birth) : '-',
         facebook: user.facebook || null,
         instagram: user.instagram || null,
       },

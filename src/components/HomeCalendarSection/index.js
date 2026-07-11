@@ -75,6 +75,7 @@ const HomeCalendarSection = () => {
             const rawStart = (item?.dateTime ?? '').toString().trim()
             if (!rawStart) return null
             const startDate = parseWithFallbacks(rawStart, [
+              'dd.MM.yyyy HH:mm', 'd.MM.yyyy HH:mm',
               'd MMM yyyy HH:mm', 'd M yyyy HH:mm',
               'dd MMM yyyy HH:mm', 'dd M yyyy HH:mm',
             ])
@@ -113,7 +114,7 @@ const HomeCalendarSection = () => {
   const parseDateOnly = (value) => {
     const v = (value ?? '').toString().trim()
     if (!v) return null
-    const formats = ['d MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy']
+    const formats = ['dd.MM.yyyy', 'd.MM.yyyy', 'd MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy']
     for (const fmt of formats) {
       const d = parse(v, fmt, new Date())
       if (!Number.isNaN(d?.getTime?.())) return d

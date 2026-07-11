@@ -99,7 +99,7 @@ const Events = ({
   const parseDateOnly = (value) => {
     const v = (value ?? '').toString().trim()
     if (!v) return null
-    const formats = ['d MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy']
+    const formats = ['dd.MM.yyyy', 'd.MM.yyyy', 'd MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy']
     for (const fmt of formats) {
       const d = parse(v, fmt, new Date())
       if (!Number.isNaN(d?.getTime?.())) return d

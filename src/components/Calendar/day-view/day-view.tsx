@@ -69,7 +69,7 @@ export const DayView: React.FC<DayViewProps> = ({ date, events = [], onEventClic
                   className="text-xs -m-3 select-none text-[#B0B0B0]"
                   dateTime={format(time, "yyyy-MM-dd")}
                 >
-                  {index === 0 ? "" : format(time, "h a")}
+                  {index === 0 ? "" : format(time, "HH:mm")}
                 </time>
               </div>
               <div

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import applicationService from '@/services/applicationService'
 import useUser from '@/data/use-user'
+import { formatDate } from '@/utils/dateHelpers'
 
 const MyPreviousReservationsComponent = () => {
 
@@ -16,20 +17,6 @@ const MyPreviousReservationsComponent = () => {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const PER_PAGE = 5
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return ''
-    try {
-      const date = new Date(dateStr)
-      if (isNaN(date.getTime())) return dateStr
-      const d = String(date.getDate()).padStart(2, '0')
-      const m = String(date.getMonth() + 1).padStart(2, '0')
-      const y = date.getFullYear()
-      return `${d}.${m}.${y}.`
-    } catch {
-      return dateStr
-    }
-  }
 
   useEffect(() => {
     let isActive = true

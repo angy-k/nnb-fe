@@ -83,6 +83,8 @@ const CalendarPage = () => {
             if (!rawStart) return null
 
             const startDate = parseWithFallbacks(rawStart, [
+              'dd.MM.yyyy HH:mm',
+              'd.MM.yyyy HH:mm',
               'd MMM yyyy HH:mm',
               'd M yyyy HH:mm',
               'dd MMM yyyy HH:mm',
@@ -95,6 +97,8 @@ const CalendarPage = () => {
             const rawApplicationEnd = (item?.applicationEndDate ?? '').toString().trim()
             const applicationEndDate = rawApplicationEnd
               ? parseWithFallbacks(rawApplicationEnd, [
+                  'dd.MM.yyyy',
+                  'd.MM.yyyy',
                   'd MMM yyyy',
                   'd M yyyy',
                   'dd MMM yyyy',
@@ -335,7 +339,7 @@ const CalendarPage = () => {
     const v = (value ?? '').toString().trim()
     if (!v) return null
 
-    const formats = ['d MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy']
+    const formats = ['dd.MM.yyyy', 'd.MM.yyyy', 'd MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy']
     for (const fmt of formats) {
       const d = parse(v, fmt, new Date())
       if (!Number.isNaN(d?.getTime?.())) return d

@@ -55,6 +55,8 @@ const UpcommingEvents = ({
             if (!rawStart) return null;
 
             const startDate = parseWithFallbacks(rawStart, [
+              'dd.MM.yyyy HH:mm',
+              'd.MM.yyyy HH:mm',
               'd MMM yyyy HH:mm',
               'd M yyyy HH:mm',
               'dd MMM yyyy HH:mm',
@@ -77,6 +79,7 @@ const UpcommingEvents = ({
                 const raw = (item?.applicationStartDate ?? '').toString().trim();
                 if (!raw) return '—';
                 const d = parseWithFallbacks(raw, [
+                  'dd.MM.yyyy', 'd.MM.yyyy',
                   'd MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy',
                 ]) ?? new Date(raw);
                 if (!d || isNaN(d.getTime())) return '—';

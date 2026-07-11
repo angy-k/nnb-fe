@@ -72,14 +72,14 @@ export const WeekView: React.FC<WeekViewProps> = ({ date, events = [], onEventCl
           {hours.map((time, index) => (
             <div
               key={time.toISOString() + index}
-              aria-label={format(time, "h a")}
+              aria-label={format(time, "HH:mm")}
               className="min-h-14 w-24 flex items-start justify-center"
             >
               <time
                 className="text-md -m-3 select-none text-[#B0B0B0]"
                 dateTime={format(time, "yyyy-MM-dd")}
               >
-                {index === 0 ? "" : format(time, "h a")}
+                {index === 0 ? "" : format(time, "HH:mm")}
               </time>
             </div>
           ))}
