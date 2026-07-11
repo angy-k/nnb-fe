@@ -3,13 +3,25 @@ import { parse } from 'cookie'
 
 const base_url = `${process.env.NEXT_PUBLIC_BACKEND_URL}`
 
+/**
+ * Čita Sanctum bearer token iz localStorage (samo u browseru).
+ * Null na serveru (SSR) — server ne šalje auth header.
+ */
+const getStoredToken = () => {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('auth_token')
+}
+
 const base_headers = (type = null) => {
   const isBrowser = typeof window !== 'undefined'
+  const token = getStoredToken()
+  const authHeader = token ? { Authorization: `Bearer ${token}` } : {}
 
   if (type === 'multipart') {
     return {
       Accept: 'application/json',
       'X-Requested-With': 'XMLHttpRequest',
+      ...authHeader,
       ...(isBrowser ? {} : { Referer: process.env.NEXT_PUBLIC_APP_URL })
     }
   }
@@ -18,6 +30,7 @@ const base_headers = (type = null) => {
     'Content-Type': 'application/json',
     Accept: 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
+    ...authHeader,
     ...(isBrowser ? {} : { Referer: process.env.NEXT_PUBLIC_APP_URL })
   }
 }
@@ -56,7 +69,7 @@ function getCSRFValue() {
 }
 
 export const get = (
-  path, 
+  path,
   { queryParams = {}, config = {}, next = {}, cache = 'force-cache' } = {}
 ) => {
   const isBrowser = typeof window !== 'undefined'

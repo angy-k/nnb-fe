@@ -7,7 +7,6 @@ import { ErrorMessage, Form, Formik } from 'formik'
 import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from '@nextui-org/react'
 
 import authService from '@/services/authService'
-import { csrf } from '@/services/csrfService'
 import activityGroupService from '@/services/activityGroupService'
 import useUser from '@/data/use-user'
 
@@ -211,13 +210,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
     }
   }, [])
 
-  // Pre-warm CSRF cookie whenever the register tab becomes active
-  // so the token is fresh before the user hits submit
-  useEffect(() => {
-    if (tab === 'register') {
-      csrf().catch(() => {})
-    }
-  }, [tab])
+  // (CSRF pre-warm nije više potreban — koristimo Sanctum bearer token auth)
 
   const handleLogin = async values => {
     if (isLoading) return
@@ -228,6 +221,8 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
     try {
       const res = await authService.login({ values })
       if (res.ok) {
+        const data = await res.json()
+        authService.storeToken(data.token)
         await mutate()
         onSuccess?.()
         onClose?.()
@@ -302,20 +297,18 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
       }
 
       let res = await authService.registerMultipart(payload)
-      // CSRF token mismatch — explicitly refresh cookie then retry once
-      if (res && res.status === 419) {
-        await csrf().catch(() => {})
-        res = await authService.registerMultipart(payload)
-      }
       if (res.ok) {
+        if (res.status === 204) {
+          // Email već postoji — server je poslao mejl sa uputstvima
+          setErrors({ failed: ['Na vašu email adresu smo poslali mejl sa uputstvima za prijavu.'] })
+          return
+        }
+        // 200 — novi korisnik kreiran, dobili smo Sanctum token
+        const data = await res.json()
+        authService.storeToken(data.token)
         await mutate()
         onSuccess?.()
         onClose?.()
-        return
-      }
-
-      if (res.status === 419) {
-        setErrors({ failed: ['Greška autorizacije. Osvežite stranicu i pokušajte ponovo.'] })
         return
       }
 

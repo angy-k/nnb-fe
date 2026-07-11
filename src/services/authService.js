@@ -1,9 +1,22 @@
 import { get, post } from '@/lib/fetchAPI'
 
-const clearXSRFToken = () => {
-  document.cookie = 
-  'XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+// ── Token storage ─────────────────────────────────────────────────────────────
+// Sanctum API token čuvamo u localStorage (cross-domain SPA — session kolačići
+// nisu dostupni između nnb-fe.vercel.app i admin.nocnibazar.rs).
+
+const storeToken = (token) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('auth_token', token)
+  }
 }
+
+const clearToken = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('auth_token')
+  }
+}
+
+// ── Auth API ──────────────────────────────────────────────────────────────────
 
 const getUser = () => {
   return get('/api/v1/profile/self', { cache: 'no-cache' }).then(async res => {
@@ -36,15 +49,16 @@ const getUser = () => {
 }
 
 const login = async ({ values }) => {
-  return post('/login', values, { withCSRF: true })
+  // withCSRF nije potreban — bearer token auth, CSRF rute su excluded
+  return post('/login', values)
 }
 
 const register = async values => {
-  return post('/register', values, { withCSRF: true })
+  return post('/register', values)
 }
 
 const registerMultipart = async formData => {
-  return post('/register', formData, { withCSRF: true, type: 'multipart' })
+  return post('/register', formData, { type: 'multipart' })
 }
 
 const forgotPassword = async values => {
@@ -52,13 +66,13 @@ const forgotPassword = async values => {
 }
 
 const logout = async () => {
-  let res = await post('/logout', {}, { withCSRF: true })
-  // If CSRF token mismatch (e.g. after OAuth redirect), refresh and retry once
-  if (res && res.status === 419) {
-    res = await post('/logout', {}, { withCSRF: true })
+  // Pošalji logout na server dok je token još u localStorage (header se čita u fetchAPI)
+  try {
+    await post('/logout', {})
+  } catch {
+    // Ignorisati greške — token brisati u svakom slučaju
   }
-  // 401 means the session is already invalid — treat as logged out
-  clearXSRFToken()
+  clearToken()
 }
 
 const resendEmailVerification = () => {
@@ -67,12 +81,12 @@ const resendEmailVerification = () => {
 
 const resetPassword = ({ ...props }) => {
   return post(
-    '/reset-password', 
+    '/reset-password',
     {
       token: props.token,
       email: props.email,
       password: props.values.password,
-    }, 
+    },
     { withCSRF: true },
   )
 }
@@ -82,6 +96,8 @@ const verifyEmail = (id, hash) => {
 }
 
 export default {
+  storeToken,
+  clearToken,
   getUser,
   login,
   register,

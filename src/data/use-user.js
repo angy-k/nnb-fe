@@ -2,11 +2,6 @@ import useSWR from 'swr';
 
 import authService from "../services/authService";
 
-const clearXSRFToken = () => {
-  document.cookie = 
-    'XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-}
-
 export default function useUser() {
   const { data, mutate, error } = useSWR('user', authService.getUser, {
     revalidateOnFocus: false,
@@ -14,8 +9,11 @@ export default function useUser() {
     revalidateOnMount: true,
     revalidateOnReconnect: false,
     refreshInterval: 0,
-    onError: () => {
-        clearXSRFToken()
+    onError: (err) => {
+      // Token istekao ili poništen — obriši iz localStorage
+      if (err?.status === 401 || err?.status === 403) {
+        authService.clearToken()
+      }
     },
     errorRetryInterval: 0,
     errorRetryCount: 0
