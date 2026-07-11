@@ -21,35 +21,103 @@ const isDevEnv = () => ['development', 'dev', 'testing', 'test', 'local'].includ
 const loginSchema = Yup.object({
   email: Yup.string()
     .email('Unesite validnu email adresu.')
+    .max(255, 'Email ne sme biti duži od 255 karaktera.')
     .required('Email je obavezan.'),
   password: Yup.string()
     .min(6, 'Lozinka mora imati najmanje 6 karaktera.')
+    .max(128, 'Lozinka ne sme biti duža od 128 karaktera.')
     .required('Lozinka je obavezna.'),
   terms_accepted: Yup.boolean()
     .oneOf([true], 'Moraš da prihvatiš politiku privatnosti.'),
 })
 
+// Samo slova, razmaci, crtice i srpska slova
+const nameRegex = /^[\p{L}\s\-']+$/u
+
+// Srpski/regionalni format telefona: 06X, 0XX, +381...
+const phoneRegex = /^(\+3816\d|06\d)[\d\s\-]{6,10}$|^(\+?[\d\s\-().]{7,20})$/
+
 const registerSchema = Yup.object({
-  brand_name:        Yup.string().required('Naziv brenda je obavezan.'),
-  first_name:        Yup.string().required('Ime je obavezno.'),
-  last_name:         Yup.string().required('Prezime je obavezno.'),
-  email:             Yup.string().email('Unesite validnu email adresu.').required('Email je obavezan.'),
-  password:          Yup.string().min(8, 'Lozinka mora imati najmanje 8 karaktera.').required('Lozinka je obavezna.'),
-  phone_number:      Yup.string().required('Broj telefona je obavezan.'),
-  birth_date:        Yup.string().required('Datum rođenja je obavezan.'),
+  brand_name: Yup.string()
+    .required('Naziv brenda je obavezan.')
+    .min(2, 'Naziv brenda mora imati najmanje 2 karaktera.')
+    .max(100, 'Naziv brenda ne sme biti duži od 100 karaktera.'),
+  first_name: Yup.string()
+    .required('Ime je obavezno.')
+    .min(2, 'Ime mora imati najmanje 2 karaktera.')
+    .max(50, 'Ime ne sme biti duže od 50 karaktera.')
+    .matches(nameRegex, 'Ime sme sadržati samo slova.'),
+  last_name: Yup.string()
+    .required('Prezime je obavezno.')
+    .min(2, 'Prezime mora imati najmanje 2 karaktera.')
+    .max(50, 'Prezime ne sme biti duže od 50 karaktera.')
+    .matches(nameRegex, 'Prezime sme sadržati samo slova.'),
+  email: Yup.string()
+    .email('Unesite validnu email adresu.')
+    .max(255, 'Email ne sme biti duži od 255 karaktera.')
+    .required('Email je obavezan.'),
+  password: Yup.string()
+    .required('Lozinka je obavezna.')
+    .min(8, 'Lozinka mora imati najmanje 8 karaktera.')
+    .max(128, 'Lozinka ne sme biti duža od 128 karaktera.')
+    .matches(/[A-Z]/, 'Lozinka mora sadržati najmanje jedno veliko slovo.')
+    .matches(/[0-9]/, 'Lozinka mora sadržati najmanje jedan broj.'),
+  phone_number: Yup.string()
+    .required('Broj telefona je obavezan.')
+    .matches(phoneRegex, 'Unesite validan broj telefona (npr. 060 123 4567 ili +381 60 123 4567).'),
+  birth_date: Yup.string()
+    .required('Datum rođenja je obavezan.')
+    .test('valid-date', 'Unesite validan datum.', val => {
+      if (!val) return false
+      const d = new Date(val)
+      return !isNaN(d.getTime())
+    })
+    .test('min-age', 'Morate imati najmanje 18 godina.', val => {
+      if (!val) return false
+      const d = new Date(val)
+      const today = new Date()
+      const cutoff = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate())
+      return d <= cutoff
+    })
+    .test('max-age', 'Unesite validan datum rođenja.', val => {
+      if (!val) return false
+      const d = new Date(val)
+      const today = new Date()
+      const oldest = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate())
+      return d >= oldest
+    }),
   activity_group_id: Yup.string().required('Grupa delatnosti je obavezna.'),
-  activity_name:     Yup.string().required('Delatnost je obavezna.'),
-  address:           Yup.string().required('Adresa je obavezna.'),
-  city:              Yup.string(),
-  terms_accepted:    Yup.boolean().oneOf([true], 'Moraš da prihvatiš politiku privatnosti.'),
-  company_name:      Yup.string().when('is_legal_entity', {
-    is: true, then: s => s.required('Naziv firme je obavezan.'),
+  activity_name: Yup.string()
+    .required('Delatnost je obavezna.')
+    .min(2, 'Naziv delatnosti mora imati najmanje 2 karaktera.')
+    .max(100, 'Naziv delatnosti ne sme biti duži od 100 karaktera.'),
+  address: Yup.string()
+    .required('Adresa je obavezna.')
+    .min(5, 'Unesite punu adresu.')
+    .max(200, 'Adresa ne sme biti duža od 200 karaktera.'),
+  city: Yup.string().max(100, 'Naziv mesta ne sme biti duži od 100 karaktera.'),
+  terms_accepted: Yup.boolean().oneOf([true], 'Moraš da prihvatiš politiku privatnosti.'),
+  company_name: Yup.string().when('is_legal_entity', {
+    is: true, then: s => s
+      .required('Naziv firme je obavezan.')
+      .min(2, 'Naziv firme mora imati najmanje 2 karaktera.')
+      .max(150, 'Naziv firme ne sme biti duži od 150 karaktera.'),
   }),
-  company_address:   Yup.string().when('is_legal_entity', {
-    is: true, then: s => s.required('Adresa firme je obavezna.'),
+  company_address: Yup.string().when('is_legal_entity', {
+    is: true, then: s => s
+      .required('Adresa firme je obavezna.')
+      .min(5, 'Unesite punu adresu firme.'),
   }),
-  mb:  Yup.string().when('is_legal_entity', { is: true, then: s => s.required('Matični broj je obavezan.') }),
-  pib: Yup.string().when('is_legal_entity', { is: true, then: s => s.required('PIB je obavezan.') }),
+  mb: Yup.string().when('is_legal_entity', {
+    is: true, then: s => s
+      .required('Matični broj je obavezan.')
+      .matches(/^\d{8}$/, 'Matični broj mora imati tačno 8 cifara.'),
+  }),
+  pib: Yup.string().when('is_legal_entity', {
+    is: true, then: s => s
+      .required('PIB je obavezan.')
+      .matches(/^\d{9}$/, 'PIB mora imati tačno 9 cifara.'),
+  }),
 })
 
 const UploadIcon = () => (
@@ -268,7 +336,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
 
           <div className="w-full md:w-1/2 lg:w-1/2 h-full flex flex-col justify-center bg-white px-6 md:px-12 lg:px-12 py-10 overflow-y-auto">
             <h2 className="text-[#261A54] font-bold mb-1" style={{ fontSize: '32px', lineHeight: 1.2 }}>Prijavite se</h2>
-            <p className="text-gray-400 text-sm mb-6">Prijavite se na vaš nalog</p>
+            <p className="text-sm mb-6" style={{ color: '#4B5563' }}>Prijavite se na vaš nalog</p>
 
             <button
               type="button"
@@ -280,7 +348,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
               Prijavite se sa Google nalogom
             </button>
 
-            <div className="flex items-center gap-3 text-gray-300 text-sm mb-5"><span className="flex-1 h-px bg-gray-200"/><span className="text-gray-400 whitespace-nowrap">Ulogujte se putem mejla</span><span className="flex-1 h-px bg-gray-200"/></div>
+            <div className="flex items-center gap-3 text-sm mb-5"><span className="flex-1 h-px bg-gray-300"/><span className="whitespace-nowrap" style={{ color: '#4B5563' }}>Ulogujte se putem mejla</span><span className="flex-1 h-px bg-gray-300"/></div>
 
             <Formik
               initialValues={{ email: '', password: '', terms_accepted: false }}
@@ -316,7 +384,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                   </div>
 
                   <div className="mb-3">
-                    <label className="flex items-center gap-2 text-gray-700">
+                    <label className="flex items-center gap-2 text-[#261A54] text-sm cursor-pointer">
                       <input
                         type="checkbox"
                         name="terms_accepted"
@@ -426,7 +494,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-8 gap-y-3">
                     <div>
                       <h2 className="text-[#261A54] font-bold mb-1" style={{ fontSize: '32px', lineHeight: 1.2 }}>Napravite profil</h2>
-                      <p className="text-gray-400 text-sm mb-5">Registrujte se kao izlagač</p>
+                      <p className="text-sm mb-5" style={{ color: '#4B5563' }}>Registrujte se kao izlagač</p>
 
                       <button
                         type="button"
@@ -438,7 +506,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                         Prijavite se sa Google nalogom
                       </button>
 
-                      <div className="flex items-center gap-3 text-gray-300 text-sm mb-4"><span className="flex-1 h-px bg-gray-200"/><span className="text-gray-400 whitespace-nowrap">Registrujte se putem mejla</span><span className="flex-1 h-px bg-gray-200"/></div>
+                      <div className="flex items-center gap-3 text-sm mb-4"><span className="flex-1 h-px bg-gray-300"/><span className="whitespace-nowrap" style={{ color: '#4B5563' }}>Registrujte se putem mejla</span><span className="flex-1 h-px bg-gray-300"/></div>
 
                       <div className="mb-3">
                         <MainTextInput
@@ -598,7 +666,14 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                             name="is_legal_entity"
                             className="auth-legal-entity-checkbox"
                             checked={!!values.is_legal_entity}
-                            onChange={e => setFieldValue('is_legal_entity', e.target.checked)}
+                            onChange={e => {
+                              setFieldValue('is_legal_entity', e.target.checked)
+                              setFieldValue('company_name', '')
+                              setFieldValue('company_address', '')
+                              setFieldValue('mb', '')
+                              setFieldValue('pib', '')
+                              setFieldValue('is_sef_user', false)
+                            }}
                           />
                           Prijavljujem se kao pravno lice.
                         </label>
@@ -631,20 +706,24 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                             <MainTextInput
                               name="mb"
                               type="text"
+                              inputMode="numeric"
                               error={errors.mb}
                               setErrors={setErrors}
-                              placeholder="Matični broj"
+                              placeholder="Matični broj (8 cifara)"
                               className="line-flex w-full"
+                              onKeyDown={e => { if (e.key.length === 1 && !/\d/.test(e.key)) e.preventDefault() }}
                             />
                           </div>
                           <div>
                             <MainTextInput
                               name="pib"
                               type="text"
+                              inputMode="numeric"
                               error={errors.pib}
                               setErrors={setErrors}
-                              placeholder="PIB"
+                              placeholder="PIB (9 cifara)"
                               className="line-flex w-full"
+                              onKeyDown={e => { if (e.key.length === 1 && !/\d/.test(e.key)) e.preventDefault() }}
                             />
                           </div>
                           <div>
@@ -730,33 +809,25 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
         isOpen={isLegalDocsOpen}
         onOpenChange={onLegalDocsOpenChange}
         onClose={onLegalDocsClose}
-        size="lg"
+        size="2xl"
         backdrop="blur"
         scrollBehavior="inside"
+        hideCloseButton
         classNames={{
           wrapper: 'nnb-modal-wrapper items-center justify-center',
           backdrop: 'nnb-modal-backdrop',
-          base: 'rounded-[32px] bg-white',
+          base: 'rounded-[32px] bg-white max-h-[80vh]',
         }}
       >
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="p-0 h-0 min-h-0 relative">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="absolute right-4 top-4 w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-700 text-xl z-10"
-                  aria-label="Zatvori"
-                >
-                  ×
-                </button>
-              </ModalHeader>
-              <ModalBody className="px-10 py-10">
+              <ModalHeader className="p-0 h-0 min-h-0" />
+              <ModalBody className="px-10 py-10 pt-12">
                 {legalDocsType === 'instructions' ? (
                   <>
                     <h2 className="text-[#261A54] text-2xl font-bold mb-4">Instrukcije za registraciju</h2>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-6">
+                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-6">
                       Instrukcije za registraciju će biti dodate ovde.
                     </p>
                     <button
@@ -772,37 +843,37 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                     <h2 className="text-[#261A54] text-2xl font-bold mb-4">Politika privatnosti</h2>
 
                     <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Šta su podaci o ličnosti?</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2">
                       Podatak o ličnosti je svaki podatak koji se odnosi na fizičko lice čiji je identitet određen ili odrediv, neposredno ili posredno. Obrada podataka o ličnosti odnosi se na bilo koju radnju koja se vrši sa podacima o ličnosti kao što su prikupljanje, beleženje, prepisivanje, umnožavanje, kopiranje, prenošenje, čuvanje, prilagođavanje, brisanje.
                     </p>
 
                     <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Rukovalac podacima</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2">
                       Rukovalac podacima za obradu podataka je Udruženje Novosadski noćni bazar, Novi Sad, Vase Stajića br. 20b/38 (u daljem tekstu: NNB).
                     </p>
 
                     <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Razlozi zbog kojih prikupljamo podatke</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-1"><span className="font-medium">Internet sajt:</span> Prikupljanjem podataka na web stranici nocnibazar.rs nudimo vam mogućnost preciznije i lakše pretrage, kao i newsletter prijavu.</p>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-1"><span className="font-medium">Izlagači:</span> Kako biste postali deo NNB-a kao izlagač, potrebno je da ostavite podatke na osnovu kojih možemo da vas kontaktiramo i izvršimo rezervaciju tezge.</p>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-2"><span className="font-medium">Kolačići:</span> Radi boljeg funkcionisanja sajta koristimo kolačiće i Google Analytics. Možete onemogućiti kolačiće putem podešavanja pretraživača.</p>
+                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-1"><span className="font-medium">Internet sajt:</span> Prikupljanjem podataka na web stranici nocnibazar.rs nudimo vam mogućnost preciznije i lakše pretrage, kao i newsletter prijavu.</p>
+                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-1"><span className="font-medium">Izlagači:</span> Kako biste postali deo NNB-a kao izlagač, potrebno je da ostavite podatke na osnovu kojih možemo da vas kontaktiramo i izvršimo rezervaciju tezge.</p>
+                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2"><span className="font-medium">Kolačići:</span> Radi boljeg funkcionisanja sajta koristimo kolačiće i Google Analytics. Možete onemogućiti kolačiće putem podešavanja pretraživača.</p>
 
                     <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Pravni osnov obrade podataka</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2">
                       Vaše lične podatke obrađujemo na osnovu vašeg pristanka, ugovornog odnosa ili legitimnog interesa. Pristanak možete u bilo kom momentu povući, što za posledicu ima prestanak dalje obrade, ali ne utiče na legalnost prethodne obrade.
                     </p>
 
                     <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Pravo na korišćenje</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2">
                       Pristup vašim podacima imaju samo članovi tima NNB-a kojima su potrebni za ispunjenje vaših zahteva. Naši eksterni partneri su obavezani ugovorom na čuvanje podataka u tajnosti i ne mogu ih koristiti za sopstvene svrhe.
                     </p>
 
                     <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Trajnost podataka</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-2">
+                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2">
                       Podatke čuvamo samo onoliko koliko su nam potrebni da bismo ostvarili svrhu za koju ste nam ih dali, ili do vašeg opoziva. Vaši podaci se ne iznose u druge države.
                     </p>
 
                     <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Vaša prava</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-6">
+                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-6">
                       Imate pravo na pristup, ispravku, brisanje i prenosivost vaših podataka, kao i pravo na prigovor i ograničenje obrade. Za sva pitanja stojimo vam na raspolaganju putem kontakt obrasca na sajtu.
                     </p>
 
