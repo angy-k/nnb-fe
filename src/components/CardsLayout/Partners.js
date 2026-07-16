@@ -70,7 +70,7 @@ const PartnerCard = ({ partner, onClick }) => (
 const PartnerModal = ({ partner, onClose }) => {
   if (!partner) return null
 
-  const description = partner.description || partner.content || partner.about || partner.info || ''
+  const description = partner.aboutPartner || partner.description || partner.content || partner.about || ''
 
   return (
     <div
@@ -188,18 +188,14 @@ const Partners = ({ partners: propPartners }) => {
   }
 
   const handlePartnerClick = (partner) => {
-    // URL fields — try common naming conventions
-    const websiteUrl =
-      partner.websiteUrl ||
-      partner.website_url ||
-      partner.website ||
-      partner.url ||
-      partner.link
+    const websiteUrl = partner.url || partner.websiteUrl || partner.website_url || partner.website || partner.link
+    const description = partner.aboutPartner || partner.description || partner.content || ''
 
     if (websiteUrl) {
+      // Ima link → otvori u novom tabu
       window.open(websiteUrl, '_blank', 'noopener,noreferrer')
-    } else {
-      // Has description → open modal
+    } else if (description) {
+      // Ima description → prikaži modal
       setSelectedPartner(partner)
     }
   }

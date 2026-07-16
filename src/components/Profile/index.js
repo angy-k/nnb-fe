@@ -5,7 +5,7 @@ import Reservations from '@/components/Reservations/Reservations';
 import AccountData from './accountData';
 import ProfileGallery from './gallery';
 import useUser from '@/data/use-user'
-import { formatDate } from '@/utils/dateHelpers'
+import { formatBirthDate } from '@/utils/dateHelpers'
 
 const ProfileComponent = ({
   account,
@@ -51,7 +51,7 @@ const ProfileComponent = ({
     const fullName = `${firstName} ${lastName}`.trim() || user.name || '-'
 
     return {
-      brandName: user.name || '-',
+      brandName: user.brand_name || '-',
       type: user.activity?.name || user.activity_group?.name || '',
       image: user.profile_photo_url || null,
       owner: {
@@ -59,7 +59,7 @@ const ProfileComponent = ({
         email: user.email || '-',
         phone: user.phone_number || '-',
         address: user.address || '-',
-        dateOfBirth: user.date_of_birth ? formatDate(user.date_of_birth) : '-',
+        dateOfBirth: user.date_of_birth ? formatBirthDate(user.date_of_birth) : '-',
         facebook: user.facebook || null,
         instagram: user.instagram || null,
       },

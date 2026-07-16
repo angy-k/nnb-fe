@@ -1,14 +1,40 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { formatBirthDate } from '@/utils/dateHelpers'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Avatar } from '@nextui-org/avatar'
 import ProfileGallery from './gallery'
 import useUser from '@/data/use-user'
 import profileService from '@/services/profileService'
+import activityGroupService from '@/services/activityGroupService'
+
+// ─── Activity grouped select ─────────────────────────────────────────────────
+const ActivitySelect = ({ value, onChange, groups }) => (
+  <div className="flex items-center justify-between bg-[#ffffff] rounded-full px-5 py-3 gap-3 w-full">
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className="flex-1 outline-none border-0 text-sm bg-transparent appearance-none cursor-pointer"
+      style={{ color: value ? '#261A54' : '#aaa', boxShadow: 'none', border: 'none', padding: 0 }}
+    >
+      <option value="">Izaberite delatnost</option>
+      {groups.map(group => (
+        <optgroup key={group.id} label={group.name}>
+          {(group.activities || []).map(a => (
+            <option key={a.id} value={String(a.id)}>{a.name}</option>
+          ))}
+        </optgroup>
+      ))}
+    </select>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#261A54" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-40 flex-shrink-0 pointer-events-none">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </div>
+)
 
 // ─── Inline editable field ────────────────────────────────────────────────────
-const EditableField = ({ value, onChange, placeholder, type = 'text', readOnly = false, filterInput = null, validate = null }) => {
+const EditableField = ({ value, onChange, placeholder, type = 'text', readOnly = false, filterInput = null, validate = null, displayValue = null }) => {
   const [editing, setEditing] = useState(false)
   const [fieldError, setFieldError] = useState(null)
   const inputRef = useRef(null)
@@ -47,7 +73,7 @@ const EditableField = ({ value, onChange, placeholder, type = 'text', readOnly =
           />
         ) : (
           <span className={`flex-1 text-sm ${value ? 'text-[#261A54]' : 'text-[#aaa]'}`}>
-            {value || placeholder}
+            {(displayValue ?? value) || placeholder}
           </span>
         )}
         <button
@@ -81,15 +107,19 @@ const Section = ({ title, children }) => (
 // ─── ProfileEdit ──────────────────────────────────────────────────────────────
 const ProfileEdit = () => {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isSetup = searchParams.get('setup') === '1'
   const { user, mutate } = useUser()
 
   // Podaci o vlasniku
-  const [brandName, setBrandName] = useState(user?.name || '')
+  const [brandName, setBrandName] = useState(user?.brand_name || '')
   const [firstName, setFirstName] = useState(user?.first_name || '')
   const [lastName, setLastName] = useState(user?.last_name || '')
   const [phone, setPhone] = useState(user?.phone_number || '')
   const [address, setAddress] = useState(user?.address || '')
   const [dateOfBirth, setDateOfBirth] = useState(user?.date_of_birth || '')
+  const [activityId, setActivityId] = useState(String(user?.activity_id || user?.activity?.id || ''))
+  const [activityGroups, setActivityGroups] = useState([])
 
   // Podaci o firmi
   const [companyName, setCompanyName] = useState(user?.legal_entity?.company_name || '')
@@ -110,15 +140,23 @@ const ProfileEdit = () => {
   const [avatarError, setAvatarError] = useState(null)
   const fileInputRef = useRef(null)
 
+  // Fetch lista delatnosti
+  useEffect(() => {
+    activityGroupService.getActivityGroups()
+      .then(data => setActivityGroups(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [])
+
   // Sync state kada user učita podatke (SWR async)
   useEffect(() => {
     if (user) {
-      setBrandName(prev => prev || user.name || '')
+      setBrandName(prev => prev || user.brand_name || '')
       setFirstName(prev => prev || user.first_name || '')
       setLastName(prev => prev || user.last_name || '')
       setPhone(prev => prev || user.phone_number || '')
       setAddress(prev => prev || user.address || '')
       setDateOfBirth(prev => prev || user.date_of_birth || '')
+      setActivityId(prev => prev || String(user.activity_id || user.activity?.id || ''))
       setCompanyName(prev => prev || user.legal_entity?.company_name || '')
       setCompanyAddress(prev => prev || user.legal_entity?.company_address || '')
       setMb(prev => prev || user.legal_entity?.mb || '')
@@ -135,6 +173,16 @@ const ProfileEdit = () => {
     setFirstName(parts[0] || '')
     setLastName(parts.slice(1).join(' ') || '')
   }
+
+  // Naziv trenutno izabrane delatnosti (za hero prikaz)
+  const currentActivityName = (() => {
+    if (!activityId) return user?.activity?.name || user?.activity_group?.name || ''
+    for (const group of activityGroups) {
+      const found = (group.activities || []).find(a => String(a.id) === String(activityId))
+      if (found) return found.name
+    }
+    return user?.activity?.name || ''
+  })()
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0]
@@ -170,12 +218,14 @@ const ProfileEdit = () => {
     setSuccess(false)
     try {
       const payload = {}
-      if (brandName && brandName !== user?.name) payload.name = brandName
+      if (brandName !== (user?.brand_name || '')) payload.brand_name = brandName
       if (firstName !== (user?.first_name || '')) payload.first_name = firstName
       if (lastName !== (user?.last_name || '')) payload.last_name = lastName
       if (dateOfBirth !== (user?.date_of_birth || '')) payload.birth_date = dateOfBirth
       if (phone !== (user?.phone_number || '')) payload.phone_number = phone
       if (address !== (user?.address || '')) payload.address = address
+      const origActivityId = String(user?.activity_id || user?.activity?.id || '')
+      if (activityId !== origActivityId) payload.activity_id = activityId ? Number(activityId) : null
       if (companyName !== (user?.legal_entity?.company_name || '')) payload.company_name = companyName
       if (companyAddress !== (user?.legal_entity?.company_address || '')) payload.company_address = companyAddress
       if (mb !== (user?.legal_entity?.mb || '')) payload.mb = mb
@@ -302,7 +352,7 @@ const ProfileEdit = () => {
                 </svg>
               </div>
               <span className="text-base" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                {user?.activity?.name || user?.activity_group?.name || ''}
+                {currentActivityName}
               </span>
             </div>
           </div>
@@ -323,6 +373,21 @@ const ProfileEdit = () => {
 
       {/* ── Forma ── */}
       <div className="w-full bg-[#f5f5f5] pb-24 overflow-hidden" style={{ paddingTop: '56px' }}>
+        {/* Baner za dopunu profila (novi Google korisnici) */}
+        {(isSetup || user?.is_guest) && (
+          <div className="max-w-[1400px] mx-auto px-6 pt-4 pb-0">
+            <div className="rounded-2xl px-6 py-4 flex items-start gap-4" style={{ background: '#FFF3E0', border: '1.5px solid #F18020' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F18020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <div>
+                <p className="font-semibold text-sm" style={{ color: '#261A54' }}>Dobrodošli! Dopunite profil da postanete izlagač.</p>
+                <p className="text-sm mt-0.5" style={{ color: '#555' }}>Unesite <strong>naziv brenda</strong> i <strong>broj telefona</strong> — vaša rola će se automatski ažurirati na izlagač.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="max-w-[1400px] mx-auto px-6 pt-4">
             <p className="text-sm rounded-lg px-4 py-2 bg-red-50" style={{ color: '#EC4923' }}>{error}</p>
@@ -336,6 +401,11 @@ const ProfileEdit = () => {
               value={fullName}
               onChange={setFullName}
               placeholder="Ime i prezime"
+            />
+            <ActivitySelect
+              value={activityId}
+              onChange={setActivityId}
+              groups={activityGroups}
             />
             <EditableField
               value={user?.email || ''}
@@ -368,8 +438,9 @@ const ProfileEdit = () => {
             <EditableField
               value={dateOfBirth}
               onChange={setDateOfBirth}
-              placeholder="Datum rodjenja"
+              placeholder="Datum rođenja"
               type="date"
+              displayValue={dateOfBirth ? formatBirthDate(dateOfBirth) : null}
             />
             <EditableField
               value={facebook}

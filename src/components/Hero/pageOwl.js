@@ -132,7 +132,7 @@ export default PageHiroSection
 const HeroLeft = ({ title, description, icons }) => {
   return (
     <div
-      className="flex-1 w-full md:w-6/12 lg:w-6/12 xl:w-6/12 2xl:w-6/12 pt-0 md:pt-[120px]"
+      className="flex-1 w-full pt-0 md:pt-[120px]"
       style={{alignSelf: 'flex-start'}}
     >
       {title && <div 
@@ -182,8 +182,8 @@ const HeroLeft = ({ title, description, icons }) => {
               <span>{`Video zapisi`}</span>
             </Link>
         </div>}
-        {description && <span 
-          className="page-hero-section-description mt-20 w-full md:w-6/12 lg:w-6/12 2xl:x-2/12"
+        {description && <span
+          className="page-hero-section-description mt-20 w-full"
         >
           {description}
         </span>}

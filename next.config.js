@@ -42,6 +42,7 @@ const nextConfig = {
     headerItems: JSON.parse(officeConfig).agency.headerItems,
     footerItems: JSON.parse(officeConfig).agency.footerItems,
     officeData: JSON.parse(officeConfig).officeData,
+    socialLinks: JSON.parse(officeConfig).socialLinks,
   },
   async redirects() {
     return [

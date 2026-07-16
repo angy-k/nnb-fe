@@ -1,11 +1,14 @@
 'use client'
 
+import { Suspense } from 'react'
 import ProfileEdit from '@/components/Profile/edit'
 
 const ProfileEditPage = () => {
   return (
     <div className="w-full">
-      <ProfileEdit />
+      <Suspense>
+        <ProfileEdit />
+      </Suspense>
     </div>
   )
 }

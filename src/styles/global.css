@@ -592,6 +592,7 @@ h6 {
   left: 0;
   bottom: 0;
   padding: 75px 0;
+  color: #ffffff;
   @media screen and (max-width: 599px) {
     padding: 20px 0;
     align-items: center;
@@ -1055,6 +1056,7 @@ h6 {
   left: 0;
   bottom: 0;
   padding: 75px 0;
+  color: #ffffff;
   @media screen and (max-width: 599px) {
     padding: 20px 0;
     align-items: center;
@@ -2410,6 +2412,25 @@ h6 {
   top: 340px;
   right: 22%;
   animation: hero-twinkle 3.2s ease-in-out infinite 2s;
+  @media screen and (max-width: 599px) { display: none; }
+}
+
+/* Kese */
+.home-hero-decor--bag1 {
+  bottom: 160px;
+  left: 36%;
+  animation: hero-float 9s ease-in-out infinite 1s;
+  opacity: 0.9;
+  @media screen and (max-width: 1024px) { left: 20%; }
+  @media screen and (max-width: 599px) { display: none; }
+}
+
+.home-hero-decor--bag2 {
+  top: 200px;
+  right: 8%;
+  animation: hero-float 7s ease-in-out infinite 3s;
+  opacity: 0.8;
+  @media screen and (max-width: 1299px) { right: 2%; }
   @media screen and (max-width: 599px) { display: none; }
 }
 

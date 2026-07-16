@@ -62,11 +62,13 @@ const MyReservationsComponent = () => {
           const status = (item?.status ?? '').toString()
 
           const applicationStatus =
-            ['declined', 'declined_no_payment', 'withdrawn', 'cancelled', 'expired', 'unpaid', 'no_show'].includes(status)
-              ? 'rejected'
-              : status === 'approved'
-                ? 'approved'
-                : 'waiting'
+            ['withdrawn', 'cancelled'].includes(status)
+              ? 'cancelled'
+              : ['declined', 'declined_no_payment', 'expired', 'unpaid', 'no_show'].includes(status)
+                ? 'rejected'
+                : status === 'approved'
+                  ? 'approved'
+                  : 'waiting'
 
           return {
             id: item?.id,
@@ -99,8 +101,8 @@ const MyReservationsComponent = () => {
     setCancelStep('form')
     setCancelForm({
       brandName: user?.brand_name || user?.company_name || '',
-      firstName: user?.name?.split(' ')[0] || '',
-      lastName: user?.name?.split(' ').slice(1).join(' ') || '',
+      firstName: user?.first_name || '',
+      lastName: user?.last_name || '',
       email: user?.email || '',
       reason: '',
     })

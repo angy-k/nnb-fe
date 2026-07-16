@@ -102,21 +102,7 @@ const ReservationOptionsModal = ({
                     value="kw_xx"
                     checked={electricityOption === 'kw_xx'}
                     onChange={setElectricityOption}
-                    label="Da, potreban nam je strujni priključak od XX kW"
-                  />
-                  <RadioOption
-                    name="electricity"
-                    value="kw_yy"
-                    checked={electricityOption === 'kw_yy'}
-                    onChange={setElectricityOption}
-                    label="Da, potreban nam je strujni priključak od YY kW"
-                  />
-                  <RadioOption
-                    name="electricity"
-                    value="kw_zz"
-                    checked={electricityOption === 'kw_zz'}
-                    onChange={setElectricityOption}
-                    label="Da, potreban nam je strujni priključak od ZZ kW"
+                    label="Da, potreban nam je strujni priključak (do 2 kW)"
                   />
                   <RadioOption
                     name="electricity"

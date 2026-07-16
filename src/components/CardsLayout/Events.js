@@ -273,11 +273,11 @@ const Events = ({
       }
 
       if (res.status === 409) {
-        setReservationError('Već ste poslali prijavu za ovaj događaj.')
+        setReservationError(data?.message || 'Već ste poslali prijavu za ovaj događaj.')
         return
       }
 
-      setReservationError('Greška prilikom slanja prijave.')
+      setReservationError(data?.message || 'Greška prilikom slanja prijave.')
     } catch (e) {
       setReservationError('Greška prilikom slanja prijave.')
     } finally {

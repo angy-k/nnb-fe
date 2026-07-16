@@ -67,7 +67,7 @@ const registerSchema = Yup.object({
     .matches(phoneRegex, 'Unesite validan broj telefona (npr. 060 123 4567 ili +381 60 123 4567).'),
   birth_date: Yup.string()
     .required('Datum rođenja je obavezan.')
-    .test('valid-date', 'Unesite validan datum.', val => {
+    .test('valid-date', 'Izaberite validan datum.', val => {
       if (!val) return false
       const d = new Date(val)
       return !isNaN(d.getTime())
@@ -180,7 +180,9 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
   const [loadingActivityGroups, setLoadingActivityGroups] = useState(true)
 
   const recaptchaRef = useRef(null)
+  const loginRecaptchaRef = useRef(null)
   const setFieldValueRef = useRef(null) // bridge Formik setFieldValue outside form scope
+  const submittingRef = useRef(false) // sinhroni guard protiv višestrukih submitova
 
   useEffect(() => {
     let cancelled = false
@@ -213,13 +215,26 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
   // (CSRF pre-warm nije više potreban — koristimo Sanctum bearer token auth)
 
   const handleLogin = async values => {
-    if (isLoading) return
+    if (submittingRef.current || isLoading) return
+    submittingRef.current = true
 
     setIsLoading(true)
     setErrors({})
 
+    // reCAPTCHA — samo u produkciji
+    let recaptchaToken = ''
+    if (!isDevEnv()) {
+      recaptchaToken = loginRecaptchaRef.current?.getValue() || ''
+      if (!recaptchaToken) {
+        setErrors({ recaptcha_token: ['Molimo potvrdite da niste robot.'] })
+        submittingRef.current = false
+        setIsLoading(false)
+        return
+      }
+    }
+
     try {
-      const res = await authService.login({ values })
+      const res = await authService.login({ values: { ...values, recaptcha_token: recaptchaToken } })
       if (res.ok) {
         const data = await res.json()
         authService.storeToken(data.token)
@@ -242,12 +257,15 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
 
       setErrors({ failed: ['Došlo je do greške. Pokušaj ponovo.'] })
     } finally {
+      loginRecaptchaRef.current?.reset?.()
+      submittingRef.current = false
       setIsLoading(false)
     }
   }
 
   const handleRegister = async values => {
-    if (isLoading) return
+    if (submittingRef.current || isLoading) return
+    submittingRef.current = true
 
     setIsLoading(true)
     setErrors({})
@@ -299,8 +317,8 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
       let res = await authService.registerMultipart(payload)
       if (res.ok) {
         if (res.status === 204) {
-          // Email već postoji — server je poslao mejl sa uputstvima
-          setErrors({ failed: ['Na vašu email adresu smo poslali mejl sa uputstvima za prijavu.'] })
+          // Email već postoji
+          setErrors({ failed: ['Korisnik sa ovom email adresom je već registrovan. Pokušajte da se prijavite.'] })
           return
         }
         // 200 — novi korisnik kreiran, dobili smo Sanctum token
@@ -320,6 +338,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
 
       setErrors({ failed: ['Došlo je do greške. Pokušaj ponovo.'] })
     } finally {
+      submittingRef.current = false
       setIsLoading(false)
       if (!isDevEnv()) {
         recaptchaRef.current?.reset?.()
@@ -419,6 +438,14 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                   </div>
 
                   <AuthValidationErrors className="mb-3" errors={errors.failed} />
+
+                  {/* ReCAPTCHA */}
+                  {!isDevEnv() && (
+                    <div className="mb-3">
+                      <ReCAPTCHA sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY} ref={loginRecaptchaRef} />
+                      <AuthValidationErrors className="mb-1" errors={errors.recaptcha_token} />
+                    </div>
+                  )}
 
                   <button
                     type="submit"
@@ -588,7 +615,6 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                           type="date"
                           error={errors.birth_date}
                           setErrors={setErrors}
-                          placeholder="Datum rođenja"
                           className="line-flex w-full"
                         />
                       </div>
@@ -817,14 +843,13 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
         isOpen={isLegalDocsOpen}
         onOpenChange={onLegalDocsOpenChange}
         onClose={onLegalDocsClose}
-        size="2xl"
         backdrop="blur"
         scrollBehavior="inside"
         hideCloseButton
         classNames={{
           wrapper: 'nnb-modal-wrapper items-center justify-center',
           backdrop: 'nnb-modal-backdrop',
-          base: 'rounded-[32px] bg-white max-h-[80vh]',
+          base: 'nnb-modal-base max-h-[85vh]',
         }}
       >
         <ModalContent>

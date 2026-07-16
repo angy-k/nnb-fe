@@ -10,13 +10,20 @@ function OAuthCallbackInner() {
 
   useEffect(() => {
     const token = searchParams.get('token')
-    const redirect = searchParams.get('redirect') || '/profil'
+    const redirect = searchParams.get('redirect') || ''
+    const setup = searchParams.get('setup') === '1'
 
     if (token) {
       authService.storeToken(token)
     }
 
-    const safePath = redirect.startsWith('/') ? redirect : `/${redirect}`
+    // Novi/gost korisnik → preusmeri na dopunu profila
+    if (setup) {
+      router.replace('/profil/izmeni?setup=1')
+      return
+    }
+
+    const safePath = redirect.startsWith('/') ? redirect : (redirect ? `/${redirect}` : '/profil')
     router.replace(safePath)
   }, [router, searchParams])
 

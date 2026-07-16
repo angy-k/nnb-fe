@@ -3,9 +3,10 @@ import { formatTitleForUri } from '@/utils/transform-helper';
 import SectionImage from '@/components/SectionImage';
 
 const statusConfig = {
-  waiting:  { label: 'Rezervacija na čekanju', bg: '#FACE06' },
-  approved: { label: 'Uspešno rezervisano',    bg: '#56C4CF' },
-  rejected: { label: 'Rezervacija odbijena',   bg: '#EC4923' },
+  waiting:   { label: 'Rezervacija na čekanju', bg: '#FACE06' },
+  approved:  { label: 'Uspešno rezervisano',    bg: '#56C4CF' },
+  cancelled: { label: 'Rezervacija otkazana',   bg: '#EC4923' },
+  rejected:  { label: 'Rezervacija odbijena',   bg: '#EC4923' },
 }
 
 const MyReservations = ({ events = [], onCancelClick = null }) => {

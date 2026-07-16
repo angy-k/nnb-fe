@@ -10,6 +10,7 @@ import LeafBottomRight from '@/icons/leaf-bottom-right.svg';
 import MoonIcon from '@/icons/moon-icon.svg';
 import WhiteStarIcon from '@/icons/white-star-icon.svg';
 import YellowStarIcon from '@/icons/yellow-star-icon.svg';
+import ShoppingBagIcon from '@/icons/shopping-bag-icon.svg';
 
 // "300.000+" → { num: 300000, suffix: '+' }
 const parseStat = (str) => {
@@ -106,6 +107,14 @@ const HomeHero = ({
       </div>
       <div className="home-hero-decor home-hero-decor--star4" aria-hidden="true">
         <Image src={YellowStarIcon} width={14} height={22} alt="" />
+      </div>
+
+      {/* ── Kese ────────────────────────────────── */}
+      <div className="home-hero-decor home-hero-decor--bag1" aria-hidden="true">
+        <Image src={ShoppingBagIcon} width={72} height={86} alt="" />
+      </div>
+      <div className="home-hero-decor home-hero-decor--bag2" aria-hidden="true">
+        <Image src={ShoppingBagIcon} width={56} height={67} alt="" />
       </div>
 
       <div className="home-hero-container" style={{ position: 'relative', zIndex: 1 }}>

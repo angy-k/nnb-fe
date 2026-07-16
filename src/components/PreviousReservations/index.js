@@ -43,11 +43,13 @@ const MyPreviousReservationsComponent = () => {
             const status = (item?.status ?? '').toString()
 
             const applicationStatus =
-              ['declined', 'declined_no_payment', 'withdrawn', 'cancelled', 'expired', 'unpaid', 'no_show'].includes(status)
-                ? 'rejected'
-                : status === 'approved'
-                  ? 'approved'
-                  : 'waiting'
+              ['withdrawn', 'cancelled'].includes(status)
+                ? 'cancelled'
+                : ['declined', 'declined_no_payment', 'expired', 'unpaid', 'no_show'].includes(status)
+                  ? 'rejected'
+                  : status === 'approved'
+                    ? 'approved'
+                    : 'waiting'
 
             return {
               id: item?.id,

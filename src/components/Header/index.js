@@ -59,7 +59,7 @@ const Header = ({bgColor = '#261A54'}) => {
   const firstName = user?.first_name || ''
   const lastName = user?.last_name || ''
   const exhibitorFullName = `${firstName} ${lastName}`.trim() || user?.name || '-'
-  const brandName = user?.name || '-'
+  const brandName = user?.brand_name || user?.name || '-'
   const avatarSrc = user?.profile_photo_url || profilePhotoUrl
 
   useEffect(() => {
@@ -107,12 +107,14 @@ const Header = ({bgColor = '#261A54'}) => {
             />
           </svg>
         </button>
-        <Logo 
-          logoSrc={LogoDark}
-          logoWidth={192}
-          logoHeight={60.45}
-          logoAlt={'Header logo.'}
-        />
+        <div className="mr-8 lg:mr-12 flex-shrink-0">
+          <Logo
+            logoSrc={LogoDark}
+            logoWidth={192}
+            logoHeight={60.45}
+            logoAlt={'Header logo.'}
+          />
+        </div>
         <div className="main-header-items items-center">
           {!openMenu && (
             <div className="main-list lg:gap-7 header-items-list">
@@ -131,7 +133,7 @@ const Header = ({bgColor = '#261A54'}) => {
            onBecomeExhibitor={() => openAuthModal('login')}
           />
         )}
-        <div className="hidden md:flex lg:flex items-center gap-4 md:ml-auto lg:ml-auto">
+        <div className="hidden md:flex lg:flex items-center gap-6 md:ml-auto lg:ml-auto pl-8">
           {user ? (
             <>
               <button
@@ -187,6 +189,10 @@ const Header = ({bgColor = '#261A54'}) => {
                 </DropdownTrigger>
                 <DropdownMenu
                   aria-label="Profil meni"
+                  itemClasses={{
+                    base: 'text-white data-[hover=true]:bg-white/10',
+                    title: 'text-white',
+                  }}
                   onAction={async (key) => {
                     if (key === 'profile') {
                       router.push('/profil')

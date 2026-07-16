@@ -24,7 +24,6 @@ const submitApplication = async ({
   return post(
     '/api/v1/applications',
     payload,
-    { withCSRF: true },
   )
 }
 
@@ -38,7 +37,6 @@ const getMyApplications = async ({ active = true, past = false, page = 1, perPag
 const cancelApplication = (id, body = {}) => post(
   `/api/v1/applications/${id}/withdraw`,
   body,
-  { withCSRF: true },
 )
 
 export default {

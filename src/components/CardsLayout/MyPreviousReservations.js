@@ -1,9 +1,10 @@
 import SectionImage from '@/components/SectionImage';
 
 const statusLabel = {
-  waiting:  'Rezervacija na čekanju',
-  approved: 'Uspešno rezervisano!',
-  rejected: 'Rezervacija odbijena',
+  waiting:   'Rezervacija na čekanju',
+  approved:  'Uspešno rezervisano!',
+  cancelled: 'Rezervacija otkazana',
+  rejected:  'Rezervacija odbijena',
 }
 
 // Prethodne rezervacije koriste istu sivu boju za sve statuse

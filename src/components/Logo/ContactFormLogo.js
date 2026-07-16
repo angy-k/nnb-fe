@@ -19,6 +19,13 @@ const ContactFormLogo = () => {
   const phones = Array.isArray(officeData.phones) ? officeData.phones : []
   const emails = Array.isArray(officeData.emails) ? officeData.emails : []
 
+  const socialLinks = (() => {
+    const raw = process.env.socialLinks
+    if (!raw) return {}
+    if (typeof raw === 'object') return raw
+    try { return JSON.parse(raw) } catch { return {} }
+  })()
+
   return(
     <div className="office-contact">
       <Image
@@ -38,24 +45,30 @@ const ContactFormLogo = () => {
         ))}
       </div>
       <div style={{display: 'flex', flexDirection: 'row', gap: '15px', paddingTop: '25px'}}>
-        <Image
-          src={FacebookIcon}
-          width={30}
-          height={30}
-          alt={'Contact form facebook icon.'}
-        />
-        <Image
-          src={InstagramIcon}
-          width={30}
-          height={30}
-          alt={'Contact form instagram icon.'}
-        />
-        <Image
-          src={YouTubeIcon}
-          width={30}
-          height={30}
-          alt={'Contact form youtube icon.'}
-        />
+        <a href={socialLinks.fb || '#'} target="_blank" rel="noopener noreferrer">
+          <Image
+            src={FacebookIcon}
+            width={30}
+            height={30}
+            alt={'Contact form facebook icon.'}
+          />
+        </a>
+        <a href={socialLinks.instagram || '#'} target="_blank" rel="noopener noreferrer">
+          <Image
+            src={InstagramIcon}
+            width={30}
+            height={30}
+            alt={'Contact form instagram icon.'}
+          />
+        </a>
+        <a href={socialLinks.youtube || '#'} target="_blank" rel="noopener noreferrer">
+          <Image
+            src={YouTubeIcon}
+            width={30}
+            height={30}
+            alt={'Contact form youtube icon.'}
+          />
+        </a>
       </div>
     </div>
   )

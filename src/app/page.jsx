@@ -77,7 +77,6 @@ export default async function Home() {
       <section style={{
         background: '#F0F0F0',
         borderRadius: '50% 50% 50% 50% / 70px 70px 70px 70px',
-        marginTop: '-70px',
         position: 'relative',
         zIndex: 1,
         overflow: 'hidden',
@@ -109,7 +108,7 @@ export default async function Home() {
       <InstagramPosts />
 
       {/* Impressions Section */}
-      <section className=''>
+      <section className='pb-24'>
         <div className='w-full'>
           <Impressions />
         </div>
