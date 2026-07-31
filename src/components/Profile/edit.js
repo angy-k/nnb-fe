@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { formatBirthDate } from '@/utils/dateHelpers'
+import { formatBirthDate, parseDate } from '@/utils/dateHelpers'
+import { format } from 'date-fns'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Avatar } from '@nextui-org/avatar'
 import ProfileGallery from './gallery'
@@ -104,6 +105,107 @@ const Section = ({ title, children }) => (
   </div>
 )
 
+// ─── PasswordSection ──────────────────────────────────────────────────────────
+const PasswordSection = ({ isSocialUser }) => {
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(false)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(false)
+
+    if (newPassword.length < 8) {
+      setError('Lozinka mora imati najmanje 8 karaktera.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Lozinke se ne poklapaju.')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const payload = {
+        new_password: newPassword,
+        new_password_confirmation: confirmPassword,
+        ...(!isSocialUser && { current_password: currentPassword }),
+      }
+      const res = await profileService.changePassword(payload)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        const messages = data?.errors
+          ? Object.values(data.errors).flat().join(' ')
+          : data?.message || 'Greška pri promeni lozinke.'
+        setError(messages)
+        return
+      }
+      setSuccess(true)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch {
+      setError('Greška pri promeni lozinke.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const inputClass = "w-full bg-white rounded-full px-5 py-3 text-sm text-[#261A54] outline-none border-0 focus:ring-0 placeholder-gray-400"
+
+  return (
+    <Section title={isSocialUser ? 'Postavite lozinku' : 'Promena lozinke'}>
+      {isSocialUser && (
+        <p className="text-xs text-[#261A54] opacity-60 -mt-1">
+          Registrovani ste putem Google naloga. Možete postaviti lozinku kako biste se mogli prijaviti i emailom.
+        </p>
+      )}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        {!isSocialUser && (
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={e => setCurrentPassword(e.target.value)}
+            placeholder="Trenutna lozinka"
+            className={inputClass}
+            autoComplete="current-password"
+          />
+        )}
+        <input
+          type="password"
+          value={newPassword}
+          onChange={e => setNewPassword(e.target.value)}
+          placeholder="Nova lozinka"
+          className={inputClass}
+          autoComplete="new-password"
+        />
+        <input
+          type="password"
+          value={confirmPassword}
+          onChange={e => setConfirmPassword(e.target.value)}
+          placeholder="Potvrdite novu lozinku"
+          className={inputClass}
+          autoComplete="new-password"
+        />
+        {error && <p className="text-sm rounded-lg px-4 py-2 bg-red-50" style={{ color: '#EC4923' }}>{error}</p>}
+        {success && <p className="text-sm rounded-lg px-4 py-2 bg-green-50 text-green-700">Lozinka je uspešno promenjena.</p>}
+        <button
+          type="submit"
+          disabled={saving}
+          className="self-start rounded-full px-6 py-2 text-sm font-medium text-white transition-opacity disabled:opacity-50"
+          style={{ backgroundColor: '#261A54' }}
+        >
+          {saving ? 'Čuvanje...' : isSocialUser ? 'Postavite lozinku' : 'Promenite lozinku'}
+        </button>
+      </form>
+    </Section>
+  )
+}
+
 // ─── ProfileEdit ──────────────────────────────────────────────────────────────
 const ProfileEdit = () => {
   const router = useRouter()
@@ -113,19 +215,27 @@ const ProfileEdit = () => {
 
   // Podaci o vlasniku
   const [brandName, setBrandName] = useState(user?.brand_name || '')
-  const [firstName, setFirstName] = useState(user?.first_name || '')
-  const [lastName, setLastName] = useState(user?.last_name || '')
+  const [fullName, setFullName] = useState(
+    [user?.first_name, user?.last_name].filter(Boolean).join(' ')
+  )
   const [phone, setPhone] = useState(user?.phone_number || '')
   const [address, setAddress] = useState(user?.address || '')
-  const [dateOfBirth, setDateOfBirth] = useState(user?.date_of_birth || '')
+  const [dateOfBirth, setDateOfBirth] = useState(
+    user?.date_of_birth ? formatBirthDate(user.date_of_birth) : ''
+  )
   const [activityId, setActivityId] = useState(String(user?.activity_id || user?.activity?.id || ''))
   const [activityGroups, setActivityGroups] = useState([])
 
-  // Podaci o firmi
+  // Podaci o pravnom licu / gazdinstvu
+  // entityType: 'legal' | 'agricultural' | null (null = ni jedno nije selektovano)
+  const [entityType, setEntityType] = useState(
+    user?.legal_entity ? (user.legal_entity.entity_type || 'legal') : null
+  )
   const [companyName, setCompanyName] = useState(user?.legal_entity?.company_name || '')
   const [companyAddress, setCompanyAddress] = useState(user?.legal_entity?.company_address || '')
   const [mb, setMb] = useState(user?.legal_entity?.mb || '')
   const [pib, setPib] = useState(user?.legal_entity?.pib || '')
+  const [farmNumber, setFarmNumber] = useState(user?.legal_entity?.farm_number || '')
   const [isSefUser, setIsSefUser] = useState(!!user?.legal_entity?.is_sef_user)
 
   // Social
@@ -139,6 +249,7 @@ const ProfileEdit = () => {
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [avatarError, setAvatarError] = useState(null)
   const fileInputRef = useRef(null)
+  const brandNameRef = useRef(null)
 
   // Fetch lista delatnosti
   useEffect(() => {
@@ -151,28 +262,22 @@ const ProfileEdit = () => {
   useEffect(() => {
     if (user) {
       setBrandName(prev => prev || user.brand_name || '')
-      setFirstName(prev => prev || user.first_name || '')
-      setLastName(prev => prev || user.last_name || '')
+      setFullName(prev => prev || [user.first_name, user.last_name].filter(Boolean).join(' '))
       setPhone(prev => prev || user.phone_number || '')
       setAddress(prev => prev || user.address || '')
-      setDateOfBirth(prev => prev || user.date_of_birth || '')
+      setDateOfBirth(prev => prev || (user.date_of_birth ? formatBirthDate(user.date_of_birth) : ''))
       setActivityId(prev => prev || String(user.activity_id || user.activity?.id || ''))
+      setEntityType(prev => prev !== null ? prev : (user.legal_entity ? (user.legal_entity.entity_type || 'legal') : null))
       setCompanyName(prev => prev || user.legal_entity?.company_name || '')
       setCompanyAddress(prev => prev || user.legal_entity?.company_address || '')
       setMb(prev => prev || user.legal_entity?.mb || '')
       setPib(prev => prev || user.legal_entity?.pib || '')
+      setFarmNumber(prev => prev || user.legal_entity?.farm_number || '')
       setIsSefUser(!!user.legal_entity?.is_sef_user)
       setFacebook(prev => prev || user.facebook || '')
       setInstagram(prev => prev || user.instagram || '')
     }
   }, [user])
-
-  const fullName = [firstName, lastName].filter(Boolean).join(' ')
-  const setFullName = (val) => {
-    const parts = val.split(' ')
-    setFirstName(parts[0] || '')
-    setLastName(parts.slice(1).join(' ') || '')
-  }
 
   // Naziv trenutno izabrane delatnosti (za hero prikaz)
   const currentActivityName = (() => {
@@ -219,18 +324,37 @@ const ProfileEdit = () => {
     try {
       const payload = {}
       if (brandName !== (user?.brand_name || '')) payload.brand_name = brandName
-      if (firstName !== (user?.first_name || '')) payload.first_name = firstName
-      if (lastName !== (user?.last_name || '')) payload.last_name = lastName
-      if (dateOfBirth !== (user?.date_of_birth || '')) payload.birth_date = dateOfBirth
+      const origFullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ')
+      if (fullName !== origFullName) {
+        const trimmed = fullName.trim()
+        const spaceIdx = trimmed.indexOf(' ')
+        payload.first_name = spaceIdx >= 0 ? trimmed.slice(0, spaceIdx) : trimmed
+        payload.last_name = spaceIdx >= 0 ? trimmed.slice(spaceIdx + 1).trim() : ''
+      }
+      const origDateFormatted = user?.date_of_birth ? formatBirthDate(user.date_of_birth) : ''
+      if (dateOfBirth !== origDateFormatted) {
+        // konvertuj dd.MM.yyyy nazad u yyyy-MM-dd za API
+        const parsed = parseDate(dateOfBirth)
+        payload.birth_date = parsed ? format(parsed, 'yyyy-MM-dd') : dateOfBirth
+      }
       if (phone !== (user?.phone_number || '')) payload.phone_number = phone
       if (address !== (user?.address || '')) payload.address = address
       const origActivityId = String(user?.activity_id || user?.activity?.id || '')
       if (activityId !== origActivityId) payload.activity_id = activityId ? Number(activityId) : null
-      if (companyName !== (user?.legal_entity?.company_name || '')) payload.company_name = companyName
-      if (companyAddress !== (user?.legal_entity?.company_address || '')) payload.company_address = companyAddress
-      if (mb !== (user?.legal_entity?.mb || '')) payload.mb = mb
-      if (pib !== (user?.legal_entity?.pib || '')) payload.pib = pib
-      if (isSefUser !== !!user?.legal_entity?.is_sef_user) payload.is_sef_user = isSefUser
+      const origEntityType = user?.legal_entity ? (user.legal_entity.entity_type || 'legal') : null
+      if (entityType === 'legal') {
+        payload.is_legal_entity = true
+        if (companyName !== (user?.legal_entity?.company_name || '')) payload.company_name = companyName
+        if (companyAddress !== (user?.legal_entity?.company_address || '')) payload.company_address = companyAddress
+        if (mb !== (user?.legal_entity?.mb || '')) payload.mb = mb
+        if (pib !== (user?.legal_entity?.pib || '')) payload.pib = pib
+        if (isSefUser !== !!user?.legal_entity?.is_sef_user) payload.is_sef_user = isSefUser
+      } else if (entityType === 'agricultural') {
+        payload.is_agricultural = true
+        if (companyName !== (user?.legal_entity?.company_name || '')) payload.company_name = companyName
+        if (companyAddress !== (user?.legal_entity?.company_address || '')) payload.company_address = companyAddress
+        if (farmNumber !== (user?.legal_entity?.farm_number || '')) payload.farm_number = farmNumber
+      }
       if (facebook !== (user?.facebook || '')) payload.facebook = facebook
       if (instagram !== (user?.instagram || '')) payload.instagram = instagram
 
@@ -339,6 +463,7 @@ const ProfileEdit = () => {
             <div className="flex flex-col gap-1 pb-2">
               <div className="flex items-center gap-2">
                 <input
+                  ref={brandNameRef}
                   type="text"
                   value={brandName}
                   onChange={(e) => setBrandName(e.target.value)}
@@ -346,10 +471,17 @@ const ProfileEdit = () => {
                   style={{ color: '#ffffff' }}
                   placeholder="Naziv brenda"
                 />
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-60 flex-shrink-0">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
+                <button
+                  type="button"
+                  onClick={() => brandNameRef.current?.focus()}
+                  className="opacity-60 hover:opacity-100 transition cursor-pointer flex-shrink-0"
+                  aria-label="Izmeni naziv brenda"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
               </div>
               <span className="text-base" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {currentActivityName}
@@ -374,19 +506,56 @@ const ProfileEdit = () => {
       {/* ── Forma ── */}
       <div className="w-full bg-[#f5f5f5] pb-24 overflow-hidden" style={{ paddingTop: '56px' }}>
         {/* Baner za dopunu profila (novi Google korisnici) */}
-        {(isSetup || user?.is_guest) && (
-          <div className="max-w-[1400px] mx-auto px-6 pt-4 pb-0">
-            <div className="rounded-2xl px-6 py-4 flex items-start gap-4" style={{ background: '#FFF3E0', border: '1.5px solid #F18020' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F18020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-              <div>
-                <p className="font-semibold text-sm" style={{ color: '#261A54' }}>Dobrodošli! Dopunite profil da postanete izlagač.</p>
-                <p className="text-sm mt-0.5" style={{ color: '#555' }}>Unesite <strong>naziv brenda</strong> i <strong>broj telefona</strong> — vaša rola će se automatski ažurirati na izlagač.</p>
-              </div>
+        {(isSetup || user?.is_guest) && (() => {
+          const requiredMissing = [
+            !brandName.trim() && 'naziv brenda',
+            !phone.trim() && 'broj telefona',
+          ].filter(Boolean)
+
+          const recommendedMissing = [
+            !fullName.trim() && 'ime i prezime',
+            !address.trim() && 'adresa',
+            !dateOfBirth.trim() && 'datum rođenja',
+            !facebook.trim() && 'Facebook link',
+            !instagram.trim() && 'Instagram link',
+          ].filter(Boolean)
+
+          if (requiredMissing.length === 0 && recommendedMissing.length === 0) return null
+
+          const joinFields = (fields) => fields.map((f, i) => (
+            <span key={f}>
+              {i > 0 && (i === fields.length - 1 ? ' i ' : ', ')}
+              <strong>{f}</strong>
+            </span>
+          ))
+
+          return (
+            <div className="max-w-[1400px] mx-auto px-6 pt-4 pb-0 flex flex-col gap-3">
+              {requiredMissing.length > 0 && (
+                <div className="rounded-2xl px-6 py-4 flex items-start gap-4" style={{ background: '#FFF3E0', border: '1.5px solid #F18020' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F18020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <div>
+                    <p className="font-semibold text-sm" style={{ color: '#261A54' }}>Obavezno za postajanje izlagača</p>
+                    <p className="text-sm mt-0.5" style={{ color: '#555' }}>Unesite {joinFields(requiredMissing)} — vaša rola će se automatski ažurirati na izlagač.</p>
+                  </div>
+                </div>
+              )}
+              {recommendedMissing.length > 0 && (
+                <div className="rounded-2xl px-6 py-4 flex items-start gap-4" style={{ background: '#EEF5FB', border: '1.5px solid #56C4CF' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#56C4CF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <div>
+                    <p className="font-semibold text-sm" style={{ color: '#261A54' }}>Preporučeno za potpun profil</p>
+                    <p className="text-sm mt-0.5" style={{ color: '#555' }}>Dopunite i: {joinFields(recommendedMissing)}.</p>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {error && (
           <div className="max-w-[1400px] mx-auto px-6 pt-4">
@@ -433,14 +602,12 @@ const ProfileEdit = () => {
             <EditableField
               value={address}
               onChange={setAddress}
-              placeholder="Adresa"
+              placeholder="Adresa (ulica i broj, mesto, opština)"
             />
             <EditableField
               value={dateOfBirth}
               onChange={setDateOfBirth}
               placeholder="Datum rođenja"
-              type="date"
-              displayValue={dateOfBirth ? formatBirthDate(dateOfBirth) : null}
             />
             <EditableField
               value={facebook}
@@ -466,65 +633,154 @@ const ProfileEdit = () => {
             />
           </Section>
 
-          {/* Podaci o firmi */}
-          <Section title="Podaci o firmi">
-            <EditableField
-              value={companyName}
-              onChange={setCompanyName}
-              placeholder="Naziv firme"
-            />
-            <EditableField
-              value={companyAddress}
-              onChange={setCompanyAddress}
-              placeholder="Adresa firme"
-            />
-            <EditableField
-              value={mb}
-              onChange={setMb}
-              placeholder="MB: matični broj"
-              filterInput={(val) => val.replace(/\D/g, '')}
-              validate={(val) => {
-                if (!val) return null
-                if (!/^\d{8}$/.test(val)) return 'Matični broj mora imati tačno 8 cifara'
-                return null
+          {/* Podaci o pravnom licu */}
+          <Section title="Podaci o pravnom licu">
+            {/* Tip entiteta — mutually exclusive checkboxes */}
+            <label
+              className="flex items-center gap-3 cursor-pointer"
+              onClick={() => {
+                setEntityType(prev => prev === 'legal' ? null : 'legal')
+                setCompanyName('')
+                setCompanyAddress('')
+                setMb('')
+                setPib('')
+                setFarmNumber('')
+                setIsSefUser(false)
               }}
-            />
-            <EditableField
-              value={pib}
-              onChange={setPib}
-              placeholder="PIB"
-              filterInput={(val) => val.replace(/\D/g, '')}
-              validate={(val) => {
-                if (!val) return null
-                if (!/^\d{9}$/.test(val)) return 'PIB mora imati tačno 9 cifara'
-                return null
-              }}
-            />
-            {/* SEF checkbox — pojavljuje se samo ako korisnik ima pravno lice */}
-            {(companyName || mb || pib) && (
-              <label
-                className="flex items-center gap-3 cursor-pointer"
-                onClick={() => setIsSefUser(v => !v)}
+            >
+              <div
+                className="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+                style={{
+                  borderColor: entityType === 'legal' ? '#56C4CF' : '#d1d5db',
+                  backgroundColor: entityType === 'legal' ? '#56C4CF' : 'transparent',
+                }}
               >
-                <div
-                  className="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors"
-                  style={{
-                    borderColor: isSefUser ? '#56C4CF' : '#d1d5db',
-                    backgroundColor: isSefUser ? '#56C4CF' : 'transparent',
+                {entityType === 'legal' && (
+                  <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+                    <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </div>
+              <span className="text-sm text-[#261A54] select-none">Podaci pravnog lica</span>
+            </label>
+
+            <label
+              className="flex items-center gap-3 cursor-pointer"
+              onClick={() => {
+                setEntityType(prev => prev === 'agricultural' ? null : 'agricultural')
+                setCompanyName('')
+                setCompanyAddress('')
+                setMb('')
+                setPib('')
+                setFarmNumber('')
+                setIsSefUser(false)
+              }}
+            >
+              <div
+                className="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+                style={{
+                  borderColor: entityType === 'agricultural' ? '#56C4CF' : '#d1d5db',
+                  backgroundColor: entityType === 'agricultural' ? '#56C4CF' : 'transparent',
+                }}
+              >
+                {entityType === 'agricultural' && (
+                  <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+                    <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </div>
+              <span className="text-sm text-[#261A54] select-none">Podaci poljoprivrednog gazdinstva</span>
+            </label>
+
+            {/* Pravno lice polja */}
+            {entityType === 'legal' && (
+              <>
+                <EditableField
+                  value={companyName}
+                  onChange={setCompanyName}
+                  placeholder="Naziv firme"
+                />
+                <EditableField
+                  value={companyAddress}
+                  onChange={setCompanyAddress}
+                  placeholder="Adresa firme (ulica i broj, mesto, opština)"
+                />
+                <EditableField
+                  value={mb}
+                  onChange={setMb}
+                  placeholder="MB: matični broj"
+                  filterInput={(val) => val.replace(/\D/g, '')}
+                  validate={(val) => {
+                    if (!val) return null
+                    if (!/^\d{8}$/.test(val)) return 'Matični broj mora imati tačno 8 cifara'
+                    return null
                   }}
+                />
+                <EditableField
+                  value={pib}
+                  onChange={setPib}
+                  placeholder="PIB"
+                  filterInput={(val) => val.replace(/\D/g, '')}
+                  validate={(val) => {
+                    if (!val) return null
+                    if (!/^\d{9}$/.test(val)) return 'PIB mora imati tačno 9 cifara'
+                    return null
+                  }}
+                />
+                <label
+                  className="flex items-center gap-3 cursor-pointer"
+                  onClick={() => setIsSefUser(v => !v)}
                 >
-                  {isSefUser && (
-                    <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
-                      <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                </div>
-                <span className="text-sm text-[#261A54] select-none">
-                  Korisnik sam SEF-a (Sistem elektronskih faktura)
-                </span>
-              </label>
+                  <div
+                    className="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+                    style={{
+                      borderColor: isSefUser ? '#56C4CF' : '#d1d5db',
+                      backgroundColor: isSefUser ? '#56C4CF' : 'transparent',
+                    }}
+                  >
+                    {isSefUser && (
+                      <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+                        <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-sm text-[#261A54] select-none">
+                    Korisnik sam SEF-a (Sistem elektronskih faktura)
+                  </span>
+                </label>
+              </>
+            )}
+
+            {/* Gazdinstvo polja */}
+            {entityType === 'agricultural' && (
+              <>
+                <EditableField
+                  value={companyName}
+                  onChange={setCompanyName}
+                  placeholder="Naziv gazdinstva"
+                />
+                <EditableField
+                  value={companyAddress}
+                  onChange={setCompanyAddress}
+                  placeholder="Adresa gazdinstva (ulica i broj, mesto, opština)"
+                />
+                <EditableField
+                  value={farmNumber}
+                  onChange={setFarmNumber}
+                  placeholder="Broj gazdinstva"
+                  filterInput={(val) => val.replace(/\D/g, '')}
+                  validate={(val) => {
+                    if (!val) return null
+                    if (!/^\d{12}$/.test(val)) return 'Broj gazdinstva mora imati tačno 12 cifara'
+                    return null
+                  }}
+                />
+              </>
             )}
           </Section>
+
+          {/* Promena lozinke */}
+          <PasswordSection isSocialUser={!!user?.is_social_user} />
         </div>
 
         {/* Galerija */}

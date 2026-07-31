@@ -6,7 +6,7 @@ import { formatTitleForUri } from '@/utils/transform-helper';
 import { useRouter } from 'next/navigation'
 import PageHeroSection from '@/components/Hero/pageOwl';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { parse, startOfToday, endOfDay, isWithinInterval } from 'date-fns';
+import { parse, isWithinInterval } from 'date-fns';
 import eventService from '@/services/eventService';
 import useUser from '@/data/use-user'
 import applicationService from '@/services/applicationService'
@@ -48,6 +48,15 @@ const Events = ({
     if (!propEvents) {
       fetchEvents()
     }
+  }, [propEvents])
+
+  useEffect(() => {
+    if (propEvents) return // events managed by parent
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchEvents()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [propEvents])
 
   const fetchEvents = async () => {
@@ -96,11 +105,12 @@ const Events = ({
     setSelectedEvent(null)
   }
 
-  const parseDateOnly = (value) => {
+  const parseAppDateTime = (value) => {
     const v = (value ?? '').toString().trim()
     if (!v) return null
-    const formats = ['dd.MM.yyyy', 'd.MM.yyyy', 'd MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy']
-    for (const fmt of formats) {
+    const dateTimeFormats = ['d.MM.yyyy HH:mm', 'dd.MM.yyyy HH:mm', 'd.M.yyyy H:mm', 'dd.M.yyyy H:mm']
+    const dateOnlyFormats = ['dd.MM.yyyy', 'd.MM.yyyy', 'd MMM yyyy', 'd M yyyy']
+    for (const fmt of [...dateTimeFormats, ...dateOnlyFormats]) {
       const d = parse(v, fmt, new Date())
       if (!Number.isNaN(d?.getTime?.())) return d
     }
@@ -109,13 +119,12 @@ const Events = ({
 
   const canApply = (event) => {
     if (!user) return false
-    const today = startOfToday()
     const isPackageUser = !!user?.active_package
     const rawStart = isPackageUser ? event?.preApplicationStartDate : event?.applicationStartDate
-    const applicationStart = parseDateOnly(rawStart)
-    const applicationEnd = parseDateOnly(event?.applicationEndDate)
+    const applicationStart = parseAppDateTime(rawStart)
+    const applicationEnd = parseAppDateTime(event?.applicationEndDate)
     if (!applicationStart || !applicationEnd) return false
-    return isWithinInterval(today, { start: applicationStart, end: endOfDay(applicationEnd) })
+    return isWithinInterval(new Date(), { start: applicationStart, end: applicationEnd })
   }
 
   const stopSessionTimer = useCallback(() => {
@@ -202,16 +211,19 @@ const Events = ({
   const computeConfirmCosts = (event, electricityOpt, marketingOpt) => {
     const cotization = Number(event?.downPayment) || 0
 
-    const electricityCostBase = Number(event?.electricityExtensionCoasts) || 0
+    const rawElectricity = event?.electricityExtensionCoasts
+    const electricityCostBase = rawElectricity != null && rawElectricity !== '' ? Number(rawElectricity) : null
     const electricity = electricityOpt && electricityOpt !== 'none' ? electricityCostBase : null
 
-    const fb = Number(event?.fbMarketingCoasts) || 0
-    const ig = Number(event?.ingMarketingCoasts) || 0
+    const rawFb = event?.fbMarketingCoasts
+    const rawIg = event?.ingMarketingCoasts
+    const fb = rawFb != null && rawFb !== '' ? Number(rawFb) : null
+    const ig = rawIg != null && rawIg !== '' ? Number(rawIg) : null
 
     let marketing = null
     if (marketingOpt === 'facebook') marketing = fb
     else if (marketingOpt === 'instagram') marketing = ig
-    else if (marketingOpt === 'instagram_facebook') marketing = fb + ig
+    else if (marketingOpt === 'instagram_facebook') marketing = (fb ?? 0) + (ig ?? 0)
 
     return { cotization, electricity, marketing }
   }
@@ -412,6 +424,7 @@ const Events = ({
         eventName={(selectedEvent?.title || selectedEvent?.name || '').toString()}
         onConfirm={confirmReservation}
         onCancel={cancelReservation}
+        costs={confirmCosts}
         isLoading={isSubmittingReservation}
         successMessage={reservationSuccess}
         errorMessage={reservationError}

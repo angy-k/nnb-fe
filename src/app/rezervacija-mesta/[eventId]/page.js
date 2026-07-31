@@ -109,10 +109,10 @@ const ReservationMapPage = () => {
   }
 
   const [eventDetails, setEventDetails] = useState({
-    downPayment: 0,
-    electricityExtensionCoasts: 0,
-    fbMarketingCoasts: 0,
-    ingMarketingCoasts: 0,
+    downPayment: null,
+    electricityExtensionCoasts: null,
+    fbMarketingCoasts: null,
+    ingMarketingCoasts: null,
     termsPdfUrl: null,
   })
   const [eventName, setEventName] = useState('')
@@ -120,16 +120,19 @@ const ReservationMapPage = () => {
   const computeConfirmCosts = (electricityOpt, marketingOpt) => {
     const cotization = Number(eventDetails?.downPayment) || 0
 
-    const electricityCostBase = Number(eventDetails?.electricityExtensionCoasts) || 0
+    const rawElectricity = eventDetails?.electricityExtensionCoasts
+    const electricityCostBase = rawElectricity != null && rawElectricity !== '' ? Number(rawElectricity) : null
     const electricity = electricityOpt && electricityOpt !== 'none' ? electricityCostBase : null
 
-    const fb = Number(eventDetails?.fbMarketingCoasts) || 0
-    const ig = Number(eventDetails?.ingMarketingCoasts) || 0
+    const rawFb = eventDetails?.fbMarketingCoasts
+    const rawIg = eventDetails?.ingMarketingCoasts
+    const fb = rawFb != null && rawFb !== '' ? Number(rawFb) : null
+    const ig = rawIg != null && rawIg !== '' ? Number(rawIg) : null
 
     let marketing = null
     if (marketingOpt === 'facebook') marketing = fb
     else if (marketingOpt === 'instagram') marketing = ig
-    else if (marketingOpt === 'instagram_facebook') marketing = fb + ig
+    else if (marketingOpt === 'instagram_facebook') marketing = (fb ?? 0) + (ig ?? 0)
 
     return { cotization, electricity, marketing }
   }
@@ -265,11 +268,12 @@ const ReservationMapPage = () => {
         const found = items.find((e) => String(e?.id) === String(eventId))
         if (!found) return
 
+        const toNum = (v) => (v != null && v !== '') ? Number(v) : null
         setEventDetails({
           downPayment: Number(found?.downPayment) || 0,
-          electricityExtensionCoasts: Number(found?.electricityExtensionCoasts) || 0,
-          fbMarketingCoasts: Number(found?.fbMarketingCoasts) || 0,
-          ingMarketingCoasts: Number(found?.ingMarketingCoasts) || 0,
+          electricityExtensionCoasts: toNum(found?.electricityExtensionCoasts),
+          fbMarketingCoasts: toNum(found?.fbMarketingCoasts),
+          ingMarketingCoasts: toNum(found?.ingMarketingCoasts),
           termsPdfUrl: found?.termsPdfUrl || null,
         })
         setEventName((found?.title || found?.name || '').toString())
@@ -786,6 +790,7 @@ const ReservationMapPage = () => {
           setReservationError(null)
           setReservationSuccess(null)
         }}
+        costs={confirmCosts}
         timeRemaining={!isPackageUser && !sessionExpired ? sessionSecondsLeft : null}
       />
     </div>

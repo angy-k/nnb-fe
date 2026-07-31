@@ -34,11 +34,41 @@ const CheckmarkIcon = () => (
   </svg>
 )
 
+const fmt = (n) => Number.isFinite(n) && n >= 0 ? `${n.toLocaleString('sr-RS')} RSD` : null
+
+const CostRow = ({ label, value }) => {
+  if (!value) return null
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #eee', fontSize: '15px', color: '#261A54' }}>
+      <span>{label}</span>
+      <span style={{ fontWeight: '600' }}>{value}</span>
+    </div>
+  )
+}
+
+const CostSummary = ({ costs }) => {
+  if (!costs) return null
+  const { cotization, electricity, marketing } = costs
+  const total = (Number(cotization) || 0) + (Number(electricity) || 0) + (Number(marketing) || 0)
+  return (
+    <div style={{ width: '100%', maxWidth: '420px', background: '#f8f9fb', borderRadius: '12px', padding: '16px 20px', marginBottom: '8px' }}>
+      <CostRow label="Kotizacija" value={fmt(cotization)} />
+      <CostRow label="Strujni priključak" value={fmt(electricity)} />
+      <CostRow label="Reklamiranje" value={fmt(marketing)} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 0', fontSize: '16px', fontWeight: '700', color: '#261A54' }}>
+        <span>Ukupno</span>
+        <span>{fmt(total)}</span>
+      </div>
+    </div>
+  )
+}
+
 const BoothReservationConfirmModal = ({
   isOpen,
   onClose,
   title = 'Da li želite da rezervišete tezgu?',
   eventName = '',
+  costs = null,
   onConfirm,
   onCancel,
   isLoading = false,
@@ -134,6 +164,8 @@ const BoothReservationConfirmModal = ({
                       </div>
                     </div>
                   )}
+
+                  <CostSummary costs={costs} />
 
                   <div className="flex items-center gap-4">
                     <button

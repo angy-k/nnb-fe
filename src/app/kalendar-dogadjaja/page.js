@@ -5,7 +5,7 @@ import Button from '@/components/Button';
 import UpcommingEvents from '@/components/UpcommingEvents';
 import useUser from '@/data/use-user'
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { add, parse, startOfToday, endOfDay, isWithinInterval, isSameDay } from 'date-fns'
+import { add, parse, isWithinInterval, isSameDay, startOfToday } from 'date-fns'
 import eventService from '@/services/eventService'
 import applicationService from '@/services/applicationService'
 import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
@@ -43,103 +43,111 @@ const CalendarPage = () => {
   const sessionIntervalRef = useRef(null)
   const sessionActiveRef = useRef(false)
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = eventService.getActiveEvents
-          ? await eventService.getActiveEvents()
-          : await eventService.getEvents()
-        if (!response.ok) {
-          setEvents([])
-          return
-        }
-
-        const data = await response.json()
-        if (!data?.success) {
-          setEvents([])
-          return
-        }
-
-        const items = Array.isArray(data.data)
-          ? data.data
-          : Array.isArray(data.data?.data)
-            ? data.data.data
-            : []
-
-        const today = startOfToday()
-
-        const parseWithFallbacks = (value, formats) => {
-          for (const fmt of formats) {
-            const d = parse(value, fmt, new Date())
-            if (!Number.isNaN(d?.getTime?.())) return d
-          }
-          return null
-        }
-
-        const detailsMap = {}
-        const mapped = items
-          .map((item) => {
-            const rawStart = (item?.dateTime ?? '').toString().trim()
-            if (!rawStart) return null
-
-            const startDate = parseWithFallbacks(rawStart, [
-              'dd.MM.yyyy HH:mm',
-              'd.MM.yyyy HH:mm',
-              'd MMM yyyy HH:mm',
-              'd M yyyy HH:mm',
-              'dd MMM yyyy HH:mm',
-              'dd M yyyy HH:mm',
-            ])
-            if (!startDate) return null
-
-            const endDate = add(startDate, { hours: 1 })
-
-            const rawApplicationEnd = (item?.applicationEndDate ?? '').toString().trim()
-            const applicationEndDate = rawApplicationEnd
-              ? parseWithFallbacks(rawApplicationEnd, [
-                  'dd.MM.yyyy',
-                  'd.MM.yyyy',
-                  'd MMM yyyy',
-                  'd M yyyy',
-                  'dd MMM yyyy',
-                  'dd M yyyy',
-                ])
-              : null
-
-            const isActiveFromApi = typeof item?.isActive === 'boolean' ? item.isActive : null
-
-            // Ako je admin eksplicitno deaktivirao događaj — ne prikazuj ga
-            if (isActiveFromApi === false) return null
-
-            const id = (item?.id ?? '').toString()
-            if (!id) return null
-
-            detailsMap[id] = item
-
-            const title = (item?.title ?? item?.name ?? '').toString()
-            const isPast = startDate < today
-
-            return {
-              id,
-              title,
-              start_date: startDate,
-              end_date: endDate,
-              variant: /startup/i.test(title) ? 'startup' : 'regular',
-              isPast,
-            }
-          })
-          .filter(Boolean)
-
-        setEvents(mapped)
-        setEventDetailsById(detailsMap)
-      } catch (e) {
+  const fetchEvents = useCallback(async () => {
+    try {
+      const response = eventService.getActiveEvents
+        ? await eventService.getActiveEvents()
+        : await eventService.getEvents()
+      if (!response.ok) {
         setEvents([])
-        setEventDetailsById({})
+        return
       }
-    }
 
-    fetchEvents()
+      const data = await response.json()
+      if (!data?.success) {
+        setEvents([])
+        return
+      }
+
+      const items = Array.isArray(data.data)
+        ? data.data
+        : Array.isArray(data.data?.data)
+          ? data.data.data
+          : []
+
+      const today = startOfToday()
+
+      const parseWithFallbacks = (value, formats) => {
+        for (const fmt of formats) {
+          const d = parse(value, fmt, new Date())
+          if (!Number.isNaN(d?.getTime?.())) return d
+        }
+        return null
+      }
+
+      const detailsMap = {}
+      const mapped = items
+        .map((item) => {
+          const rawStart = (item?.dateTime ?? '').toString().trim()
+          if (!rawStart) return null
+
+          const startDate = parseWithFallbacks(rawStart, [
+            'dd.MM.yyyy HH:mm',
+            'd.MM.yyyy HH:mm',
+            'd MMM yyyy HH:mm',
+            'd M yyyy HH:mm',
+            'dd MMM yyyy HH:mm',
+            'dd M yyyy HH:mm',
+          ])
+          if (!startDate) return null
+
+          const endDate = add(startDate, { hours: 1 })
+
+          const rawApplicationEnd = (item?.applicationEndDate ?? '').toString().trim()
+          const applicationEndDate = rawApplicationEnd
+            ? parseWithFallbacks(rawApplicationEnd, [
+                'dd.MM.yyyy',
+                'd.MM.yyyy',
+                'd MMM yyyy',
+                'd M yyyy',
+                'dd MMM yyyy',
+                'dd M yyyy',
+              ])
+            : null
+
+          const isActiveFromApi = typeof item?.isActive === 'boolean' ? item.isActive : null
+
+          // Ako je admin eksplicitno deaktivirao događaj — ne prikazuj ga
+          if (isActiveFromApi === false) return null
+
+          const id = (item?.id ?? '').toString()
+          if (!id) return null
+
+          detailsMap[id] = item
+
+          const title = (item?.title ?? item?.name ?? '').toString()
+          const isPast = startDate < today
+
+          return {
+            id,
+            title,
+            start_date: startDate,
+            end_date: endDate,
+            variant: /startup/i.test(title) ? 'startup' : 'regular',
+            isPast,
+          }
+        })
+        .filter(Boolean)
+
+      setEvents(mapped)
+      setEventDetailsById(detailsMap)
+    } catch (e) {
+      setEvents([])
+      setEventDetailsById({})
+    }
   }, [])
+
+  useEffect(() => {
+    fetchEvents()
+  }, [fetchEvents])
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchEvents()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [fetchEvents])
 
   const selectedEvent = selectedEventId ? eventDetailsById?.[selectedEventId] : null
 
@@ -254,16 +262,19 @@ const CalendarPage = () => {
   const computeConfirmCosts = (event, electricityOpt, marketingOpt) => {
     const cotization = Number(event?.downPayment) || 0
 
-    const electricityCostBase = Number(event?.electricityExtensionCoasts) || 0
+    const rawElectricity = event?.electricityExtensionCoasts
+    const electricityCostBase = rawElectricity != null && rawElectricity !== '' ? Number(rawElectricity) : null
     const electricity = electricityOpt && electricityOpt !== 'none' ? electricityCostBase : null
 
-    const fb = Number(event?.fbMarketingCoasts) || 0
-    const ig = Number(event?.ingMarketingCoasts) || 0
+    const rawFb = event?.fbMarketingCoasts
+    const rawIg = event?.ingMarketingCoasts
+    const fb = rawFb != null && rawFb !== '' ? Number(rawFb) : null
+    const ig = rawIg != null && rawIg !== '' ? Number(rawIg) : null
 
     let marketing = null
     if (marketingOpt === 'facebook') marketing = fb
     else if (marketingOpt === 'instagram') marketing = ig
-    else if (marketingOpt === 'instagram_facebook') marketing = fb + ig
+    else if (marketingOpt === 'instagram_facebook') marketing = (fb ?? 0) + (ig ?? 0)
 
     return { cotization, electricity, marketing }
   }
@@ -334,13 +345,13 @@ const CalendarPage = () => {
   }
 
   const isPackageUser = !!user?.active_package
-  const today = startOfToday()
-  const parseDateOnly = (value) => {
+
+  const parseAppDateTime = (value) => {
     const v = (value ?? '').toString().trim()
     if (!v) return null
-
-    const formats = ['dd.MM.yyyy', 'd.MM.yyyy', 'd MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy']
-    for (const fmt of formats) {
+    const dateTimeFormats = ['d.MM.yyyy HH:mm', 'dd.MM.yyyy HH:mm', 'd.M.yyyy H:mm', 'dd.M.yyyy H:mm']
+    const dateOnlyFormats = ['dd.MM.yyyy', 'd.MM.yyyy', 'd MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy']
+    for (const fmt of [...dateTimeFormats, ...dateOnlyFormats]) {
       const d = parse(v, fmt, new Date())
       if (!Number.isNaN(d?.getTime?.())) return d
     }
@@ -350,14 +361,14 @@ const CalendarPage = () => {
   const applicationStartRaw = selectedEvent
     ? (isPackageUser ? selectedEvent?.preApplicationStartDate : selectedEvent?.applicationStartDate)
     : null
-  const applicationStart = applicationStartRaw ? parseDateOnly(applicationStartRaw) : null
-  const applicationEnd = selectedEvent?.applicationEndDate ? parseDateOnly(selectedEvent.applicationEndDate) : null
+  const applicationStart = applicationStartRaw ? parseAppDateTime(applicationStartRaw) : null
+  const applicationEnd = selectedEvent?.applicationEndDate ? parseAppDateTime(selectedEvent.applicationEndDate) : null
 
   const canApply =
     !!user &&
     !!applicationStart &&
     !!applicationEnd &&
-    isWithinInterval(today, { start: applicationStart, end: endOfDay(applicationEnd) })
+    isWithinInterval(new Date(), { start: applicationStart, end: applicationEnd })
 
   const brandName = user?.name || ''
   const avatarSrc = user?.profile_photo_url || null
@@ -404,7 +415,7 @@ const CalendarPage = () => {
           <Calendar view={'month'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
         </div>
         <div className="block md:hidden lg:hidden" style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
-          <Calendar view={'day'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
+          <Calendar view={'month'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
         </div>
 
         {/* Legenda — samo za ulogovane korisnike */}
@@ -485,6 +496,7 @@ const CalendarPage = () => {
           eventName={(selectedEvent?.title || selectedEvent?.name || '').toString()}
           onConfirm={confirmReservation}
           onCancel={cancelReservation}
+          costs={confirmCosts}
           isLoading={isSubmittingReservation}
           successMessage={reservationSuccess}
           errorMessage={reservationError}

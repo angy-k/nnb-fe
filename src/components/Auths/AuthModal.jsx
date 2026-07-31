@@ -97,16 +97,18 @@ const registerSchema = Yup.object({
     .max(200, 'Adresa ne sme biti duža od 200 karaktera.'),
   city: Yup.string().max(100, 'Naziv mesta ne sme biti duži od 100 karaktera.'),
   terms_accepted: Yup.boolean().oneOf([true], 'Moraš da prihvatiš politiku privatnosti.'),
-  company_name: Yup.string().when('is_legal_entity', {
-    is: true, then: s => s
-      .required('Naziv firme je obavezan.')
-      .min(2, 'Naziv firme mora imati najmanje 2 karaktera.')
-      .max(150, 'Naziv firme ne sme biti duži od 150 karaktera.'),
+  company_name: Yup.string().when(['is_legal_entity', 'is_agricultural'], {
+    is: (isLegal, isAgri) => isLegal || isAgri,
+    then: s => s
+      .required('Naziv je obavezan.')
+      .min(2, 'Naziv mora imati najmanje 2 karaktera.')
+      .max(150, 'Naziv ne sme biti duži od 150 karaktera.'),
   }),
-  company_address: Yup.string().when('is_legal_entity', {
-    is: true, then: s => s
-      .required('Adresa firme je obavezna.')
-      .min(5, 'Unesite punu adresu firme.'),
+  company_address: Yup.string().when(['is_legal_entity', 'is_agricultural'], {
+    is: (isLegal, isAgri) => isLegal || isAgri,
+    then: s => s
+      .required('Adresa je obavezna.')
+      .min(5, 'Unesite punu adresu.'),
   }),
   mb: Yup.string().when('is_legal_entity', {
     is: true, then: s => s
@@ -117,6 +119,11 @@ const registerSchema = Yup.object({
     is: true, then: s => s
       .required('PIB je obavezan.')
       .matches(/^\d{9}$/, 'PIB mora imati tačno 9 cifara.'),
+  }),
+  farm_number: Yup.string().when('is_agricultural', {
+    is: true, then: s => s
+      .required('Broj gazdinstva je obavezan.')
+      .matches(/^\d{12}$/, 'Broj gazdinstva mora imati tačno 12 cifara.'),
   }),
 })
 
@@ -288,6 +295,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
       payload.append('city', values.city || values.address || '')
 
       payload.append('is_legal_entity', values.is_legal_entity ? '1' : '0')
+      payload.append('is_agricultural', values.is_agricultural ? '1' : '0')
       payload.append('terms_accepted', values.terms_accepted ? '1' : '0')
 
       if (values.is_legal_entity) {
@@ -296,6 +304,10 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
         payload.append('mb', values.mb || '')
         payload.append('pib', values.pib || '')
         payload.append('is_sef_user', values.is_sef_user ? '1' : '0')
+      } else if (values.is_agricultural) {
+        payload.append('company_name', values.company_name || '')
+        payload.append('company_address', values.company_address || '')
+        payload.append('farm_number', values.farm_number || '')
       }
 
       if (values.brand_logo instanceof File) {
@@ -499,8 +511,10 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
             password: '',
             birth_date: '',
             is_legal_entity: false,
+            is_agricultural: false,
             mb: '',
             pib: '',
+            farm_number: '',
             is_sef_user: false,
             company_name: '',
             company_address: '',
@@ -664,7 +678,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                           type="text"
                           error={errors.address}
                           setErrors={setErrors}
-                          placeholder="Adresa i mesto stanovanja"
+                          placeholder="Adresa (ulica i broj, mesto, opština)"
                           className="line-flex w-full"
                         />
                       </div>
@@ -702,14 +716,39 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                             checked={!!values.is_legal_entity}
                             onChange={e => {
                               setFieldValue('is_legal_entity', e.target.checked)
+                              if (e.target.checked) setFieldValue('is_agricultural', false)
                               setFieldValue('company_name', '')
                               setFieldValue('company_address', '')
+                              setFieldValue('mb', '')
+                              setFieldValue('pib', '')
+                              setFieldValue('farm_number', '')
+                              setFieldValue('is_sef_user', false)
+                            }}
+                          />
+                          Prijavljujem se kao pravno lice.
+                        </label>
+                      </div>
+
+                      {/* Agricultural holding toggle */}
+                      <div>
+                        <label className="flex items-center gap-2 text-[#261A54] text-sm cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="is_agricultural"
+                            className="auth-legal-entity-checkbox"
+                            checked={!!values.is_agricultural}
+                            onChange={e => {
+                              setFieldValue('is_agricultural', e.target.checked)
+                              if (e.target.checked) setFieldValue('is_legal_entity', false)
+                              setFieldValue('company_name', '')
+                              setFieldValue('company_address', '')
+                              setFieldValue('farm_number', '')
                               setFieldValue('mb', '')
                               setFieldValue('pib', '')
                               setFieldValue('is_sef_user', false)
                             }}
                           />
-                          Prijavljujem se kao pravno lice.
+                          Prijavljujem se kao poljoprivredno gazdinstvo.
                         </label>
                       </div>
 
@@ -732,7 +771,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                               type="text"
                               error={errors.company_address}
                               setErrors={setErrors}
-                              placeholder="Sedište"
+                              placeholder="Sedište — ulica i broj, mesto, opština"
                               className="line-flex w-full"
                             />
                           </div>
@@ -771,6 +810,44 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                               />
                               Korisnik sam SEF-a (Sistem elektronskih faktura).
                             </label>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Agricultural holding fields */}
+                      {values.is_agricultural && (
+                        <>
+                          <div>
+                            <MainTextInput
+                              name="company_name"
+                              type="text"
+                              error={errors.company_name}
+                              setErrors={setErrors}
+                              placeholder="Naziv gazdinstva"
+                              className="line-flex w-full"
+                            />
+                          </div>
+                          <div>
+                            <MainTextInput
+                              name="company_address"
+                              type="text"
+                              error={errors.company_address}
+                              setErrors={setErrors}
+                              placeholder="Adresa gazdinstva — ulica i broj, mesto, opština"
+                              className="line-flex w-full"
+                            />
+                          </div>
+                          <div>
+                            <MainTextInput
+                              name="farm_number"
+                              type="text"
+                              inputMode="numeric"
+                              error={errors.farm_number}
+                              setErrors={setErrors}
+                              placeholder="Broj gazdinstva"
+                              className="line-flex w-full"
+                              onKeyDown={e => { if (e.key.length === 1 && !/\d/.test(e.key)) e.preventDefault() }}
+                            />
                           </div>
                         </>
                       )}

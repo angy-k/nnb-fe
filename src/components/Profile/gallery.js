@@ -5,7 +5,8 @@ import Image from 'next/image'
 import galleryService from '@/services/galleryService'
 import MediaUploadModal from './MediaUploadModal'
 
-const MAX_ITEMS = 20
+const MAX_IMAGES = 3
+const MAX_VIDEOS = 1
 
 const TrashIcon = () => (
   <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -42,10 +43,8 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
   const [videoModalOpen, setVideoModalOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(null) // { id, type }
 
-  const total = images.length + videos.length
-
   const handleImageUpload = async (file) => {
-    if (!file || total >= MAX_ITEMS) return
+    if (!file || images.length >= MAX_IMAGES) return
     setUploading(true)
     try {
       const res = await galleryService.uploadImage(file)
@@ -66,7 +65,7 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
   }
 
   const handleAddVideo = async (url) => {
-    if (total >= MAX_ITEMS) return
+    if (videos.length >= MAX_VIDEOS) return
     setAddingVideo(true)
     try {
       const res = await galleryService.addVideo(url)
@@ -126,7 +125,7 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
             {editable ? 'Galerija' : 'Galerija fotografija'}
           </span>
           {editable && (
-            <span className="text-sm text-[#261A54]/50">{total}/{MAX_ITEMS} medija</span>
+            <span className="text-sm text-[#261A54]/50">{images.length}/{MAX_IMAGES} fotografija</span>
           )}
         </div>
 
@@ -155,7 +154,7 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
           ))}
 
           {/* Upload slot kao grid ćelija (edit mode) */}
-          {editable && total < MAX_ITEMS && (
+          {editable && images.length < MAX_IMAGES && (
             <button
               type="button"
               disabled={uploading}
@@ -198,6 +197,9 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <span className="edit-profile-subtitle">Video galerija</span>
+          {editable && (
+            <span className="text-sm text-[#261A54]/50">{videos.length}/{MAX_VIDEOS} video</span>
+          )}
         </div>
 
 
@@ -240,7 +242,7 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
           })}
 
           {/* Upload slot za video (edit mode) */}
-          {editable && total < MAX_ITEMS && (
+          {editable && videos.length < MAX_VIDEOS && (
             <div
               className="rounded-[20px] aspect-video flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#261A54]/20 text-[#261A54]/50 cursor-pointer hover:border-[#56C4CF] hover:text-[#56C4CF] transition"
               onClick={() => setVideoModalOpen(true)}

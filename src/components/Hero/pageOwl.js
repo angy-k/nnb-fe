@@ -60,69 +60,53 @@ const PageHiroSection = ({
       </div>
     )
   }
-  const titleHero = () => {
-    return (
-      <div className="w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto page-hero-section"
-      >
-        <HeroLeft
-          title={title}
-          description={description}
-          icons={icons}
-        />
-        <HeroRight
-          illustration={illustration}
-          description={description}
-        />
-      </div>
-    )
-  }
-
-  const getHeroSection = () => {
-    switch(type) {
-      case 'image':
-        return (
-          <div className="w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto page-hero-section">
-            <HeroWithImage 
-              title={title}
-              formatTitle={formatTitle}
-              image={image}
-              illustration={illustration}
-            />
-          </div>
-        )
-      case 'title' || 'icons' || 'description':
-        return (
-          <div 
-            className={cn("w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto page-hero-section",title ? '' : 'pt-60')}
-            // style={{gridTemplateColumns: '1fr 1fr'}}
-          >
-            <HeroLeft
-              title={title} 
-              description={description}
-              icons={icons} 
-            />
-            <HeroRight 
-              illustration={illustration}
-              description={description}
-            />
-          </div>
-        )
-      default: 
-        return (
-          <div>
-            {titleHero()}
-          </div>
-        )
-    }
-    
-    
-  }
+  // Hero height accounts for the fixed transparent header (paddingTop 116px + logo ~61px + paddingBottom 60px = ~237px).
+  // Content in HeroLeft uses pt-[240px] to start just below the header.
+  const heroHeight = icons || description
+    ? 'md:h-[750px] lg:h-[750px]'
+    : image
+    ? 'md:h-[1374px] lg:h-[1374px]'
+    : 'md:h-[450px] lg:h-[450px]'
 
   return (
-    <div 
-      className={cn("w-full h-auto bg-[#261A54] page-hero-section", (description || icons) ? 'md:h-[572px] lg:h-[572px] xl:h-[572px] 2xl:h-[572px]' : (image ? 'md:h-[1374px] lg:h-[1374px] xl:h-[1374px] 2xl:h-[1374px]' : 'md:h-[372px] lg:h-[372px] xl:h-[372px] 2xl:h-[372px]'))}
+    <div
+      className={cn("w-full h-auto bg-[#261A54] page-hero-section relative", heroHeight)}
+      style={type !== 'image' ? { overflow: 'visible', zIndex: 1 } : undefined}
     >
-      {getHeroSection()}
+      {type === 'image' ? (
+        <div className="w-full grid place-items-center mx-auto max-w-[1400px]" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+          <HeroWithImage
+            title={title}
+            formatTitle={formatTitle}
+            image={image}
+            illustration={illustration}
+          />
+        </div>
+      ) : (
+        <div className="w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 place-items-center" style={{ maxWidth: '1400px', marginLeft: 'auto', marginRight: 'auto' }}>
+          <HeroLeft
+            title={title}
+            description={description}
+            icons={icons}
+          />
+          <HeroRight
+            illustration={illustration}
+            description={description}
+          />
+        </div>
+      )}
+
+      {/* Scroll indicator — shown only when gallery navigation icons are present */}
+      {icons && (
+        <div
+          className="absolute bottom-6 left-1/2 hidden md:block lg:block"
+          style={{ transform: 'translateX(-50%)' }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.65)" strokeWidth="1.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      )}
     </div>
   )
 }
@@ -132,7 +116,7 @@ export default PageHiroSection
 const HeroLeft = ({ title, description, icons }) => {
   return (
     <div
-      className="flex-1 w-full pt-0 md:pt-[120px]"
+      className="flex-1 w-full pt-[240px]"
       style={{alignSelf: 'flex-start'}}
     >
       {title && <div 
@@ -194,8 +178,8 @@ const HeroLeft = ({ title, description, icons }) => {
 
 const HeroRight = ({ description, illustration }) => (
   <div
-    className="flex-1 w-full md:w-6/12 lg:w-6/12 xl:w-6/12 2xl:w-6/12"
-    style={{ alignSelf: 'flex-start', paddingTop: '208px' }}
+    className="flex-1 w-full"
+    style={{ alignSelf: 'flex-start', paddingTop: '237px', maxWidth: '541px' }}
   >
     {illustration && <HeroOwlWithEyes />}
   </div>
