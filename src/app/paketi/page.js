@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import packageService from '@/services/packageService'
-import HeroOwlWithEyes from '@/components/Hero/HeroOwlWithEyes'
 
 // ─── Color config ─────────────────────────────────────────────────────────────
 const PALETTE = {
@@ -64,46 +63,31 @@ const FeatureItem = ({ section, colors }) => {
   )
 }
 
-// ─── Animated owl column ─────────────────────────────────────────────────────
-// HeroOwlWithEyes renders hero-owl.svg at 660×914px.
-// We scale it down to fit the package section column (~300px wide).
-const OWL_NATURAL_W = 660
-const OWL_NATURAL_H = 914
-const OWL_TARGET_W  = 300
-const OWL_SCALE     = OWL_TARGET_W / OWL_NATURAL_W          // ≈ 0.4545
-const OWL_TARGET_H  = Math.round(OWL_NATURAL_H * OWL_SCALE) // ≈ 415px
-
+// ─── Owl column ───────────────────────────────────────────────────────────────
+// SVG prirodna veličina: 681×897. Skaliramo na 280px širine.
 const OwlColumn = () => (
   <div style={{
     flexShrink: 0,
     alignSelf: 'flex-end',
-    width:  `${OWL_TARGET_W}px`,
-    height: `${OWL_TARGET_H}px`,
-    position: 'relative',
-    overflow: 'hidden',
+    width: '280px',
   }}>
-    {/*
-      Absolute positioning + transform scale collapses the 660px element into the
-      300px container. getBoundingClientRect() on the inner wrapperRef reflects the
-      visual (transformed) size, so the eye-tracking maths remain correct.
-    */}
-    <div style={{
-      position: 'absolute',
-      bottom: 0,
-      left: '50%',
-      transform: `translateX(-50%) scale(${OWL_SCALE})`,
-      transformOrigin: 'bottom center',
-    }}>
-      <HeroOwlWithEyes />
-    </div>
+    <img
+      src="/owl-paketi.svg"
+      alt=""
+      width={280}
+      height={Math.round(280 * 897 / 681)}
+      style={{ display: 'block', width: '100%', height: 'auto' }}
+    />
   </div>
 )
 
 // ─── Package section ─────────────────────────────────────────────────────────
-const PackageSection = ({ pkg, index }) => {
+const PackageSection = ({ pkg, index, hasNext }) => {
   const colors = getColors(pkg, index)
-  const owlOnRight = index % 2 === 0   // even index → owl right
-  const owlOnLeft  = index % 2 === 1   // odd  index → owl left
+  // Sova se prikazuje samo ako postoji sledeći paket
+  const showOwl    = hasNext
+  const owlOnRight = showOwl && index % 2 === 0
+  const owlOnLeft  = showOwl && index % 2 === 1
 
   const sections = Array.isArray(pkg.sections) ? pkg.sections : []
 
@@ -245,7 +229,12 @@ const PaketiPage = () => {
         </div>
       ) : (
         packages.map((pkg, index) => (
-          <PackageSection key={pkg.id} pkg={pkg} index={index} />
+          <PackageSection
+            key={pkg.id}
+            pkg={pkg}
+            index={index}
+            hasNext={index < packages.length - 1}
+          />
         ))
       )}
     </>
