@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 // import { Inter, OpenSans,  } from 'next/font/google'
 import '@/styles/global.css'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
+import ConditionalChrome from '@/components/ConditionalChrome'
 import GoogleAnalytics from '@/components/GoogleAnalytics/GoogleAnalytics'
 import Providers from './providers'
 import WelcomeModal from '@/components/WelcomeModal'
@@ -58,12 +57,9 @@ export default function RootLayout({
       </head>
        <body>
         <Providers>
-          <div className='bg-[#261A54] flex flex-col nnb-wrapper bg-full'>
-            <Header />
-            <main className="flex-1 min-h-screen flex-col nnb-wrapper">{children}</main>
-            {/* <SnackBarToast /> */}
-            <Footer />
-          </div>
+          <ConditionalChrome>
+            {children}
+          </ConditionalChrome>
           <WelcomeModal />
           <ProfileCompletionModal />
         </Providers>

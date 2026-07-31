@@ -2677,3 +2677,16 @@ h6 {
   text-align: center;
   margin: 0;
 }
+
+/* ─── Paketi stranica — responsive ─────────────────────────────────────── */
+@media (max-width: 767px) {
+  .paketi-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px 0 !important;
+  }
+
+  .paketi-owl-absolute,
+  .paketi-owl-spacer {
+    display: none !important;
+  }
+}

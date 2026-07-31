@@ -64,20 +64,15 @@ const FeatureItem = ({ section, colors }) => {
 
 // ─── Owl column ───────────────────────────────────────────────────────────────
 // SVG prirodna veličina: 681×897. Skaliramo na 280px širine.
-const OwlColumn = () => (
-  <div style={{
-    flexShrink: 0,
-    alignSelf: 'flex-end',
-    width: '280px',
-  }}>
-    <img
-      src="/owl-paketi.svg"
-      alt=""
-      width={280}
-      height={Math.round(280 * 897 / 681)}
-      style={{ display: 'block', width: '100%', height: 'auto' }}
-    />
-  </div>
+// Prikazuje se apsolutno na dnu sekcije — sova "stoji" na ivici.
+const OwlImage = () => (
+  <img
+    src="/owl-paketi.svg"
+    alt=""
+    width={280}
+    height={Math.round(280 * 897 / 681)}
+    style={{ display: 'block', width: '100%', height: 'auto' }}
+  />
 )
 
 // ─── Package section ─────────────────────────────────────────────────────────
@@ -90,12 +85,17 @@ const PackageSection = ({ pkg, index, hasNext }) => {
 
   const sections = Array.isArray(pkg.sections) ? pkg.sections : []
 
+  const OWL_W = 280
+
   return (
     <div style={{
       width: '100%',
       background: colors.bg,
       padding: '64px 40px 80px',
-      overflow: 'hidden',
+      overflow: 'visible',
+      position: 'relative',
+      // Sekcija sa sovom treba viši z-index da overflow bude iznad sledeće sekcije
+      zIndex: showOwl ? 2 : 'auto',
     }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
 
@@ -104,16 +104,17 @@ const PackageSection = ({ pkg, index, hasNext }) => {
           {pkg.name}
         </h2>
 
-        {/* Content row: [owl?] [features grid] [owl?] */}
+        {/* Content row — spacer rezerviše prostor za sovu u flex layout-u */}
         <div style={{
           display: 'flex',
-          alignItems: 'flex-end',
+          alignItems: 'flex-start',
           gap: '48px',
         }}>
-          {owlOnLeft && <OwlColumn />}
+          {/* Spacer levo (rezerviše prostor, sova se prikazuje apsolutno) */}
+          {owlOnLeft && <div className="paketi-owl-spacer" style={{ flexShrink: 0, width: `${OWL_W}px` }} />}
 
-          {/* Features — 3-column grid that wraps naturally */}
-          <div style={{
+          {/* Features — na desktopu 3 kolone, na mobilnom 1 kolona */}
+          <div className="paketi-grid" style={{
             flex: 1,
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
@@ -125,9 +126,25 @@ const PackageSection = ({ pkg, index, hasNext }) => {
             ))}
           </div>
 
-          {owlOnRight && <OwlColumn />}
+          {/* Spacer desno */}
+          {owlOnRight && <div className="paketi-owl-spacer" style={{ flexShrink: 0, width: `${OWL_W}px` }} />}
         </div>
       </div>
+
+      {/* Sova — sakrivena na mobilnom */}
+      {showOwl && (
+        <div className="paketi-owl-absolute" style={{
+          position: 'absolute',
+          bottom: 0,
+          ...(owlOnRight ? { right: '0px' } : { left: '0px' }),
+          width: `${OWL_W}px`,
+          zIndex: 10,
+          pointerEvents: 'none',
+          transform: 'translateY(7%)',
+        }}>
+          <OwlImage />
+        </div>
+      )}
     </div>
   )
 }
@@ -142,7 +159,7 @@ const PaketiHero = () => (
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '120px 24px 80px',
+    padding: '80px 24px 80px',
     textAlign: 'center',
     overflow: 'hidden',
   }}>

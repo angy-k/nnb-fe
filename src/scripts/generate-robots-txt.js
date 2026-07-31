@@ -14,8 +14,11 @@ Disallow: /prijava
 Disallow: /registracija
 Disallow: /profil
 Disallow: /reset-lozinke
+Disallow: /paketi
+Disallow: /moje-rezervacije
+Disallow: /prethodne-rezervacije
 
-Sitemap: ${appUrl}/sitemap`
+Sitemap: ${appUrl}/sitemap.xml`
 }
 
 const uncrawableRobotsTxt = `User-Agent: *\nDisallow: /`
