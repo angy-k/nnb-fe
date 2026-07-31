@@ -9,11 +9,12 @@ export default function useUser() {
     revalidateOnMount: true,
     revalidateOnReconnect: false,
     refreshInterval: 0,
-    onError: (err) => {
-      // Token istekao ili poništen — obriši iz localStorage
-      if (err?.status === 401 || err?.status === 403) {
-        authService.clearToken()
-      }
+    onError: () => {
+      // Ne brišemo token ovde — to radi samo eksplicitni logout (authService.logout()).
+      // Brisanje tokena na svaki 401 izaziva neočekivano izlogovanje zbog
+      // tranzijentnih grešaka (opaque redirect, timing, itd.).
+      // loggedOut = true će biti true kada error.status === 401/403, što je dovoljno
+      // za UI — korisnik vidi "morate biti ulogovani" i može da se ponovo prijavi.
     },
     errorRetryInterval: 0,
     errorRetryCount: 0

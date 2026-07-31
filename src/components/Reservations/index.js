@@ -27,7 +27,7 @@ const inputStyle = {
 
 const MyReservationsComponent = () => {
 
-  const { user } = useUser()
+  const { user, loading: userLoading, loggedOut } = useUser()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -91,10 +91,11 @@ const MyReservationsComponent = () => {
   }
 
   useEffect(() => {
+    if (loggedOut) return
     const controller = new AbortController()
     loadEvents(controller.signal)
     return () => controller.abort()
-  }, [])
+  }, [loggedOut])
 
   const handleCancelClick = (event) => {
     setCancelError(null)
@@ -141,6 +142,31 @@ const MyReservationsComponent = () => {
     setCancelModal({ open: false, applicationId: null })
     setCancelError(null)
     setCancelStep('form')
+  }
+
+  if (userLoading) {
+    return <div className="w-full min-h-screen bg-[#261A54]" />
+  }
+
+  if (loggedOut) {
+    return (
+      <>
+        <div className="w-full bg-[#261A54] pt-60 pb-16" />
+        <div className="grid place-items-center w-full pb-48 bg-[#f0f0f0]">
+          <div className="mt-24 flex flex-col items-center gap-6">
+            <p className="text-[#261A54]">Morate biti ulogovani da biste videli rezervacije.</p>
+            <button
+              type="button"
+              className="px-6 py-3 rounded-full font-semibold text-white"
+              style={{ backgroundColor: '#56C4CF' }}
+              onClick={() => window.dispatchEvent(new Event('nnb:open-auth-modal'))}
+            >
+              Prijavite se
+            </button>
+          </div>
+        </div>
+      </>
+    )
   }
 
   const avatarSrc = user?.profile_photo_url || null

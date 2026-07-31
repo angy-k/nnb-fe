@@ -269,8 +269,13 @@ const Header = ({bgColor = '#261A54'}) => {
             <ModalBody className="p-0 flex-1 min-h-0 flex overflow-y-auto">
               <AuthModal
                 onClose={onClose}
-                onSuccess={() => {
-                  router.push('/profil')
+                onSuccess={(userData) => {
+                  // Gost korisnik ili novi korisnik → dopuna profila (kao Google OAuth flow)
+                  if (userData?.is_guest) {
+                    router.push('/profil/izmeni?setup=1')
+                  } else {
+                    router.push('/profil')
+                  }
                 }}
                 initialTab={initialAuthTab}
               />

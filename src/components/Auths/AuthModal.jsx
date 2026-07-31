@@ -243,10 +243,16 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
     try {
       const res = await authService.login({ values: { ...values, recaptcha_token: recaptchaToken } })
       if (res.ok) {
+        if (res.status === 204) {
+          // 204 = "already authenticated" od guest middleware (stara sesija nije očišćena).
+          // Logout fix osigurava da se ovo ne dešava, ali za svaki slučaj prikazujemo grešku.
+          setErrors({ failed: ['Greška pri prijavi. Obrišite kolačiće za ovaj sajt i pokušajte ponovo.'] })
+          return
+        }
         const data = await res.json()
         authService.storeToken(data.token)
-        await mutate()
-        onSuccess?.()
+        const userData = await mutate()
+        onSuccess?.(userData)
         onClose?.()
         return
       }
@@ -336,8 +342,8 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
         // 200 — novi korisnik kreiran, dobili smo Sanctum token
         const data = await res.json()
         authService.storeToken(data.token)
-        await mutate()
-        onSuccess?.()
+        const userData = await mutate()
+        onSuccess?.(userData)
         onClose?.()
         return
       }

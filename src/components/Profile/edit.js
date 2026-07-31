@@ -97,6 +97,73 @@ const EditableField = ({ value, onChange, placeholder, type = 'text', readOnly =
   )
 }
 
+// ─── Date picker field ────────────────────────────────────────────────────────
+const DatePickerField = ({ value, onChange, placeholder }) => {
+  const inputRef = useRef(null)
+
+  // value se čuva kao dd.MM.yyyy; native date input očekuje yyyy-MM-dd
+  const isoValue = (() => {
+    if (!value) return ''
+    const d = parseDate(value)
+    return d ? format(d, 'yyyy-MM-dd') : ''
+  })()
+
+  const handleChange = (e) => {
+    const iso = e.target.value // yyyy-MM-dd
+    if (!iso) { onChange(''); return }
+    const d = parseDate(iso)
+    onChange(d ? format(d, 'dd.MM.yyyy') : iso)
+  }
+
+  const handlePencilClick = () => {
+    if (inputRef.current?.showPicker) {
+      inputRef.current.showPicker()
+    } else {
+      inputRef.current?.click()
+    }
+  }
+
+  return (
+    <div
+      className="flex items-center justify-between bg-[#ffffff] rounded-full px-5 py-3 gap-3 w-full"
+      style={{ position: 'relative' }}
+    >
+      <span className={`flex-1 text-sm ${value ? 'text-[#261A54]' : 'text-[#aaa]'}`}>
+        {value || placeholder}
+      </span>
+      {/* Skriveni native date input — showPicker() ga otvara na klik olovke */}
+      <input
+        ref={inputRef}
+        type="date"
+        value={isoValue}
+        onChange={handleChange}
+        style={{
+          position: 'absolute',
+          opacity: 0,
+          width: '1px',
+          height: '1px',
+          pointerEvents: 'none',
+          top: '50%',
+          right: '16px',
+        }}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+      <button
+        type="button"
+        onClick={handlePencilClick}
+        className="flex-shrink-0 transition text-[#261A54] opacity-60 hover:opacity-100 cursor-pointer"
+        aria-label="Izmeni datum rođenja"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+      </button>
+    </div>
+  )
+}
+
 // ─── Section ──────────────────────────────────────────────────────────────────
 const Section = ({ title, children }) => (
   <div className="flex flex-col gap-3 w-full">
@@ -192,7 +259,7 @@ const PasswordSection = ({ isSocialUser }) => {
           autoComplete="new-password"
         />
         {error && <p className="text-sm rounded-lg px-4 py-2 bg-red-50" style={{ color: '#EC4923' }}>{error}</p>}
-        {success && <p className="text-sm rounded-lg px-4 py-2 bg-green-50 text-green-700">Lozinka je uspešno promenjena.</p>}
+        {success && <p className="text-sm rounded-lg px-4 py-2 bg-green-50" style={{ color: '#166534' }}>Lozinka je uspešno promenjena.</p>}
         <button
           type="submit"
           disabled={saving}
@@ -211,7 +278,7 @@ const ProfileEdit = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const isSetup = searchParams.get('setup') === '1'
-  const { user, mutate } = useUser()
+  const { user, loading, loggedOut, mutate } = useUser()
 
   // Podaci o vlasniku
   const [brandName, setBrandName] = useState(user?.brand_name || '')
@@ -279,6 +346,32 @@ const ProfileEdit = () => {
     }
   }, [user])
 
+  // ── Auth guard (mora biti posle svih hookova) ─────────────────────────────────
+  if (loading) {
+    return <div className="w-full min-h-screen bg-[#261A54]" />
+  }
+
+  if (loggedOut) {
+    return (
+      <>
+        <div className="w-full bg-[#261A54] pt-60 pb-16" />
+        <div className="grid place-items-center w-full pb-48 bg-[#f0f0f0]">
+          <div className="mt-24 flex flex-col items-center gap-6">
+            <p className="text-[#261A54]">Morate biti ulogovani da biste izmenili profil.</p>
+            <button
+              type="button"
+              className="px-6 py-3 rounded-full font-semibold text-white"
+              style={{ backgroundColor: '#56C4CF' }}
+              onClick={() => window.dispatchEvent(new Event('nnb:open-auth-modal'))}
+            >
+              Prijavite se
+            </button>
+          </div>
+        </div>
+      </>
+    )
+  }
+
   // Naziv trenutno izabrane delatnosti (za hero prikaz)
   const currentActivityName = (() => {
     if (!activityId) return user?.activity?.name || user?.activity_group?.name || ''
@@ -343,14 +436,16 @@ const ProfileEdit = () => {
       if (activityId !== origActivityId) payload.activity_id = activityId ? Number(activityId) : null
       const origEntityType = user?.legal_entity ? (user.legal_entity.entity_type || 'legal') : null
       if (entityType === 'legal') {
-        payload.is_legal_entity = true
+        // is_legal_entity se šalje samo kada se tip promenio; inače backend
+        // dobija null za company_name jer polje nije u payload-u
+        if (entityType !== origEntityType) payload.is_legal_entity = true
         if (companyName !== (user?.legal_entity?.company_name || '')) payload.company_name = companyName
         if (companyAddress !== (user?.legal_entity?.company_address || '')) payload.company_address = companyAddress
         if (mb !== (user?.legal_entity?.mb || '')) payload.mb = mb
         if (pib !== (user?.legal_entity?.pib || '')) payload.pib = pib
         if (isSefUser !== !!user?.legal_entity?.is_sef_user) payload.is_sef_user = isSefUser
       } else if (entityType === 'agricultural') {
-        payload.is_agricultural = true
+        if (entityType !== origEntityType) payload.is_agricultural = true
         if (companyName !== (user?.legal_entity?.company_name || '')) payload.company_name = companyName
         if (companyAddress !== (user?.legal_entity?.company_address || '')) payload.company_address = companyAddress
         if (farmNumber !== (user?.legal_entity?.farm_number || '')) payload.farm_number = farmNumber
@@ -364,9 +459,12 @@ const ProfileEdit = () => {
       }
 
       const res = await profileService.updateProfile(payload)
-      if (res.ok || res.status === 200 || res.type === 'opaqueredirect') {
-        await mutate?.()
+      if (res.ok) {
         setSuccess(true)
+        await mutate()
+        // router.refresh() invaliduje Next.js router cache za /profil
+        // bez toga App Router servira stari render stranice, ignoriše novi SWR fetch
+        router.refresh()
         setTimeout(() => router.push('/profil'), 900)
       } else {
         const data = await res.json().catch(() => null)
@@ -505,8 +603,8 @@ const ProfileEdit = () => {
 
       {/* ── Forma ── */}
       <div className="w-full bg-[#f5f5f5] pb-24 overflow-hidden" style={{ paddingTop: '56px' }}>
-        {/* Baner za dopunu profila (novi Google korisnici) */}
-        {(isSetup || user?.is_guest) && (() => {
+        {/* Baner za dopunu profila — prikazuje se dok postoje nedostajući podaci */}
+        {(() => {
           const requiredMissing = [
             !brandName.trim() && 'naziv brenda',
             !phone.trim() && 'broj telefona',
@@ -604,7 +702,7 @@ const ProfileEdit = () => {
               onChange={setAddress}
               placeholder="Adresa (ulica i broj, mesto, opština)"
             />
-            <EditableField
+            <DatePickerField
               value={dateOfBirth}
               onChange={setDateOfBirth}
               placeholder="Datum rođenja"

@@ -29,15 +29,32 @@ const AccountData = ({
         </div>
       </div>
       <div className='flex-1 w-full gap-3' style={{display: 'flex', flexDirection: 'column'}}>
-        <span className='edit-profile-subtitle'>{`Podaci o firmi`}</span>
+        <span className='edit-profile-subtitle'>
+          {account.company.entityType === 'agricultural'
+            ? 'Podaci o poljoprivrednom gazdinstvu'
+            : 'Podaci o pravnom licu'}
+        </span>
         <div className='edit-profile-container'>
           <span className='edit-profile-name'>{account.company.name}</span>
           <span className='edit-profile-data'>{account.company.address}</span>
-          {account.company.mb && account.company.mb !== '-' && (
-            <span className='edit-profile-data'>MB: {account.company.mb}</span>
-          )}
-          {account.company.pib && account.company.pib !== '-' && (
-            <span className='edit-profile-data'>PIB: {account.company.pib}</span>
+          {account.company.entityType === 'agricultural' ? (
+            account.company.farmNumber && (
+              <span className='edit-profile-data'>Broj gazdinstva: {account.company.farmNumber}</span>
+            )
+          ) : (
+            <>
+              {account.company.mb && (
+                <span className='edit-profile-data'>MB: {account.company.mb}</span>
+              )}
+              {account.company.pib && (
+                <span className='edit-profile-data'>PIB: {account.company.pib}</span>
+              )}
+              {account.company.isSefUser && (
+                <span className='edit-profile-data' style={{ color: '#56C4CF', fontWeight: 600 }}>
+                  Korisnik SEF-a
+                </span>
+              )}
+            </>
           )}
         </div>
       </div>

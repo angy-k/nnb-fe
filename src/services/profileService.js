@@ -1,7 +1,7 @@
 import { put, post } from '@/lib/fetchAPI'
 
 const updateProfile = (data) =>
-  put('/api/v1/profile/self', data, { withCSRF: true })
+  put('/api/v1/profile/self', data)
 
 const uploadAvatar = (file) => {
   const formData = new FormData()

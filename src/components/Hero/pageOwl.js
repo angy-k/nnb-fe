@@ -15,6 +15,7 @@ const PageHiroSection = ({
   icons,
   illustration = true,
   image = false,
+  tall = false,
 }) => {
 
   const formatTitle = (styledWords, classStyle) => {
@@ -62,7 +63,7 @@ const PageHiroSection = ({
   }
   // Hero height accounts for the fixed transparent header (paddingTop 116px + logo ~61px + paddingBottom 60px = ~237px).
   // Content in HeroLeft uses pt-[240px] to start just below the header.
-  const heroHeight = icons || description
+  const heroHeight = tall || icons || description
     ? 'md:h-[750px] lg:h-[750px]'
     : image
     ? 'md:h-[1374px] lg:h-[1374px]'

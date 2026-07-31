@@ -410,7 +410,7 @@ const CalendarPage = () => {
           </div>
         </div>
       )}
-      <div className="w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-48 bg-[#f0f0f0]">
+      <div className={`w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-48 bg-[#f0f0f0]${!user ? ' pt-24' : ''}`} style={{ position: 'relative', zIndex: 2 }}>
         <div className="hidden md:block lg:block" style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
           <Calendar view={'month'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
         </div>
