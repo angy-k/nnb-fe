@@ -4,16 +4,29 @@ import Image from 'next/image'
 import packageService from '@/services/packageService'
 import HeroOwlWithEyes from '@/components/Hero/HeroOwlWithEyes'
 
-// ─── Color config — diktirano dizajnom, ne backendom ─────────────────────────
-// neparan paket (index 0, 2, …) → teal, paran (index 1, 3, …) → orange
-const PALETTE = [
-  { bg: '#56C4CF', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' }, // teal
-  { bg: '#F18020', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' }, // orange
-]
-const getColors = (index) => PALETTE[index % 2]
+// ─── Color config ─────────────────────────────────────────────────────────────
+const PALETTE = {
+  teal:   { bg: '#56C4CF', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
+  orange: { bg: '#F18020', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
+  yellow: { bg: '#F4C430', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
+  navy:   { bg: '#261A54', title: '#ffffff', text: '#ffffff', iconBg: '#ffffff', iconColor: '#261A54' },
+}
+const FALLBACK_ORDER = ['teal', 'orange', 'yellow', 'navy']
+// Koristi color iz backenda ako postoji, inače fallback po indeksu
+const getColors = (pkg, index) =>
+  PALETTE[pkg.color] ?? PALETTE[FALLBACK_ORDER[index % FALLBACK_ORDER.length]]
+
+// ─── Util: icon URL iz relativne putanje ili apsolutnog URL-a ─────────────────
+const resolveIconUrl = (iconUrl) => {
+  if (!iconUrl) return null
+  if (iconUrl.startsWith('http')) return iconUrl
+  return `${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/${iconUrl}`
+}
 
 // ─── Feature item ────────────────────────────────────────────────────────────
-const FeatureItem = ({ section, colors }) => (
+const FeatureItem = ({ section, colors }) => {
+  const iconUrl = resolveIconUrl(section.icon_url)
+  return (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
     {/* Icon circle */}
     <div style={{
@@ -23,9 +36,9 @@ const FeatureItem = ({ section, colors }) => (
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
     }}>
-      {section.icon_url ? (
+      {iconUrl ? (
         <img
-          src={section.icon_url}
+          src={iconUrl}
           alt={section.title || ''}
           style={{ width: '44px', height: '44px', objectFit: 'contain' }}
         />
@@ -48,7 +61,8 @@ const FeatureItem = ({ section, colors }) => (
       {section.description && ` ${section.description}`}
     </p>
   </div>
-)
+  )
+}
 
 // ─── Animated owl column ─────────────────────────────────────────────────────
 // HeroOwlWithEyes renders hero-owl.svg at 660×914px.
@@ -87,7 +101,7 @@ const OwlColumn = () => (
 
 // ─── Package section ─────────────────────────────────────────────────────────
 const PackageSection = ({ pkg, index }) => {
-  const colors = getColors(index)
+  const colors = getColors(pkg, index)
   const owlOnRight = index % 2 === 0   // even index → owl right
   const owlOnLeft  = index % 2 === 1   // odd  index → owl left
 
