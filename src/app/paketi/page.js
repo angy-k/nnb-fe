@@ -4,12 +4,15 @@ import Image from 'next/image'
 import packageService from '@/services/packageService'
 
 // ─── Color config ─────────────────────────────────────────────────────────────
-// Boje su diktirane dizajnom — naizmenično po indeksu paketa
-const PALETTE = [
-  { bg: '#56C4CF', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' }, // teal
-  { bg: '#F18020', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' }, // orange
-]
-const getColors = (index) => PALETTE[index % PALETTE.length]
+const PALETTE = {
+  teal:   { bg: '#56C4CF', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
+  orange: { bg: '#F18020', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
+  yellow: { bg: '#F4C430', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
+  navy:   { bg: '#261A54', title: '#ffffff', text: '#ffffff', iconBg: '#ffffff', iconColor: '#261A54' },
+}
+const FALLBACK = ['teal', 'orange', 'yellow', 'navy']
+const getColors = (pkg, index) =>
+  PALETTE[pkg.color] ?? PALETTE[FALLBACK[index % FALLBACK.length]]
 
 // ─── Util: icon URL iz relativne putanje ili apsolutnog URL-a ─────────────────
 const resolveIconUrl = (iconUrl) => {
@@ -79,7 +82,7 @@ const OwlColumn = () => (
 
 // ─── Package section ─────────────────────────────────────────────────────────
 const PackageSection = ({ pkg, index, hasNext }) => {
-  const colors = getColors(index)
+  const colors = getColors(pkg, index)
   // Sova se prikazuje samo ako postoji sledeći paket
   const showOwl    = hasNext
   const owlOnRight = showOwl && index % 2 === 0
