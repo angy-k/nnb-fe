@@ -179,8 +179,7 @@ const HeroLeft = ({ title, description, icons }) => {
 
 const HeroRight = ({ description, illustration }) => (
   <div
-    className="flex-1 w-full"
-    className="page-hero-right"
+    className="flex-1 w-full page-hero-right"
     style={{ alignSelf: 'flex-start', maxWidth: '541px' }}
   >
     {illustration && <HeroOwlWithEyes />}
