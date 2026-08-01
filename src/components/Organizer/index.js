@@ -13,7 +13,7 @@ const OrganizerWord = ({
     : <DefaultBio />;
 
   return (
-    <div className='w-full' style={{position: 'relative', width: '100%', height: '100%',  display: 'flex'}}>
+    <div className='w-full organizer-outer' style={{position: 'relative', width: '100%', height: '100%',  display: 'flex'}}>
       <div className="w-full section-main-word-background-image-div" style={{width: '100%', height: '1743px',  display: 'block', position: 'relative'}}>
         <Image
           src={photoUrl}

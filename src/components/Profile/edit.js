@@ -499,13 +499,13 @@ const ProfileEdit = () => {
   return (
     <>
       {/* ── Header — paddingTop gura sadržaj ispod fixed nava ── */}
-      <div className="w-full bg-[#261A54]" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
-        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6">
+      <div className="w-full bg-[#261A54] profile-page-header" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
+        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6 profile-page-header-inner">
 
           {/* Avatar + brand name */}
-          <div className="flex items-end gap-6">
+          <div className="flex items-end gap-6 profile-page-header-left">
             {/* Avatar with upload overlay */}
-            <div className="flex flex-col items-center gap-2" style={{ marginBottom: '-56px' }}>
+            <div className="flex flex-col items-center gap-2 profile-page-avatar-wrapper" style={{ marginBottom: '-56px' }}>
               <div className="relative flex-shrink-0 group z-10">
                 <Avatar
                   isBordered
@@ -558,14 +558,14 @@ const ProfileEdit = () => {
             </div>
 
             {/* Inline editable brand name */}
-            <div className="flex flex-col gap-1 pb-2">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-1 pb-2 profile-page-header-name">
+              <div className="flex items-center gap-2 profile-brand-name-row">
                 <input
                   ref={brandNameRef}
                   type="text"
                   value={brandName}
                   onChange={(e) => setBrandName(e.target.value)}
-                  className="bg-transparent text-3xl font-bold leading-tight outline-none border-b border-transparent focus:border-[#56C4CF]/60 transition min-w-[100px] py-0 h-[38px]"
+                  className="bg-transparent text-3xl font-bold leading-tight outline-none border-b border-transparent focus:border-[#56C4CF]/60 transition min-w-[100px] py-0 h-[38px] profile-brand-name-input"
                   style={{ color: '#ffffff' }}
                   placeholder="Naziv brenda"
                 />
@@ -602,7 +602,7 @@ const ProfileEdit = () => {
       </div>
 
       {/* ── Forma ── */}
-      <div className="w-full bg-[#f5f5f5] pb-24 overflow-hidden" style={{ paddingTop: '56px' }}>
+      <div className="w-full bg-[#f5f5f5] pb-24 overflow-hidden profile-page-content" style={{ paddingTop: '56px' }}>
         {/* Baner za dopunu profila — prikazuje se dok postoje nedostajući podaci */}
         {(() => {
           const requiredMissing = [

@@ -115,7 +115,7 @@ const BoothReservationConfirmModal = ({
 
               {isSuccess ? (
                 /* ── Success screen ─────────────────────────────────────────── */
-                <div className="flex flex-col items-center text-center px-12 py-16 gap-6">
+                <div className="flex flex-col items-center text-center px-12 py-16 sm:px-6 sm:py-10 gap-6 sm:gap-4">
                   <CheckmarkIcon />
 
                   <h2 style={{ fontSize: '26px', fontWeight: '700', color: '#261A54', lineHeight: '1.35', margin: 0 }}>
@@ -141,7 +141,7 @@ const BoothReservationConfirmModal = ({
                 </div>
               ) : (
                 /* ── Confirm screen ─────────────────────────────────────────── */
-                <div className="flex flex-col items-center text-center px-12 py-16 gap-8">
+                <div className="flex flex-col items-center text-center px-12 py-16 sm:px-6 sm:py-10 gap-8 sm:gap-5">
                   <TimerChip timeRemaining={timeRemaining} />
 
                   <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#261A54', margin: 0 }}>
@@ -167,11 +167,12 @@ const BoothReservationConfirmModal = ({
 
                   <CostSummary costs={costs} />
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 sm:flex-col sm:w-full">
                     <button
                       type="button"
                       disabled={isLoading}
                       onClick={() => onConfirm?.()}
+                      className="sm:w-full"
                       style={{
                         background: '#56C4CF', color: '#ffffff',
                         borderRadius: '30px', padding: '12px 32px',
@@ -190,6 +191,7 @@ const BoothReservationConfirmModal = ({
                         onCancel?.()
                         modalOnClose()
                       }}
+                      className="sm:w-full"
                       style={{
                         background: '#EC4923', color: '#ffffff',
                         borderRadius: '30px', padding: '12px 32px',

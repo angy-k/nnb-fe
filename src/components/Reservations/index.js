@@ -174,10 +174,10 @@ const MyReservationsComponent = () => {
   return (
     <>
       {/* Dark header */}
-      <div className="w-full bg-[#261A54]" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
-        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6">
-          <div className="flex items-end gap-6">
-            <div className="relative z-10 flex-shrink-0" style={{ marginBottom: '-56px' }}>
+      <div className="w-full bg-[#261A54] profile-page-header" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
+        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6 profile-page-header-inner">
+          <div className="flex items-end gap-6 profile-page-header-left">
+            <div className="relative z-10 flex-shrink-0 profile-page-avatar-wrapper" style={{ marginBottom: '-56px' }}>
               <Avatar
                 isBordered
                 src={avatarSrc || undefined}
@@ -186,11 +186,11 @@ const MyReservationsComponent = () => {
                 className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
               />
             </div>
-            <div className="flex flex-col gap-1 pb-2">
+            <div className="flex flex-col gap-1 pb-2 profile-page-header-name">
               <span className="text-3xl font-bold leading-tight" style={{ color: '#ffffff' }}>Moje rezervacije</span>
             </div>
           </div>
-          <div className="flex items-end gap-3 pb-2">
+          <div className="flex items-end gap-3 pb-2 profile-page-header-actions">
             <Link href="/profil">
               <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', height: '44px', padding: '10px 24px', color: '#ffffff', display: 'inline-block', cursor: 'pointer' }}>
                 Vrati se na profil
@@ -206,7 +206,7 @@ const MyReservationsComponent = () => {
       </div>
 
       {/* Sivi sadržaj */}
-      <div className="w-full bg-[#f5f5f5]" style={{ paddingTop: '70px', paddingBottom: '96px' }}>
+      <div className="w-full bg-[#f5f5f5] profile-page-content" style={{ paddingTop: '70px', paddingBottom: '96px' }}>
         <div className="max-w-[1400px] mx-auto px-6">
           <span className="font-normal text-[18px] text-[#261A54]">
             *Rezervaciju je moguće otkazati kontaktiranjem Noćnog Bazara.
@@ -245,13 +245,13 @@ const MyReservationsComponent = () => {
 
             {cancelStep === 'form' ? (
               /* ── STEP 1: Form ─────────────────────────────────────────── */
-              <div style={{ padding: '56px 64px 56px' }}>
+              <div className="cancel-modal-inner" style={{ padding: '56px 64px 56px' }}>
                 {/* Title */}
                 <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#222', textAlign: 'center', marginBottom: '40px' }}>
                   Otkazivanje rezervacije
                 </h2>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
+                <div className="cancel-modal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
                   {/* Left — inputs */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     <input

@@ -106,7 +106,7 @@ const UpcommingEvents = ({
 
   return (
     <div
-      className="w-full blogs-container pt-24 grid place-items-start mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-48"
+      className="w-full blogs-container pt-24 sm:pt-8 grid place-items-start mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-48 sm:pb-16"
       style={{ justifySelf: 'center', maxWidth: '1400px' }}
     >
       <span className="our-team-title">{title}</span>
@@ -117,44 +117,78 @@ const UpcommingEvents = ({
       )}
 
       {!loading && events.length > 0 && (
-        <Table aria-label="Očekivani događaji" radius>
-          <TableHeader>
-            <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Manifestacija</TableColumn>
-            <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Mesto</TableColumn>
-            <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Datum</TableColumn>
-            <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Početak prijava</TableColumn>
-          </TableHeader>
-          <TableBody>
+        <>
+          {/* Desktop tabela */}
+          <div className="hidden md:block lg:block w-full">
+            <Table aria-label="Očekivani događaji" radius>
+              <TableHeader>
+                <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Manifestacija</TableColumn>
+                <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Mesto</TableColumn>
+                <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Datum</TableColumn>
+                <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Početak prijava</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {events.map((event, index) => (
+                  <TableRow key={event.id || index}>
+                    <TableCell
+                      className="text-[#1B1B1B] capitalize font-normal font-[18px] rounded-l-full"
+                      style={{ flex: 1, padding: '16px', backgroundColor: '#56C4CF' }}
+                    >
+                      {event.name}
+                    </TableCell>
+                    <TableCell
+                      className="text-[#1B1B1B] capitalize font-normal font-[18px]"
+                      style={{ flex: 1, backgroundColor: '#56C4CF', padding: '16px' }}
+                    >
+                      {event.location}
+                    </TableCell>
+                    <TableCell
+                      className="text-[#1B1B1B] capitalize font-normal font-[18px]"
+                      style={{ flex: 1, backgroundColor: '#56C4CF', padding: '16px' }}
+                    >
+                      {event.date}
+                    </TableCell>
+                    <TableCell
+                      className="text-[#1B1B1B] capitalize font-normal font-[18px] rounded-r-full"
+                      style={{ flex: 1, padding: '16px', backgroundColor: '#56C4CF' }}
+                    >
+                      {event.applicationStart}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobilni card prikaz */}
+          <div className="block md:hidden lg:hidden w-full space-y-3">
             {events.map((event, index) => (
-              <TableRow key={event.id || index}>
-                <TableCell
-                  className="text-[#1B1B1B] capitalize font-normal font-[18px] rounded-l-full"
-                  style={{ flex: 1, padding: '16px', backgroundColor: '#56C4CF' }}
-                >
-                  {event.name}
-                </TableCell>
-                <TableCell
-                  className="text-[#1B1B1B] capitalize font-normal font-[18px]"
-                  style={{ flex: 1, backgroundColor: '#56C4CF', padding: '16px' }}
-                >
-                  {event.location}
-                </TableCell>
-                <TableCell
-                  className="text-[#1B1B1B] capitalize font-normal font-[18px]"
-                  style={{ flex: 1, backgroundColor: '#56C4CF', padding: '16px' }}
-                >
-                  {event.date}
-                </TableCell>
-                <TableCell
-                  className="text-[#1B1B1B] capitalize font-normal font-[18px] rounded-r-full"
-                  style={{ flex: 1, padding: '16px', backgroundColor: '#56C4CF' }}
-                >
-                  {event.applicationStart}
-                </TableCell>
-              </TableRow>
+              <div
+                key={event.id || index}
+                className="w-full text-[#1B1B1B]"
+                style={{ backgroundColor: '#56C4CF', borderRadius: '24px', padding: '16px 20px' }}
+              >
+                <p className="font-bold text-[16px] capitalize mb-2">{event.name}</p>
+                <div className="flex flex-col gap-1">
+                  {event.location && (
+                    <div className="flex items-center gap-2 text-[14px]">
+                      <span className="font-semibold">Mesto:</span>
+                      <span className="capitalize">{event.location}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-[14px]">
+                    <span className="font-semibold">Datum:</span>
+                    <span>{event.date}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[14px]">
+                    <span className="font-semibold">Početak prijava:</span>
+                    <span>{event.applicationStart}</span>
+                  </div>
+                </div>
+              </div>
             ))}
-          </TableBody>
-        </Table>
+          </div>
+        </>
       )}
     </div>
   );

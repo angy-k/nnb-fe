@@ -42,17 +42,20 @@ export const MonthView: React.FC<MonthViewProps> = ({ date, events = [], onEvent
   const groups = createMonthGroups(events, weeks);
 
   return (
-    <section id="calendar-month-view" className="flex-1 flex flex-col min-h-[800px] max-h-[888px]">
+    <section id="calendar-month-view" className="flex-1 flex flex-col min-h-[800px] max-h-[888px] sm:min-h-0 sm:max-h-none">
       <div className="w-full flex">
         {days.map((day) => (
           <div
             key={day.toISOString()}
-            className="flex-1 flex justify-center"
+            className="flex-1 flex justify-center overflow-hidden"
           >
-            <span className="mt-2 text-sm font-normal text-[#1B1B1B] capitalize">
-              {day.toLocaleDateString('sr-Latn', {
-                  weekday: 'long'
-              })}
+            <span className="mt-2 text-sm font-normal text-[#1B1B1B] capitalize sm:text-[11px] sm:mt-1">
+              <span className="sm:hidden">
+                {day.toLocaleDateString('sr-Latn', { weekday: 'long' })}
+              </span>
+              <span className="hidden sm:inline">
+                {day.toLocaleDateString('sr-Latn', { weekday: 'short' })}
+              </span>
             </span>
           </div>
         ))}

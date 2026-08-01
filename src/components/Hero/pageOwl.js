@@ -75,7 +75,7 @@ const PageHiroSection = ({
       style={type !== 'image' ? { overflow: 'visible', zIndex: 1 } : undefined}
     >
       {type === 'image' ? (
-        <div className="w-full grid place-items-center mx-auto max-w-[1400px]" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+        <div className="w-full grid place-items-center mx-auto max-w-[1400px]" style={{ marginLeft: 'auto', marginRight: 'auto', overflow: 'hidden' }}>
           <HeroWithImage
             title={title}
             formatTitle={formatTitle}
@@ -117,7 +117,7 @@ export default PageHiroSection
 const HeroLeft = ({ title, description, icons }) => {
   return (
     <div
-      className="flex-1 w-full pt-[240px]"
+      className="flex-1 w-full pt-[240px] sm:pt-[100px]"
       style={{alignSelf: 'flex-start'}}
     >
       {title && <div 
@@ -180,7 +180,8 @@ const HeroLeft = ({ title, description, icons }) => {
 const HeroRight = ({ description, illustration }) => (
   <div
     className="flex-1 w-full"
-    style={{ alignSelf: 'flex-start', paddingTop: '237px', maxWidth: '541px' }}
+    className="page-hero-right"
+    style={{ alignSelf: 'flex-start', maxWidth: '541px' }}
   >
     {illustration && <HeroOwlWithEyes />}
   </div>
@@ -190,21 +191,21 @@ const HeroRight = ({ description, illustration }) => (
 const HeroWithImage = ({ title, formatTitle, image, illustration }) => {
   return (
     <div 
-      className="w-full items-center pt-80" 
+      className="w-full items-center pt-80 sm:pt-[88px]"
       style={{display: 'flex', flexDirection: 'column', gap: '50px'}}
     >
       {title && <div className="page-hero-section-title">
         {formatTitle('Novosadski \n noćni bazar?', 'aboutUs')}
       </div>}
-      {image && <Image 
+      {image && <Image
         src={'/about-us-hero-image.png'}
         className="about-us-hero-image"
         width={1440}
         height={486}
         alt='about-us-hero-image'
       />}
-      {!illustration && <div 
-        className="flex flex-row grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2" 
+      {!illustration && <div
+        className="flex flex-row grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 about-us-hero-content"
         style={{width: '100%', height: '100%', maxWidth: '1400px'}}
         >
         <div 
@@ -218,13 +219,13 @@ const HeroWithImage = ({ title, formatTitle, image, illustration }) => {
           />
           <span className="about-us-hero-title max-w-[400px]">{`Prvi Novosadski noćni bazar`}</span>
         </div>
-        <span 
-          className="w-full content-center font-[18px] text-[#ffffff]" 
-          style={{ whiteSpace: 'nowrap', textAlign: 'justify'}}
+        <span
+          className="w-full content-center font-[18px] text-[#ffffff]"
+          style={{ whiteSpace: 'normal', textAlign: 'justify'}}
         >
-          <span 
-            className="flex content-center font-bold" 
-            style={{display:'inline', whiteSpace: 'nowrap'}}
+          <span
+            className="flex content-center font-bold"
+            style={{display:'inline', whiteSpace: 'normal'}}
           >
             {`Prvi Novosadski noćni bazar`}
           </span>

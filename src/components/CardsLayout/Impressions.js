@@ -149,7 +149,7 @@ const Impressions = ({
                     }
                 }}
             >
-                <ModalContent style={{
+                <ModalContent className="impression-modal-content" style={{
                     backgroundColor: '#FFFFFF',
                     color: '#1b1b1b',
                     borderRadius: '30px',
@@ -166,14 +166,15 @@ const Impressions = ({
                                 <div className="flex flex-col gap-10">
                                 {selectedImpression && (
                                     <p
-                                         style={{
-                                             fontFamily: 'Open Sans',
-                                             fontWeight: '400',
-                                             fontSize: '36px',
-                                             lineHeight: '1.4',
-                                             color: '#1b1b1b',
-                                             whiteSpace: 'pre-line'
-                                         }}
+                                        className="impression-modal-text"
+                                        style={{
+                                            fontFamily: 'Open Sans',
+                                            fontWeight: '400',
+                                            fontSize: '36px',
+                                            lineHeight: '1.4',
+                                            color: '#1b1b1b',
+                                            whiteSpace: 'pre-line'
+                                        }}
                                     >
                                         {selectedImpression.content}
                                     </p>
@@ -187,7 +188,8 @@ const Impressions = ({
                                     }}
                                 >
                                     {selectedImpression && (
-                                        <span 
+                                        <span
+                                            className="impression-modal-author"
                                             style={{
                                                 fontFamily: 'Open Sans',
                                                 fontWeight: '700',
@@ -199,7 +201,8 @@ const Impressions = ({
                                         </span>
                                     )}
                                     {selectedImpression && (
-                                        <span 
+                                        <span
+                                            className="impression-modal-position"
                                             style={{
                                                 fontFamily: 'Open Sans',
                                                 fontWeight: '400',

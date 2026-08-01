@@ -66,10 +66,10 @@ const ContactForm = ({
       {sectionTitle && <span className="contact-section-title text-left">{sectionTitle}</span>}
       {sectionTitle && <Divider className="section-divider w-1440"/>}
       <div
-        className={`flex flex-col-reverse lg:flex-row ${withImage ? '' : 'place-items-center'} justify-center gap-1 ${withImage ? 'sm:gap-24 md:gap-[24px] lg:gap-[24px]' : 'sm:gap-20 md:gap-60 lg:gap-60 py-20 px-20 md:px-40'} lg:w-1440 contact-from bg-[#ffffff] mt-24 2xl:max-w-screen-2xl 2xl:mx-auto rounded-3xl overflow-hidden`}
+        className={`flex flex-col-reverse lg:flex-row ${withImage ? '' : 'place-items-center'} justify-center gap-1 ${withImage ? 'sm:gap-24 md:gap-[24px] lg:gap-[24px]' : 'sm:gap-4 md:gap-60 lg:gap-60 sm:py-8 sm:px-4 py-20 px-20 md:px-40'} lg:w-1440 contact-from bg-[#ffffff] mt-24 2xl:max-w-screen-2xl 2xl:mx-auto rounded-3xl overflow-hidden`}
       >
         {withImage ? (
-          <div className="relative w-full min-h-[300px] lg:min-h-0 lg:self-stretch lg:w-[45%] flex-shrink-0 overflow-hidden rounded-b-3xl lg:rounded-b-none lg:rounded-l-3xl">
+          <div className="relative w-full min-h-[300px] lg:min-h-0 lg:self-stretch lg:w-[45%] flex-shrink-0 overflow-hidden rounded-b-3xl lg:rounded-b-none lg:rounded-l-3xl sm:hidden">
             <Image
               src={DefaultImage}
               fill
@@ -80,7 +80,7 @@ const ContactForm = ({
         ) : (
           <ContactFormLogo />
         )}
-        <div className={`w-[100%] ${withImage ? 'p-[48px]' : 'p-0'}`}>
+        <div className={`w-[100%] ${withImage ? 'sm:p-5 p-[48px]' : 'p-0'}`}>
           <Formik
             initialValues={{
               title: predefinedTitle,

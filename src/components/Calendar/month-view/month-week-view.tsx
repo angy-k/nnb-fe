@@ -49,8 +49,8 @@ export const MonthWeekView: React.FC<MonthWeekViewProps> = ({
   const restEvents = groups.slice(5).flat(1);
 
   return (
-    <div className="w-full h-full relative">
-      <div className="w-full h-full flex">
+    <div className="w-full h-full relative sm:h-auto">
+      <div className="w-full h-full flex sm:h-auto">
         {week.map((day) => {
           const isStartOfMonth = isSameDay(day, startOfMonth(day));
 
@@ -62,18 +62,25 @@ export const MonthWeekView: React.FC<MonthWeekViewProps> = ({
 
           const className = cn(dayLabelVariants({ variant, size }));
 
+          const dayKey = day.toISOString();
+          const hasEvents = (week_day_events[dayKey]?.length ?? 0) > 0 ||
+            week_events.some(ev => isSameDay(ev.start_date, day))
+
           return (
             <div
               key={"day-label-" + day.toISOString()}
-              className="flex-1 flex flex-col items-center [&:not(:last-child)]:border-r border-b text-[#B0B0B0] cursor-pointer hover:bg-black/5 transition-colors"
+              className="flex-1 flex flex-col items-center [&:not(:last-child)]:border-r border-b text-[#B0B0B0] cursor-pointer hover:bg-black/5 transition-colors sm:aspect-square sm:justify-center"
               onClick={() => onDayClick?.(day)}
             >
               <h2 className={className}>{text}</h2>
+              {hasEvents && (
+                <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-[#261A54] mt-0.5" />
+              )}
             </div>
           );
         })}
       </div>
-      <div className="mt-10 mb-5 absolute inset-0 space-y-1 overflow-hidden">
+      <div className="mt-10 mb-5 absolute inset-0 space-y-1 overflow-hidden sm:hidden">
         <MonthWeekEventsView date={week[3]} groups={limitedGroups} onEventClick={onEventClick} />
         <div className="min-h-6 flex">
           {week.map((day) => {

@@ -16,12 +16,13 @@ const NotFoundPage = () => {
         flexDirection: 'column',
         alignItems: 'center',
         overflowY: 'auto',
+        overflowX: 'hidden',
       }}
     >
       {/* Logo */}
       <div style={{ paddingTop: '48px', paddingBottom: '0' }}>
         <Image
-          src="/logo-dark.svg"
+          src="/logo-light.svg"
           alt="Novosadski noćni bazar"
           width={220}
           height={70}
@@ -31,6 +32,7 @@ const NotFoundPage = () => {
 
       {/* Content row */}
       <div
+        className="error-page-content"
         style={{
           display: 'flex',
           flexDirection: 'row',
@@ -44,8 +46,9 @@ const NotFoundPage = () => {
         }}
       >
         {/* Left — text */}
-        <div style={{ flex: '0 0 auto', maxWidth: '560px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className="error-page-text" style={{ flex: '0 0 auto', maxWidth: '560px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <h1
+            className="error-page-title"
             style={{
               fontSize: '48px',
               fontWeight: '800',
@@ -58,6 +61,7 @@ const NotFoundPage = () => {
           </h1>
 
           <p
+            className="error-page-desc"
             style={{
               fontSize: '18px',
               fontWeight: '400',
@@ -72,6 +76,7 @@ const NotFoundPage = () => {
           <button
             type="button"
             onClick={() => router.back()}
+            className="error-page-btn"
             style={{
               alignSelf: 'flex-start',
               marginTop: '12px',
@@ -90,7 +95,7 @@ const NotFoundPage = () => {
         </div>
 
         {/* Right — owls illustration */}
-        <div style={{ flex: '1 1 auto', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <div className="error-page-owls" style={{ flex: '1 1 auto', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
           <Image
             src="/owls.svg"
             alt="Sove noćnog bazara"

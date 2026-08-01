@@ -36,10 +36,10 @@ const EventDetailsModal = ({
       <ModalContent className="rounded-2xl overflow-hidden">
         {(modalOnClose) => (
           <ModalBody className="p-0">
-            <div className="flex flex-row min-h-[420px]">
+            <div className="flex flex-row sm:flex-col">
 
               {/* Leva strana — cover slika */}
-              <div className="w-1/2 relative overflow-hidden bg-[#261A54] flex-shrink-0">
+              <div className="w-1/2 sm:w-full relative overflow-hidden bg-[#261A54] flex-shrink-0 min-h-[420px] sm:min-h-[200px]">
                 {event?.coverImage ? (
                   <img
                     src={event.coverImage}
@@ -60,7 +60,7 @@ const EventDetailsModal = ({
 
               {/* Desna strana — sadržaj */}
               <div
-                className="w-1/2 relative flex flex-col justify-between p-8"
+                className="w-1/2 sm:w-full relative flex flex-col justify-between p-8 sm:p-5"
                 style={{ background: 'linear-gradient(to bottom, #ffffff 60%, #dff4f5 100%)' }}
               >
                 {/* X close */}
@@ -74,13 +74,13 @@ const EventDetailsModal = ({
                 </button>
 
                 {/* Tekst */}
-                <div className="flex flex-col gap-4 pr-8">
-                  <h2 className="text-[#261A54] font-bold leading-snug" style={{ fontSize: '24px' }}>
+                <div className="flex flex-col gap-4 pr-8 sm:pr-0 sm:pt-9">
+                  <h2 className="text-[#261A54] font-bold leading-snug" style={{ fontSize: '20px' }}>
                     {event?.name || event?.title}
                   </h2>
 
                   {description && (
-                    <p className="text-[#555] leading-relaxed" style={{ fontSize: '15px' }}>
+                    <p className="text-[#555] leading-relaxed" style={{ fontSize: '14px' }}>
                       {description}
                     </p>
                   )}
@@ -88,7 +88,7 @@ const EventDetailsModal = ({
 
                 {/* Dugme */}
                 {showReserveButton && (
-                  <div className="mt-8">
+                  <div className="mt-8 sm:mt-4">
                     <button
                       type="button"
                       onClick={() => onReserve?.()}

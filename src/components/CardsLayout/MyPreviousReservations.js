@@ -93,11 +93,11 @@ const MyPreviousReservations = ({ events = [], page = 1, totalPages = 1, onPageC
         {events.map((event, index) => (
           <div
             key={`prev-res-${index}`}
-            className="flex flex-row bg-white rounded-[16px] overflow-hidden shadow-sm"
+            className="flex flex-row bg-white rounded-[16px] overflow-hidden shadow-sm prev-reservation-card"
             style={{ minHeight: '120px' }}
           >
             {/* Image left */}
-            <div className="flex-shrink-0 w-[200px] md:w-[240px]">
+            <div className="flex-shrink-0 w-[200px] md:w-[240px] prev-reservation-card-image">
               <SectionImage
                 imageSrc={event.coverImage || '/card-component-default-image.png'}
                 isGrey={true}
@@ -126,7 +126,7 @@ const MyPreviousReservations = ({ events = [], page = 1, totalPages = 1, onPageC
             </div>
 
             {/* Status button right */}
-            <div className="flex-shrink-0 flex items-center pr-6">
+            <div className="flex-shrink-0 flex items-center pr-6 prev-reservation-card-status">
               <div
                 style={{ background: STATUS_BG, cursor: 'default' }}
                 className="h-[44px] px-5 rounded-full text-white font-semibold text-[13px] whitespace-nowrap flex items-center justify-center"

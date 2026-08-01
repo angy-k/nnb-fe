@@ -308,7 +308,7 @@ const HomeCalendarSection = () => {
   return (
     <div className="w-full">
       <div className="w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto">
-        <div className="w-full pt-24" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
+        <div className="w-full pt-24 sm:pt-8" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
           <span className="our-team-title">Kalendar događaja</span>
           <Divider className="section-divider" />
         </div>
@@ -321,8 +321,8 @@ const HomeCalendarSection = () => {
         </div>
 
         {!user && (
-          <div className="pt-12 flex flex-row justify-between items-center" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
-            <span className="text-[darkBlue] underline text-[22px]">Pogledajte instrukcije za registraciju</span>
+          <div className="pt-12 sm:pt-6 flex flex-row sm:flex-col justify-between items-center sm:items-start gap-4" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
+            <span className="text-[darkBlue] underline text-[22px] sm:text-[18px]">Pogledajte instrukcije za registraciju</span>
             <Button
               type={'outlined-orange'}
               name={'Postani izlagač'}

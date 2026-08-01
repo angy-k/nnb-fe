@@ -90,11 +90,11 @@ const ProfileComponent = ({
   return (
     <>
       {/* Profile header — paddingTop gura sadržaj ispod fixed nava */}
-      <div className="w-full bg-[#261A54]" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
-        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6">
-          <div className="flex items-end gap-6">
+      <div className="w-full bg-[#261A54] profile-page-header" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
+        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6 profile-page-header-inner">
+          <div className="flex items-end gap-6 profile-page-header-left">
             {/* Avatar — z-10 da bude iznad gray sekcije, marginBottom negativan za prelaz */}
-            <div className="relative z-10 flex-shrink-0" style={{ marginBottom: '-56px' }}>
+            <div className="relative z-10 flex-shrink-0 profile-page-avatar-wrapper" style={{ marginBottom: '-56px' }}>
               <Avatar
                 isBordered
                 showFallback
@@ -104,7 +104,7 @@ const ProfileComponent = ({
                 className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
               />
             </div>
-            <div className="flex flex-col gap-1 pb-2">
+            <div className="flex flex-col gap-1 pb-2 profile-page-header-name">
               <span className="text-3xl font-bold leading-tight" style={{ color: '#ffffff' }}>{mappedAccount.brandName}</span>
               <span className="text-base" style={{ color: 'rgba(255,255,255,0.6)' }}>{mappedAccount.type}</span>
             </div>
@@ -120,7 +120,7 @@ const ProfileComponent = ({
       </div>
 
       {/* Content area — paddingTop za prostor avatara koji visi */}
-      <div className="w-full bg-[#f5f5f5] pb-24 overflow-hidden" style={{ paddingTop: '56px' }}>
+      <div className="w-full bg-[#f5f5f5] pb-24 overflow-hidden profile-page-content" style={{ paddingTop: '56px' }}>
         <Reservations />
         <div className="max-w-[1400px] mx-auto px-6">
           <AccountData account={mappedAccount} />

@@ -89,14 +89,14 @@ const ReservationOptionsModal = ({
                 ×
               </button>
 
-              <div className="p-10 pb-12">
+              <div className="p-10 pb-12 sm:p-6 sm:pt-16 sm:pb-8 sm:overflow-y-auto sm:max-h-[85dvh]">
                 <TimerChip timeRemaining={timeRemaining} />
-                <h2 className="text-[#261A54] text-xl font-bold mb-8">
+                <h2 className="text-[#261A54] text-xl font-bold mb-8 sm:mb-5 sm:text-lg">
                   Da li Vam je osim osvetljenja potreban strujni priključak za
                   određeni uređaj neophodan za izlaganje?
                 </h2>
 
-                <div className="space-y-4 mb-10">
+                <div className="space-y-4 mb-10 sm:mb-6">
                   <RadioOption
                     name="electricity"
                     value="kw_xx"
@@ -113,11 +113,11 @@ const ReservationOptionsModal = ({
                   />
                 </div>
 
-                <h3 className="text-[#261A54] text-xl font-bold mb-5">
+                <h3 className="text-[#261A54] text-xl font-bold mb-5 sm:text-lg">
                   Da li vam je potrebna reklama?
                 </h3>
 
-                <div className="space-y-4 mb-10">
+                <div className="space-y-4 mb-10 sm:mb-6">
                   <RadioOption
                     name="marketing"
                     value="instagram"
@@ -185,11 +185,11 @@ const ReservationOptionsModal = ({
                   </span>
                 </label>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 sm:flex-col sm:w-full">
                   <button
                     onClick={() => onSubmit?.()}
                     disabled={!termsAccepted}
-                    className="bg-[#56C4CF] hover:opacity-90 text-white px-10 py-3 rounded-full font-semibold transition text-sm"
+                    className="bg-[#56C4CF] hover:opacity-90 text-white px-10 py-3 rounded-full font-semibold transition text-sm sm:w-full"
                     style={{ opacity: termsAccepted ? 1 : 0.45, cursor: termsAccepted ? 'pointer' : 'not-allowed' }}
                     type="button"
                   >
@@ -199,7 +199,7 @@ const ReservationOptionsModal = ({
                   {showCancel && (
                     <button
                       onClick={modalOnClose}
-                      className="text-[#261A54] px-8 py-3 rounded-full font-semibold border border-[#261A54] hover:opacity-80 transition text-sm"
+                      className="text-[#261A54] px-8 py-3 rounded-full font-semibold border border-[#261A54] hover:opacity-80 transition text-sm sm:w-full"
                       type="button"
                     >
                       {cancelLabel}

@@ -88,6 +88,7 @@ const ImpressionCard = ({
   return (
     <div
       key={keyValue}
+      className="immpression-card-inner"
       onClick={cardAction || undefined}
       style={{
         backgroundColor: `${isDark ? '#56C4CF' : '#ffffff'}`,
@@ -103,6 +104,7 @@ const ImpressionCard = ({
       }}
     >
       {description && <p
+        className="immpression-card-text"
         style={{
           fontFamily: 'Open Sans',
           fontWeight: '400',

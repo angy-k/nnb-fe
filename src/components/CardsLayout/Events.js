@@ -413,6 +413,8 @@ const Events = ({
         setMarketingOption={setMarketingOption}
         onSubmit={submitReservationOptions}
         submitLabel="Prijavite se"
+        showCancel={true}
+        cancelLabel="Otkaži"
         timeRemaining={sessionSeconds}
         termsPdfUrl={selectedEvent?.termsPdfUrl || null}
       />

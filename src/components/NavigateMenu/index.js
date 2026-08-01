@@ -45,7 +45,7 @@ const NavigateMenu = ({
 
   const wrapperClassName = className
     ? `${className} bg-[#261A54] flex flex-col overflow-hidden`
-    : `absolute left-0 sm:pl-10 lg:pl-16 pt-19 bg-[#261A54] w-full px-7 xl:relative xl:top-0 xl:h-auto xl:flex xl:hidden flex flex-col overflow-hidden`
+    : `absolute left-0 sm:pl-10 lg:pl-16 pt-19 bg-[#261A54] w-full px-7 xl:relative xl:top-0 xl:h-auto xl:flex xl:hidden flex flex-col overflow-hidden navigate-menu-wrapper`
 
   const defaultWrapperStyle = className
     ? undefined

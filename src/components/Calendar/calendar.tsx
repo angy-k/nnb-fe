@@ -93,18 +93,14 @@ export const Calendar: React.FC<CalendarProps> = ({
     }, [curView]);
 
 return (
-    <div key={"calendar-component"} className={"2xl:max-w-screen-2xl w-full h-full flex-1 flex flex-col overflow-hidden pt-60"}>
-        <section id="calendar-header" className="mb-6 w-full flex justify-between pb-24">
-            <div className="flex gap-2 items-center w-full justify-center">
-                <span className="calendar-title capitalize">
+    <div key={"calendar-component"} className={"2xl:max-w-screen-2xl w-full h-full flex-1 flex flex-col overflow-hidden sm:overflow-visible pt-60 sm:pt-4 sm:h-auto"}>
+        <section id="calendar-header" className="mb-6 sm:mb-3 w-full flex justify-between gap-2 pb-24 sm:pb-4">
+            <div className="flex gap-2 items-center flex-1 min-w-0 justify-center">
+                <span className="calendar-title capitalize sm:text-[20px]">
                     {formatDateForView(curDate).toLowerCase()}
                 </span>
-                {/* <button aria-label={"set date today"} onClick={() => setCurDate(new Date())} className={"py-2 px-3 border border-gray-200 rounded-md font-semibold hover:bg-blue-100 transition-colors duration-300"}>
-                    {`Today`}
-                </button> */}
-                
             </div>
-            <div className="flex gap-2 calendar-buttons h-[48px]">
+            <div className="flex gap-2 calendar-buttons h-[48px] flex-shrink-0">
                 <button onClick={onPrev} aria-label={`prev ${curView}`} className="w-[42px] aspect-square border-none button-one font-semibold flex justify-center items-center hover:bg-[lightBlue] hover:opacity-75 transition-colors duration-300">
                     <Image
                         src={ArrowLeft}

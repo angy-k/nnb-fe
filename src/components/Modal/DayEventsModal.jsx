@@ -98,7 +98,7 @@ const DayEventsModal = ({
       >
         {(modalOnClose) => (
           <ModalBody className="p-0">
-            <div className="relative px-10 pt-10 pb-12">
+            <div className="relative px-10 pt-10 pb-12 sm:px-5 sm:pt-7 sm:pb-8">
               {/* X close */}
               <button
                 type="button"
@@ -110,7 +110,7 @@ const DayEventsModal = ({
               </button>
 
               {/* Date header */}
-              <h2 className="text-[#1B1B1B] text-[22px] font-bold capitalize mb-8 pr-10">
+              <h2 className="text-[#1B1B1B] text-[22px] sm:text-[18px] font-bold capitalize mb-8 sm:mb-5 pr-10">
                 {formattedDate}
               </h2>
 
@@ -127,6 +127,7 @@ const DayEventsModal = ({
                       <li key={ev.id}>
                         {/* Navy pill row */}
                         <div
+                          className="day-event-pill"
                           style={{
                             background: '#261A54',
                             borderRadius: '60px',

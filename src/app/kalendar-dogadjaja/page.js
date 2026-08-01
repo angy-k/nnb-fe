@@ -420,7 +420,7 @@ const CalendarPage = () => {
 
         {/* Legenda — samo za ulogovane korisnike */}
         {user && (
-          <div className="flex items-center gap-6 mt-6 mb-2 px-4" style={{width: '100%', maxWidth: '1400px'}}>
+          <div className="flex items-center gap-6 mt-6 mb-2 px-4 sm:flex-col sm:items-start sm:gap-3" style={{width: '100%', maxWidth: '1400px'}}>
             <div className="flex items-center gap-2">
               <Image src={EventDark} width={100} height={41} alt="Novosadski noćni bazar" />
               <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Novosadski noćni bazar</span>

@@ -41,7 +41,7 @@ const AboutUsPage = async () => {
           image={true}
         />
         <div className="w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto z-1 bg-darkBlue">
-          <Divider className="section-divider-light w-1440"/>
+          <Divider className="section-divider-light w-full"/>
 
           {/* Dark section — 2-col grid matching Figma */}
           <div className="about-us-container">
