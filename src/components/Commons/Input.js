@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { useState } from 'react'
-import EyeIcon from '@/icons/event-icon.svg';
+import EyeIcon from '@/icons/eye.svg';
 import EyeUnseen from '@/icons/eye-unseen.svg';
 
 const Input = ({
@@ -53,12 +53,12 @@ const Input = ({
         {visible && password && (
           <button
             onClick={() => {
-              setInputType('text')
+              setInputType('password')
               setVisible(false)
             }}
             type="button"
             tabIndex="-1"
-            className='absolute pt-5 right-4'>
+            className='absolute top-1/2 -translate-y-1/2 right-4'>
               <Image
                 src={EyeIcon}
                 alt="eye"
@@ -71,12 +71,12 @@ const Input = ({
         {!visible && password && (
           <button
             onClick={() => {
-              setInputType('password')
+              setInputType('text')
               setVisible(true)
             }}
             tabIndex="-1"
             type="button"
-            className='absolute pt-5 right-4'
+            className='absolute top-1/2 -translate-y-1/2 right-4'
           >
             <Image
               src={EyeUnseen}

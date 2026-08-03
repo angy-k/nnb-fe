@@ -606,8 +606,10 @@ const ProfileEdit = () => {
         {/* Baner za dopunu profila — prikazuje se dok postoje nedostajući podaci */}
         {(() => {
           const requiredMissing = [
+            !fullName.trim() && 'ime i prezime',
             !brandName.trim() && 'naziv brenda',
             !phone.trim() && 'broj telefona',
+            !address.trim() && 'adresu',
           ].filter(Boolean)
 
           const recommendedMissing = [
