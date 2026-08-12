@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import useUser from '@/data/use-user'
 import eventService from '@/services/eventService'
 import applicationService from '@/services/applicationService'
+import { checkProfileReady } from '@/utils/profileValidation'
 import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
 import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
 import GalleryWarningModal from '@/components/Modal/GalleryWarningModal'
@@ -442,6 +443,13 @@ const ReservationMapPage = () => {
     if (!user || !eventId) return
     if (!isPackageUser && sessionExpired) {
       setReservationError('Sesija za izbor mesta je istekla. Osvežite stranicu i pokušajte ponovo.')
+      return
+    }
+
+    const withMarketing = marketingOption && marketingOption !== 'none'
+    const { ok: profileOk, missing } = checkProfileReady(user, { withMarketing })
+    if (!profileOk) {
+      setReservationError(`Pre prijave dopunite profil — nedostaje: ${missing.join(', ')}. Idite na Profil → Izmeni profil.`)
       return
     }
 

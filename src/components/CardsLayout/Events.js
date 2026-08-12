@@ -3,6 +3,7 @@ import CardComponent from "@/components/CardComponent";
 import { Divider } from "@nextui-org/divider";
 import Button from "../Button";
 import { formatTitleForUri } from '@/utils/transform-helper';
+import { checkProfileReady } from '@/utils/profileValidation'
 import { useRouter } from 'next/navigation'
 import PageHeroSection from '@/components/Hero/pageOwl';
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -262,6 +263,13 @@ const Events = ({
 
     if (!eventId) {
       setReservationError('Nedostaje događaj.')
+      return
+    }
+
+    const withMarketing = marketingOption && marketingOption !== 'none'
+    const { ok: profileOk, missing } = checkProfileReady(user, { withMarketing })
+    if (!profileOk) {
+      setReservationError(`Pre prijave dopunite profil — nedostaje: ${missing.join(', ')}. Idite na Profil → Izmeni profil.`)
       return
     }
 

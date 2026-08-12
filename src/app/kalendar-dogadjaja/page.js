@@ -8,6 +8,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { add, parse, isWithinInterval, isSameDay, startOfToday } from 'date-fns'
 import eventService from '@/services/eventService'
 import applicationService from '@/services/applicationService'
+import { checkProfileReady } from '@/utils/profileValidation'
 import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
 import EventDetailsModal from '@/components/Modal/EventDetailsModal'
 import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
@@ -305,6 +306,13 @@ const CalendarPage = () => {
     const eventId = selectedEventId
     if (!eventId) {
       setReservationError('Nedostaje događaj.')
+      return
+    }
+
+    const withMarketing = marketingOption && marketingOption !== 'none'
+    const { ok: profileOk, missing } = checkProfileReady(user, { withMarketing })
+    if (!profileOk) {
+      setReservationError(`Pre prijave dopunite profil — nedostaje: ${missing.join(', ')}. Idite na Profil → Izmeni profil.`)
       return
     }
 

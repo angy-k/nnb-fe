@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { Calendar } from '@/components/Calendar'
 import UpcommingEvents from '@/components/UpcommingEvents'
 import Button from '@/components/Button'
+import { checkProfileReady } from '@/utils/profileValidation'
 import EventDetailsModal from '@/components/Modal/EventDetailsModal'
 import DayEventsModal from '@/components/Modal/DayEventsModal'
 import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
@@ -292,6 +293,14 @@ const HomeCalendarSection = () => {
     if (!user) return
     const eventId = selectedEventId
     if (!eventId) { setReservationError('Nedostaje događaj.'); return }
+
+    const withMarketing = marketingOption && marketingOption !== 'none'
+    const { ok: profileOk, missing } = checkProfileReady(user, { withMarketing })
+    if (!profileOk) {
+      setReservationError(`Pre prijave dopunite profil — nedostaje: ${missing.join(', ')}. Idite na Profil → Izmeni profil.`)
+      return
+    }
+
     try {
       setReservationError(null)
       setReservationSuccess(null)
