@@ -48,11 +48,12 @@ const CostRow = ({ label, value }) => {
 
 const CostSummary = ({ costs }) => {
   if (!costs) return null
-  const { cotization, electricity, marketing } = costs
-  const total = (Number(cotization) || 0) + (Number(electricity) || 0) + (Number(marketing) || 0)
+  const { cotization, zoneCost, electricity, marketing } = costs
+  const total = (Number(cotization) || 0) + (Number(zoneCost) || 0) + (Number(electricity) || 0) + (Number(marketing) || 0)
   return (
     <div style={{ width: '100%', maxWidth: '420px', background: '#f8f9fb', borderRadius: '12px', padding: '16px 20px', marginBottom: '8px' }}>
       <CostRow label="Kotizacija" value={fmt(cotization)} />
+      <CostRow label="Dodatak za zonu" value={fmt(zoneCost)} />
       <CostRow label="Strujni priključak" value={fmt(electricity)} />
       <CostRow label="Reklamiranje" value={fmt(marketing)} />
       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 0', fontSize: '16px', fontWeight: '700', color: '#261A54' }}>
@@ -78,6 +79,7 @@ const BoothReservationConfirmModal = ({
   confirmLabel = 'Rezerviši tezgu',
   cancelLabel = 'Poništi rezervaciju',
   timeRemaining = null,
+  selectedStand = null,
 }) => {
   const isSuccess = !!successMessage
 
@@ -143,6 +145,23 @@ const BoothReservationConfirmModal = ({
                 /* ── Confirm screen ─────────────────────────────────────────── */
                 <div className="flex flex-col items-center text-center px-12 py-16 sm:px-6 sm:py-10 gap-8 sm:gap-5">
                   <TimerChip timeRemaining={timeRemaining} />
+
+                  {selectedStand && (
+                    <div style={{
+                      background: '#f0fbfc',
+                      border: '2px solid #56C4CF',
+                      borderRadius: '16px',
+                      padding: '14px 28px',
+                      marginBottom: '-16px',
+                    }}>
+                      <div style={{ fontSize: '13px', color: '#56C4CF', fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '4px' }}>
+                        Izabrano mesto
+                      </div>
+                      <div style={{ fontSize: '36px', fontWeight: '800', color: '#261A54', lineHeight: 1 }}>
+                        {selectedStand}
+                      </div>
+                    </div>
+                  )}
 
                   <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#261A54', margin: 0 }}>
                     {title}

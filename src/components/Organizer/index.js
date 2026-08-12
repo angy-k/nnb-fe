@@ -9,7 +9,7 @@ const OrganizerWord = ({
     bio       = null,
 }) => {
   const bioContent = bio
-    ? bio.split('\n\n').map((p, i) => <p key={i}>{p}</p>)
+    ? bio.split('\n\n').map((p, i) => <p key={i} style={{ whiteSpace: 'pre-wrap' }}>{p}</p>)
     : <DefaultBio />;
 
   return (
@@ -31,8 +31,8 @@ const OrganizerWord = ({
         </div>
       </div>
       <div className="bg-darkBlue organizer-section-quote justify-center" style={{position: 'absolute', bottom: 0, width: '100%'}}>
-        <span className="organizer-section-main-quote text-lightBlue">{quote}</span>
-        <span className="organizer-section-sub-quote text-[#ffffff]">{quoteSub}</span>
+        <span className="organizer-section-main-quote text-lightBlue" style={{ whiteSpace: 'pre-wrap' }}>{quote}</span>
+        <span className="organizer-section-sub-quote text-[#ffffff]" style={{ whiteSpace: 'pre-wrap' }}>{quoteSub}</span>
       </div>
     </div>
   )

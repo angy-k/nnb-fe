@@ -56,9 +56,13 @@ const AboutUsPage = async () => {
               <div className="about-us-star-decor" style={{ position: 'absolute', bottom: '120px', right: '30px' }}>
                 <Image src={WhiteStarIcon} width={22} height={22} alt="" aria-hidden="true" />
               </div>
-              <p style={{ color: '#ffffff', fontWeight: '700', fontSize: '28px', lineHeight: '1.55', marginTop: '120px' }}>
-                {s.intro_quote || `Trg je oduvek mesto skupljanja, ovaj put skupljamo VAS – preduzetnike, umetnike i male proizvođače, a glavnu ulogu imaće vaši proizvodi i kupci.`}
-              </p>
+              <div style={{ marginTop: '120px', display: 'flex', flexDirection: 'column', gap: '1em' }}>
+                {(s.intro_quote || `Trg je oduvek mesto skupljanja, ovaj put skupljamo VAS – preduzetnike, umetnike i male proizvođače, a glavnu ulogu imaće vaši proizvodi i kupci.`).split('\n\n').map((para, i) => (
+                  <p key={`iq-${i}`} style={{ color: '#ffffff', fontWeight: '700', fontSize: '28px', lineHeight: '1.55', whiteSpace: 'pre-wrap', margin: 0 }}>
+                    {para}
+                  </p>
+                ))}
+              </div>
             </div>
 
             {/* Cell 2 — Owl + shopping photo (row 1, col 2) */}
@@ -117,12 +121,16 @@ const AboutUsPage = async () => {
 
             {/* Cell 4 — Body text (row 2, col 2) */}
             <div style={{ padding: '60px 60px 60px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '24px' }}>
-              <p style={{ color: '#ffffff', fontSize: '18px', lineHeight: '1.75' }}>
-                {s.body_text_1 || `Da proces kupovine i prodaje bude još bolji, pripremili smo i prateći program gde će naši savremeni dobošari prenositi znanja o važnosti brendiranja, socijalnog preduzetništva, razvoja preduzetništva mladih i ženskog preduzetništva.`}
-              </p>
-              <p style={{ color: '#ffffff', fontSize: '18px', lineHeight: '1.75' }}>
-                {s.body_text_2 || `Sve ovo biće praćeno i dobrom hranom, zabavom i muzikom.`}
-              </p>
+              {(s.body_text_1 || `Da proces kupovine i prodaje bude još bolji, pripremili smo i prateći program gde će naši savremeni dobošari prenositi znanja o važnosti brendiranja, socijalnog preduzetništva, razvoja preduzetništva mladih i ženskog preduzetništva.`).split('\n\n').map((para, i) => (
+                <p key={`b1-${i}`} style={{ color: '#ffffff', fontSize: '18px', lineHeight: '1.75', whiteSpace: 'pre-wrap', margin: 0 }}>
+                  {para}
+                </p>
+              ))}
+              {(s.body_text_2 || `Sve ovo biće praćeno i dobrom hranom, zabavom i muzikom.`).split('\n\n').map((para, i) => (
+                <p key={`b2-${i}`} style={{ color: '#ffffff', fontSize: '18px', lineHeight: '1.75', whiteSpace: 'pre-wrap', margin: 0 }}>
+                  {para}
+                </p>
+              ))}
             </div>
 
           </div>

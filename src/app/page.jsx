@@ -131,6 +131,9 @@ export default async function Home() {
       <div className='pb-24'>
         <ContactForm
           withImage={true}
+          sectionTitle="Kontaktirajte nas"
+          sectionTitleColor="#ffffff"
+          hideDivider={true}
           predefinedTitle="Kontaktirajte nas"
         />
       </div>

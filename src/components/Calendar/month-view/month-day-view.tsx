@@ -2,6 +2,7 @@ import { isWithinInterval } from "date-fns";
 import Image from 'next/image';
 import EventDark from '@/icons/event-dark.svg';
 import EventLight from '@/icons/event-light.svg';
+import EventOrange from '@/icons/event-orange.svg';
 
 import { Event } from "../types";
 
@@ -56,6 +57,9 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
     <ul className="pl-4 pr-6 flex-1 flex flex-wrap gap-1 overflow-hidden">
       {eventsToDisplay.map((event) => {
         const isStartup = event.variant === 'startup';
+        const isAway = event.variant === 'away';
+        const badgeSrc = isStartup ? EventLight : isAway ? EventOrange : EventDark;
+        const badgeAlt = isStartup ? 'NNB Startup' : isAway ? 'NNB u drugom mestu' : 'NNB';
         return (
           <li className="flex items-center" key={event.id}>
             <button
@@ -66,13 +70,13 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
               }}
               className="inline-flex items-center justify-center rounded-full transition-opacity"
               style={event.isPast ? { opacity: 0.35, cursor: 'default', filter: 'grayscale(0.5) blur(1px)' } : { cursor: 'pointer' }}
-              aria-label={isStartup ? 'NNB Startup event' : 'NNB event'}
+              aria-label={badgeAlt}
             >
               <Image
-                src={isStartup ? EventLight : EventDark}
+                src={badgeSrc}
                 width={63}
                 height={26}
-                alt={isStartup ? 'NNB Startup' : 'NNB'}
+                alt={badgeAlt}
               />
             </button>
           </li>

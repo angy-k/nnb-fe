@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Divider } from '@nextui-org/divider';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@nextui-org/table';
 import { add, parse, startOfToday } from 'date-fns';
 import eventService from '@/services/eventService';
 
@@ -120,48 +119,39 @@ const UpcommingEvents = ({
         <>
           {/* Desktop tabela */}
           <div className="hidden md:block lg:block w-full">
-            <Table aria-label="Očekivani događaji" radius>
-              <TableHeader>
-                <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Manifestacija</TableColumn>
-                <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Mesto</TableColumn>
-                <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Datum</TableColumn>
-                <TableColumn className="text-[#1B1B1B] capitalize font-bold font-[18px]">Početak prijava</TableColumn>
-              </TableHeader>
-              <TableBody>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 10px' }}>
+              <thead>
+                <tr>
+                  {['Manifestacija', 'Mesto', 'Datum', 'Početak prijava'].map((col) => (
+                    <th key={col} style={{ textAlign: 'left', padding: '4px 16px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', fontWeight: 700, color: '#1B1B1B' }}>
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
                 {events.map((event, index) => (
-                  <TableRow key={event.id || index}>
-                    <TableCell
-                      className="text-[#1B1B1B] capitalize font-normal font-[18px] rounded-l-full"
-                      style={{ flex: 1, padding: '16px', backgroundColor: '#56C4CF' }}
-                    >
+                  <tr key={event.id || index}>
+                    <td style={{ background: '#56C4CF', padding: '16px 20px', borderRadius: '102px 0 0 102px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
                       {event.name}
-                    </TableCell>
-                    <TableCell
-                      className="text-[#1B1B1B] capitalize font-normal font-[18px]"
-                      style={{ flex: 1, backgroundColor: '#56C4CF', padding: '16px' }}
-                    >
+                    </td>
+                    <td style={{ background: '#56C4CF', padding: '16px 20px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
                       {event.location}
-                    </TableCell>
-                    <TableCell
-                      className="text-[#1B1B1B] capitalize font-normal font-[18px]"
-                      style={{ flex: 1, backgroundColor: '#56C4CF', padding: '16px' }}
-                    >
+                    </td>
+                    <td style={{ background: '#56C4CF', padding: '16px 20px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
                       {event.date}
-                    </TableCell>
-                    <TableCell
-                      className="text-[#1B1B1B] capitalize font-normal font-[18px] rounded-r-full"
-                      style={{ flex: 1, padding: '16px', backgroundColor: '#56C4CF' }}
-                    >
+                    </td>
+                    <td style={{ background: '#56C4CF', padding: '16px 20px', borderRadius: '0 102px 102px 0', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
                       {event.applicationStart}
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
 
           {/* Mobilni card prikaz */}
-          <div className="block md:hidden lg:hidden w-full space-y-3">
+          <div className="block md:hidden lg:hidden w-full space-y-3 px-4">
             {events.map((event, index) => (
               <div
                 key={event.id || index}

@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import EventDark from '@/icons/event-dark.svg'
 import EventLight from '@/icons/event-light.svg'
+import EventOrange from '@/icons/event-orange.svg'
 import ExhibitorIcon from '@/icons/exhibitor-icon.svg'
 
 const CalendarPage = () => {
@@ -123,7 +124,7 @@ const CalendarPage = () => {
             title,
             start_date: startDate,
             end_date: endDate,
-            variant: /startup/i.test(title) ? 'startup' : 'regular',
+            variant: item?.eventType === 'startup_bazar' ? 'startup' : item?.eventType === 'nocni_bazar_mesto' ? 'away' : 'regular',
             isPast,
           }
         })
@@ -428,6 +429,10 @@ const CalendarPage = () => {
             <div className="flex items-center gap-2">
               <Image src={EventLight} width={100} height={41} alt="Novosadski noćni bazar — startup" />
               <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Novosadski noćni bazar - startup</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Image src={EventOrange} width={100} height={41} alt="Noćni bazar u drugom mestu" />
+              <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Noćni bazar u drugom mestu</span>
             </div>
           </div>
         )}

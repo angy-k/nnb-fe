@@ -24,8 +24,20 @@ const ReservationMapPage = () => {
 
   const [availability, setAvailability] = useState(null)
 
-  const imgRef = useRef(null)
-  const [imgScale, setImgScale] = useState({ x: 1, y: 1 })
+  // Map coordinate system: SVG viewBox is 1920×1609
+  const MAP_W = 1920
+  const MAP_H = 1609
+  // Y: hotspot JSON was calibrated ~7.8% compressed vs SVG viewBox height.
+  const Y_SCALE = 1.0779
+  // X: hotspot JSON x-coordinates are offset from the raster's actual stand positions.
+  // Empirical fit across 11 measured stands: actual_svg_x = X_SCALE * hotspot_x - X_OFFSET
+  const X_SCALE = 1.070
+  const X_OFFSET = 173.9
+
+  const mapContainerRef = useRef(null)
+  const [containerWidth, setContainerWidth] = useState(0)
+  const mapScale = containerWidth > 0 ? containerWidth / MAP_W : 0
+
   const [overlayOffset, setOverlayOffset] = useState({ x: 0, y: 0 })
 
   const debugMode = useMemo(() => {
@@ -51,22 +63,10 @@ const ReservationMapPage = () => {
 
   const [sessionExpired, setSessionExpired] = useState(false)
   const [sessionSecondsLeft, setSessionSecondsLeft] = useState(120)
-  const sessionStartedAtRef = useRef(null)
-  const sessionTimeoutRef = useRef(null)
-  const sessionDisplayIntervalRef = useRef(null)
-
   useEffect(() => {
-    sessionStartedAtRef.current = null
+    // Resetuj tajmer pri promeni eventa ili korisnika (nova sesija)
     setSessionExpired(false)
     setSessionSecondsLeft(120)
-    if (sessionTimeoutRef.current) {
-      clearTimeout(sessionTimeoutRef.current)
-      sessionTimeoutRef.current = null
-    }
-    if (sessionDisplayIntervalRef.current) {
-      clearInterval(sessionDisplayIntervalRef.current)
-      sessionDisplayIntervalRef.current = null
-    }
   }, [eventId, user?.id])
 
   const normalizeLabel = (value) => {
@@ -90,6 +90,27 @@ const ReservationMapPage = () => {
     if (v.includes('nakit')) return 'nakit'
     if (v.includes('kozmetika')) return 'kozmetika'
     if (v.includes('ostalo')) return 'ostalo'
+
+    // Craft / textile activities → rukotvorine
+    if (
+      v.includes('strikanje') ||
+      v.includes('pletenje') ||
+      v.includes('heklanje') ||
+      v.includes('vez') ||
+      v.includes('tkanje') ||
+      v.includes('tekstil') ||
+      v.includes('keramik') ||
+      v.includes('grncar') ||
+      v.includes('drvorez') ||
+      v.includes('origami') ||
+      v.includes('makrame') ||
+      v.includes('kuis') ||
+      v.includes('svec') ||
+      v.includes('sapun') ||
+      v.includes('decupage') ||
+      v.includes('craft') ||
+      v.includes('zanat')
+    ) return 'rukotvorine'
 
     return v
   }
@@ -120,6 +141,23 @@ const ReservationMapPage = () => {
   const computeConfirmCosts = (electricityOpt, marketingOpt) => {
     const cotization = Number(eventDetails?.downPayment) || 0
 
+    // Zone additional cost for the selected stand
+    const allZones = Array.isArray(mapConfig?.zones) ? mapConfig.zones : []
+    const standNo = Number(selectedStand)
+    let zoneCost = null
+    if (Number.isFinite(standNo) && standNo > 0 && allZones.length > 0) {
+      for (const z of allZones) {
+        const from = Number(z?.stand_number_from)
+        const to = Number(z?.stand_number_to)
+        if (Number.isFinite(from) && Number.isFinite(to) && standNo >= Math.min(from, to) && standNo <= Math.max(from, to)) {
+          const cost = Number(z?.additional_zone_cost)
+          if (Number.isFinite(cost) && cost > 0) {
+            zoneCost = (zoneCost ?? 0) + cost
+          }
+        }
+      }
+    }
+
     const rawElectricity = eventDetails?.electricityExtensionCoasts
     const electricityCostBase = rawElectricity != null && rawElectricity !== '' ? Number(rawElectricity) : null
     const electricity = electricityOpt && electricityOpt !== 'none' ? electricityCostBase : null
@@ -134,51 +172,20 @@ const ReservationMapPage = () => {
     else if (marketingOpt === 'instagram') marketing = ig
     else if (marketingOpt === 'instagram_facebook') marketing = (fb ?? 0) + (ig ?? 0)
 
-    return { cotization, electricity, marketing }
+    return { cotization, zoneCost, electricity, marketing }
   }
 
-  const hotspotsBounds = useMemo(() => {
-    const hs = mapConfig?.hotspots
-    if (!Array.isArray(hs) || hs.length === 0) return { width: null, height: null }
-
-    let maxX = 0
-    let maxY = 0
-
-    for (const h of hs) {
-      const r = h?.rect
-      if (!r) continue
-
-      const x = Number(r.x) || 0
-      const y = Number(r.y) || 0
-      const w = Number(r.width) || 0
-      const hgt = Number(r.height) || 0
-
-      maxX = Math.max(maxX, x + w)
-      maxY = Math.max(maxY, y + hgt)
-    }
-
-    return {
-      width: maxX > 0 ? maxX : null,
-      height: maxY > 0 ? maxY : null,
-    }
-  }, [mapConfig?.hotspots])
-
-  const updateImageScale = () => {
-    const img = imgRef.current
-    if (!img) return
-
-    const rect = img.getBoundingClientRect()
-
-    const naturalWidthRaw = Number(img.naturalWidth) || 0
-    const naturalHeightRaw = Number(img.naturalHeight) || 0
-    const sourceWidth = naturalWidthRaw > 1 ? naturalWidthRaw : (hotspotsBounds.width ?? rect.width ?? 1)
-    const sourceHeight = naturalHeightRaw > 1 ? naturalHeightRaw : (hotspotsBounds.height ?? rect.height ?? 1)
-
-    const x = rect.width / (sourceWidth || 1)
-    const y = rect.height / (sourceHeight || 1)
-
-    setImgScale({ x: Number.isFinite(x) && x > 0 ? x : 1, y: Number.isFinite(y) && y > 0 ? y : 1 })
-  }
+  useEffect(() => {
+    const el = mapContainerRef.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width)
+    })
+    observer.observe(el)
+    // Set initial width
+    setContainerWidth(el.getBoundingClientRect().width)
+    return () => observer.disconnect()
+  }, [mapConfig])
 
   const refreshAvailability = async () => {
     if (!eventId || !user) return
@@ -188,13 +195,7 @@ const ReservationMapPage = () => {
     const data = await res.json()
     if (data?.success) {
       setAvailability(data.data)
-      if (data.data?.my_lock) {
-        setLockId(data.data.my_lock.id)
-        setSelectedStand(data.data.my_lock.stand_number)
-      } else {
-        setLockId(null)
-        setSelectedStand(null)
-      }
+      // Ne vraćamo selectedStand/lockId iz my_lock — svaka sesija počinje ispočetka
     }
   }
 
@@ -231,13 +232,6 @@ const ReservationMapPage = () => {
 
     fetchConfig()
   }, [eventId])
-
-  useEffect(() => {
-    updateImageScale()
-    const onResize = () => updateImageScale()
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [hotspotsBounds.width, hotspotsBounds.height])
 
   useEffect(() => {
     if (!debugMode) return
@@ -285,6 +279,12 @@ const ReservationMapPage = () => {
     fetchEventDetails()
   }, [eventId])
 
+  // Pri svakom loadu/refreshu: oslobodi stari lock da štand ne ostane blokiran
+  useEffect(() => {
+    if (!user || !eventId || isPackageUser) return
+    eventService.unlockStand({ eventId }).catch(() => null)
+  }, [user?.id, eventId])
+
   useEffect(() => {
     if (!user || !eventId) return
     if (isPackageUser || sessionExpired) return
@@ -300,79 +300,32 @@ const ReservationMapPage = () => {
     return () => clearInterval(interval)
   }, [user, eventId, isPackageUser, sessionExpired])
 
+  // Expiry: okida se kad tajmer dođe do 0
   useEffect(() => {
-    if (!user || !eventId) return
-    if (isPackageUser) return
+    if (sessionSecondsLeft > 0) return
     if (sessionExpired) return
+    if (isPackageUser) return
+    if (!eventId) return
 
-    const ttlSeconds = 120
-
-    if (sessionStartedAtRef.current === null) {
-      sessionStartedAtRef.current = Date.now()
-    }
-
-    const elapsedMs = Date.now() - sessionStartedAtRef.current
-    const remainingMs = ttlSeconds * 1000 - elapsedMs
-
-    if (remainingMs <= 0) {
-      setSessionExpired(true)
-      setIsConfirmModalOpen(false)
-      setIsOptionsOpen(false)
-      setReservationError('Sesija za izbor mesta je istekla. Osvežite stranicu i pokušajte ponovo.')
-      setLockId(null)
-      setSelectedStand(null)
-      eventService.unlockStand({ eventId }).catch(() => null)
-      return
-    }
-
-    if (sessionTimeoutRef.current) {
-      clearTimeout(sessionTimeoutRef.current)
-    }
-
-    sessionTimeoutRef.current = setTimeout(() => {
-      setSessionExpired(true)
-      setIsConfirmModalOpen(false)
-      setIsOptionsOpen(false)
-      setReservationError('Sesija za izbor mesta je istekla. Osvežite stranicu i pokušajte ponovo.')
-      setLockId(null)
-      setSelectedStand(null)
-      eventService.unlockStand({ eventId }).catch(() => null)
-    }, remainingMs)
-
-    return () => {
-      if (sessionTimeoutRef.current) {
-        clearTimeout(sessionTimeoutRef.current)
-      }
-    }
-  }, [user?.id, eventId, isPackageUser, sessionExpired])
+    setSessionExpired(true)
+    setIsConfirmModalOpen(false)
+    setIsOptionsOpen(false)
+    setReservationError('Sesija za izbor mesta je istekla. Osvežite stranicu i pokušajte ponovo.')
+    setLockId(null)
+    setSelectedStand(null)
+    eventService.unlockStand({ eventId }).catch(() => null)
+  }, [sessionSecondsLeft])
 
   useEffect(() => {
-    if (!user || !eventId || isPackageUser || sessionExpired) return
+    // Tajmer kreće odmah od munta/refresh-a, ne čeka user load
+    if (isPackageUser || sessionExpired) return
 
-    const tick = () => {
-      if (sessionStartedAtRef.current === null) return
-      const elapsed = Math.floor((Date.now() - sessionStartedAtRef.current) / 1000)
-      const remaining = Math.max(0, 120 - elapsed)
-      setSessionSecondsLeft(remaining)
-    }
+    const id = setInterval(() => {
+      setSessionSecondsLeft(s => Math.max(0, s - 1))
+    }, 1000)
 
-    // Start counting once session is initialized (after first render with user)
-    const initDelay = setTimeout(() => {
-      if (sessionStartedAtRef.current === null) {
-        sessionStartedAtRef.current = Date.now()
-      }
-      tick()
-      sessionDisplayIntervalRef.current = setInterval(tick, 1000)
-    }, 100)
-
-    return () => {
-      clearTimeout(initDelay)
-      if (sessionDisplayIntervalRef.current) {
-        clearInterval(sessionDisplayIntervalRef.current)
-        sessionDisplayIntervalRef.current = null
-      }
-    }
-  }, [user?.id, eventId, isPackageUser, sessionExpired])
+    return () => clearInterval(id)
+  }, [isPackageUser, sessionExpired])
 
   useEffect(() => {
     if (!user || !eventId) return
@@ -513,7 +466,7 @@ const ReservationMapPage = () => {
       const data = contentType.includes('application/json') ? await res.json() : null
 
       if (res.ok && data?.success) {
-        setReservationSuccess('Prijava je uspešno poslata.')
+        router.push('/moje-rezervacije')
         return
       }
 
@@ -589,12 +542,14 @@ const ReservationMapPage = () => {
 
   const standAllowed = (standNo) => {
     if (isPackageUser) return { ok: false, reason: 'Imate aktivan paket. Mesto se dodeljuje automatski.' }
-    if (!userGroupKey) return { ok: false, reason: 'Molimo odaberite grupu delatnosti u profilu.' }
+    // Ako nema zona — svako može birati bez obzira na grupu delatnosti
+    if (!userGroupKey && candidateZones.length > 0) return { ok: false, reason: 'Molimo odaberite grupu delatnosti u profilu.' }
     if (userGroupKey === 'ostalo') return { ok: true, reason: null }
 
     if (candidateZones.length > 0) {
       const z = findZonesForStand(standNo)
-      if (z.length === 0) return { ok: false, reason: 'Mesto nije u nijednoj zoni.' }
+      // Stand bez zone nema ograničenja — dostupan svima
+      if (z.length === 0) return { ok: true, reason: null }
 
       const allowed = z.some((zone) => {
         const cat = normalizeLabel(zone?.zone_category)
@@ -639,17 +594,21 @@ const ReservationMapPage = () => {
                 />
               </label>
               <div className="text-xs text-[#261A54] opacity-70">
-                scaleX: {imgScale.x.toFixed(4)} scaleY: {imgScale.y.toFixed(4)}
+                scale: {mapScale.toFixed(4)} containerWidth: {containerWidth}
               </div>
             </div>
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow overflow-hidden">
-          <div className="relative w-full overflow-auto">
-            <div className="relative inline-block">
-              <img ref={imgRef} onLoad={updateImageScale} src={mapConfig.map_url} alt="Mapa štandova" className="w-full h-auto" />
-              {mapConfig.hotspots.map((h, idx) => {
+        <div className="bg-white rounded-2xl shadow">
+          <div className="w-full overflow-x-auto overflow-y-hidden rounded-t-2xl">
+            <div ref={mapContainerRef} className="relative" style={{ minWidth: '900px' }}>
+              <img
+                src={mapConfig.map_url}
+                alt="Mapa štandova"
+                style={{ display: 'block', width: '100%', height: 'auto' }}
+              />
+              {mapScale > 0 && mapConfig.hotspots.map((h, idx) => {
                 const standNo = Number(h?.stand_number)
                 const r = h?.rect
                 if (!standNo || !r) return null
@@ -658,33 +617,40 @@ const ReservationMapPage = () => {
                 const isLocked = locked.has(standNo)
                 const isMine = Number(selectedStand) === standNo
                 const allowed = standAllowed(standNo)
-                const disabled = isReserved || (isLocked && !isMine) || !canSelectStand || !allowed.ok
+                // trueDisabled = button ne može ni reagovati (reserved/locked/nema sesije)
+                const trueDisabled = isReserved || (isLocked && !isMine) || !canSelectStand
+                // notAllowed = korisnik može kliknuti, ali će dobiti objašnjenje zašto ne može
+                const notAllowed = !trueDisabled && !allowed.ok
 
                 const bg = isReserved
-                  ? 'bg-red-500/20 border-red-600'
+                  ? 'bg-red-500/25 border-red-600'
                   : isMine
-                    ? 'bg-emerald-500/20 border-emerald-600'
+                    ? 'bg-emerald-500/40 border-emerald-600'
                     : isLocked
-                      ? 'bg-yellow-500/20 border-yellow-600'
-                      : 'bg-blue-500/10 border-blue-600'
+                      ? 'bg-yellow-500/25 border-yellow-600'
+                      : notAllowed
+                        ? 'bg-gray-400/20 border-gray-400'
+                        : 'bg-blue-500/10 border-blue-500'
 
                 return (
                   <button
                     key={`${standNo}-${idx}`}
                     type="button"
-                    onClick={() => onPickStand(standNo)}
-                    disabled={disabled}
-                    title={allowed.ok ? `Mesto ${standNo}` : `Mesto ${standNo} - ${allowed.reason}`}
+                    onClick={() => {
+                      if (notAllowed) return
+                      onPickStand(standNo)
+                    }}
+                    disabled={trueDisabled}
+                    title={allowed.ok ? `Mesto ${standNo}` : `Mesto ${standNo} — ${allowed.reason}`}
                     style={{
                       position: 'absolute',
-                      left: `${Number(r.x) * imgScale.x + overlayOffset.x}px`,
-                      top: `${Number(r.y) * imgScale.y + overlayOffset.y}px`,
-                      width: `${Number(r.width) * imgScale.x}px`,
-                      height: `${Number(r.height) * imgScale.y}px`,
+                      left: `${(Number(r.x) * X_SCALE - X_OFFSET) * mapScale + overlayOffset.x}px`,
+                      top: `${Number(r.y) * Y_SCALE * mapScale + overlayOffset.y}px`,
+                      width: `${Number(r.width) * X_SCALE * mapScale}px`,
+                      height: `${Number(r.height) * Y_SCALE * mapScale}px`,
                     }}
-                    className={`border ${bg} text-[10px] text-[#261A54] flex items-center justify-center ${disabled ? 'cursor-not-allowed opacity-60' : 'hover:opacity-90'} `}
+                    className={`border ${bg} ${trueDisabled ? 'cursor-not-allowed' : notAllowed ? 'cursor-not-allowed' : 'hover:bg-blue-500/25'} `}
                   >
-                    {standNo}
                   </button>
                 )
               })}
@@ -779,7 +745,8 @@ const ReservationMapPage = () => {
       <BoothReservationConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
-        title={selectedStand ? `Da li želite da rezervišete tezgu ${selectedStand}?` : 'Da li želite da rezervišete tezgu?'}
+        selectedStand={selectedStand}
+        title={selectedStand ? 'Da li želite da potvrdite rezervaciju?' : 'Da li želite da rezervišete tezgu?'}
         eventName={eventName}
         onConfirm={confirmReservation}
         onCancel={() => setIsConfirmModalOpen(false)}
