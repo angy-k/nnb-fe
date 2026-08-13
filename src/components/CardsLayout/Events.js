@@ -397,6 +397,13 @@ const Events = ({
               return
             }
 
+            const { ok: profileOk } = checkProfileReady(user)
+            if (!profileOk) {
+              window.dispatchEvent(new CustomEvent('nnb:open-profile-modal'))
+              hideModal()
+              return
+            }
+
             if (!canApply(selectedEvent)) return
 
             const navigated = await goToReservationMap(selectedEvent)

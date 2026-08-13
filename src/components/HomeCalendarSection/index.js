@@ -260,6 +260,13 @@ const HomeCalendarSection = () => {
         return
       }
 
+      const { ok: profileOk } = checkProfileReady(user)
+      if (!profileOk) {
+        window.dispatchEvent(new CustomEvent('nnb:open-profile-modal'))
+        closeEventModal()
+        return
+      }
+
       if (!canApply) return
 
       const navigated = await goToReservationMap(selectedEvent)

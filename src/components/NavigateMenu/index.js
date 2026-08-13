@@ -5,6 +5,7 @@ import Button from '@/components/Button';
 import useUser from '@/data/use-user'
 import authService from '@/services/authService'
 import { useRouter } from 'next/navigation'
+import { checkProfileReady } from '@/utils/profileValidation'
 import { Avatar } from "@nextui-org/avatar";
 import {
   Dropdown,
@@ -69,6 +70,12 @@ const NavigateMenu = ({
               type={'outlined-orange'}
               name={'Rezervišite tezgu'}
               onClick={() => {
+                const { ok } = checkProfileReady(user)
+                if (!ok) {
+                  window.dispatchEvent(new CustomEvent('nnb:open-profile-modal'))
+                  if (typeof onClick === 'function') onClick()
+                  return
+                }
                 router.push('/dogadjaji')
                 if (typeof onClick === 'function') onClick()
               }}

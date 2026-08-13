@@ -9,14 +9,14 @@ const DISMISSED_KEY = 'nnb:profile-completion-dismissed'
 // Profile is "incomplete" if any of the required fields are missing
 const isProfileIncomplete = (user) => {
   if (!user) return false
-  const missing =
+  return (
     !user.first_name?.trim() ||
     !user.phone_number?.trim() ||
     !user.name?.trim()     // brand_name is stored as `name`
-  return missing
+  )
 }
 
-// Pages where the modal should NOT appear
+// Pages where the auto-show should NOT appear
 const EXCLUDED_PATHS = ['/profil']
 
 const ProfileCompletionModal = () => {
@@ -24,18 +24,20 @@ const ProfileCompletionModal = () => {
   const router = useRouter()
   const pathname = usePathname()
   const [visible, setVisible] = useState(false)
+  // forced = triggered imperatively via nnb:open-profile-modal event
+  // hides "Sačuvaj za kasnije" and ignores sessionStorage dismiss
+  const [forced, setForced] = useState(false)
 
+  // Auto-show on incomplete profile (dismissable)
   useEffect(() => {
     if (loading) return
 
-    // Don't show on profile-related pages
     const onExcluded = EXCLUDED_PATHS.some(p => pathname === p || pathname?.startsWith(p + '/'))
     if (onExcluded) {
       setVisible(false)
       return
     }
 
-    // Don't show if already dismissed in this browser session
     if (typeof window !== 'undefined' && sessionStorage.getItem(DISMISSED_KEY)) return
 
     if (user && isProfileIncomplete(user)) {
@@ -43,15 +45,27 @@ const ProfileCompletionModal = () => {
     }
   }, [user, loading, pathname])
 
+  // Imperative show via window event (blocking — no "Sačuvaj za kasnije")
+  useEffect(() => {
+    const handleForceOpen = () => {
+      setForced(true)
+      setVisible(true)
+    }
+    window.addEventListener('nnb:open-profile-modal', handleForceOpen)
+    return () => window.removeEventListener('nnb:open-profile-modal', handleForceOpen)
+  }, [])
+
   const dismiss = () => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem(DISMISSED_KEY, '1')
     }
+    setForced(false)
     setVisible(false)
   }
 
   const goToProfile = () => {
-    dismiss()
+    setForced(false)
+    setVisible(false)
     router.push('/profil/izmeni')
   }
 
@@ -118,7 +132,7 @@ const ProfileCompletionModal = () => {
           Dopunite vaš profil
         </h2>
         <p style={{ fontSize: '15px', color: '#666', lineHeight: 1.6, marginBottom: '32px' }}>
-          Prijavili ste se putem Google naloga. Da biste mogli da se prijavite na događaje, molimo vas da dopunite osnovne podatke o profilu.
+          Da biste se prijavili na događaj, potrebno je da dopunite osnovne podatke o profilu.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

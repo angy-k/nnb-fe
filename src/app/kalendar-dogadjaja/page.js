@@ -475,6 +475,13 @@ const CalendarPage = () => {
                 return
               }
 
+              const { ok: profileOk } = checkProfileReady(user)
+              if (!profileOk) {
+                window.dispatchEvent(new CustomEvent('nnb:open-profile-modal'))
+                hideEventModal()
+                return
+              }
+
               const navigated = await goToReservationMap(selectedEvent)
               if (navigated) {
                 hideEventModal()
@@ -534,6 +541,19 @@ const CalendarPage = () => {
           onEventClick(eventId)
         }}
         onReserve={async (eventId) => {
+          if (!user) {
+            window.dispatchEvent(new CustomEvent('nnb:open-auth-modal'))
+            setIsDayModalOpen(false)
+            return
+          }
+
+          const { ok: profileOk } = checkProfileReady(user)
+          if (!profileOk) {
+            window.dispatchEvent(new CustomEvent('nnb:open-profile-modal'))
+            setIsDayModalOpen(false)
+            return
+          }
+
           setIsDayModalOpen(false)
           startSessionTimer()
           setSelectedEventId(String(eventId))

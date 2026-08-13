@@ -13,6 +13,7 @@ import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import exhibitorIcon from '@/icons/exhibitor-icon.svg'
 import avatarDefaultIcon from '@/icons/avatar-default.svg'
+import { checkProfileReady } from '@/utils/profileValidation'
 import calendarIcon from '@/icons/calendar-icon.svg'
 import {
   Modal,
@@ -138,7 +139,14 @@ const Header = ({bgColor = '#261A54'}) => {
             <>
               <button
                 className="button-outlined-orange flex items-center gap-2"
-                onClick={() => router.push('/dogadjaji')}
+                onClick={() => {
+                  const { ok } = checkProfileReady(user)
+                  if (!ok) {
+                    window.dispatchEvent(new CustomEvent('nnb:open-profile-modal'))
+                    return
+                  }
+                  router.push('/dogadjaji')
+                }}
                 aria-label="Rezervišite tezgu"
               >
                 <Image src={calendarIcon} width={20} height={20} alt="" />
