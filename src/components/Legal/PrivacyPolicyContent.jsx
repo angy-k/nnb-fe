@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Kratak izvod za modal — prikazuje se dok korisnik ne klikne „pročitaj više".
+ * Kratak izvod za modal — prikazuje se dok korisnik ne klikne „pročitaj više“.
  * Pun tekst je u komponenti ispod.
  */
 export const PRIVACY_EXCERPT =
@@ -305,7 +305,7 @@ const PrivacyPolicyContent = ({ compact = true }) => {
 
       <H>Šta su kolačići (cookies) i u koju svrhu se koriste?</H>
       <P>
-        Kolačići, odnosno „cookies", su informacije koje internet stranica šalje računaru korisnika. Oni obično čuvaju vaša
+        Kolačići, odnosno „cookies“, su informacije koje internet stranica šalje računaru korisnika. Oni obično čuvaju vaša
         podešavanja za internet stranicu, kao što su željeni jezik ili adresa i sl. Kasnije, kada opet otvorite istu stranicu,
         pretraživač šalje nazad kolačiće što omogućava da vam se na stranici prikažu informacije prilagođene vašim potrebama.
         Takođe, ovi kolačići su neophodni za brži, efikasniji pristup našoj stranici kao i za njenu bezbednost, čime vam se
@@ -322,14 +322,14 @@ const PrivacyPolicyContent = ({ compact = true }) => {
         Naravno, u svakom trenutku možete da odlučite da ne koristite kolačiće tokom posete našoj ili bilo kojoj web stranici.
         Međutim, imajte na umu da u tom slučaju neke funkcije i stranice neće raditi onako kako očekujete, kao i da ćete biti
         uskraćeni za što bolju mogućnost pretrage. To možete učiniti tako što ćete na pretraživaču podesiti da se kolačići ne
-        čuvaju kao i da se već sačuvani obrišu. Za onemogućavanje i brisanje kolačića potražite uputstva u opciji „Pomoć" vašeg
+        čuvaju kao i da se već sačuvani obrišu. Za onemogućavanje i brisanje kolačića potražite uputstva u opciji „Pomoć“ vašeg
         internet pretraživača.
       </P>
 
       <H>Šta je Google Analytics i čemu služi?</H>
       <P>
         Za analizu poseta i kvaliteta korišćenja naših web stranica koristi se Google Analytics, zvanična internet alatka
-        čuvenog Google servisa. Ovu uslugu pruža kompanija Google Inc. („Google") koja primenjuje kolačiće koji se čuvaju na
+        čuvenog Google servisa. Ovu uslugu pruža kompanija Google Inc. („Google“) koja primenjuje kolačiće koji se čuvaju na
         vašem računaru i koji omogućuju analizu korišćenja naše internet stranice.
       </P>
       <P>
