@@ -17,9 +17,32 @@ const EventDetailsModal = ({
   const day = event?._day || null
   const title = event?._dayLabel || event?.name || event?.title || ''
 
-  const whenLine = day
-    ? [day.date, day.timeRange].filter(Boolean).join(' · ')
-    : event?.dateTime
+  // `_day` postavlja samo kalendar, jer se tamo klikće na bedž konkretnog dana.
+  // Sa liste kartica stiže ceo događaj, pa se datum i vreme čitaju iz `days[]`.
+  // Bez ovoga bi se pao na `dateTime` — staru kolonu koja nema vreme završetka.
+  const days = Array.isArray(event?.days) ? event.days : []
+
+  const whenLine = (() => {
+    if (day) {
+      return [day.date, day.timeRange].filter(Boolean).join(' · ')
+    }
+
+    if (days.length === 1) {
+      return [days[0]?.date, days[0]?.timeRange].filter(Boolean).join(' · ')
+    }
+
+    if (days.length > 1) {
+      // Više dana bez izabranog: raspon datuma, pa vreme ako je svih dana isto.
+      const prvi = days[0]
+      const poslednji = days[days.length - 1]
+      const raspon = [prvi?.date, poslednji?.date].filter(Boolean).join(' – ')
+      const istoVreme = days.every((d) => d?.timeRange && d.timeRange === prvi?.timeRange)
+
+      return [raspon, istoVreme ? prvi.timeRange : null].filter(Boolean).join(' · ')
+    }
+
+    return event?.dateTime
+  })()
 
   // Nema description polja u API-ju — komponujemo ga iz dostupnih podataka
   const descriptionParts = [whenLine, event?.eventAddress].filter(Boolean)

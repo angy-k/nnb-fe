@@ -16,6 +16,9 @@ const PageHiroSection = ({
   illustration = true,
   image = false,
   tall = false,
+  // Uvodni tekst ispod naslova (misija i vizija na stranici „O nama").
+  // Prazan prop znači da se sekcija ne prikazuje, pa ostale stranice ostaju netaknute.
+  introText,
 }) => {
 
   const formatTitle = (styledWords, classStyle) => {
@@ -81,6 +84,7 @@ const PageHiroSection = ({
             formatTitle={formatTitle}
             image={image}
             illustration={illustration}
+            introText={introText}
           />
         </div>
       ) : (
@@ -187,15 +191,24 @@ const HeroRight = ({ description, illustration }) => (
 )
 
 
-const HeroWithImage = ({ title, formatTitle, image, illustration }) => {
+const HeroWithImage = ({ title, formatTitle, image, illustration, introText }) => {
   return (
-    <div 
+    <div
       className="w-full items-center pt-80 sm:pt-[88px]"
       style={{display: 'flex', flexDirection: 'column', gap: '50px'}}
     >
       {title && <div className="page-hero-section-title">
         {formatTitle('Novosadski \n noćni bazar?', 'aboutUs')}
       </div>}
+      {/* Uvodni tekst — isti stil kao tekst uz „Prvi Novosadski noćni bazar" ispod slike.
+          Prazan red u tekstu razdvaja pasuse, da se duži unos iz admina ne slije u blok. */}
+      {introText && (
+        <div className="about-us-intro-text">
+          {String(introText).split('\n\n').map((pasus, i) => (
+            <p key={`intro-${i}`}>{pasus}</p>
+          ))}
+        </div>
+      )}
       {image && <Image
         src={'/about-us-hero-image.png'}
         className="about-us-hero-image"

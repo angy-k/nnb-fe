@@ -65,13 +65,21 @@ const FeatureItem = ({ section, colors }) => {
 // ─── Owl column ───────────────────────────────────────────────────────────────
 // SVG prirodna veličina: 681×897. Skaliramo na 280px širine.
 // Prikazuje se apsolutno na dnu sekcije — sova "stoji" na ivici.
-const OwlImage = () => (
+//
+// Crtež je okrenut ka levo, što odgovara sovi na desnoj ivici. Kada se smeni na
+// levu stranu, ogleda se po horizontali da i dalje gleda ka sadržaju.
+const OwlImage = ({ flipped = false }) => (
   <img
     src="/owl-paketi.svg"
     alt=""
     width={280}
     height={Math.round(280 * 897 / 681)}
-    style={{ display: 'block', width: '100%', height: 'auto' }}
+    style={{
+      display: 'block',
+      width: '100%',
+      height: 'auto',
+      ...(flipped ? { transform: 'scaleX(-1)' } : {}),
+    }}
   />
 )
 
@@ -142,7 +150,7 @@ const PackageSection = ({ pkg, index, hasNext }) => {
           pointerEvents: 'none',
           transform: 'translateY(7%)',
         }}>
-          <OwlImage />
+          <OwlImage flipped={owlOnLeft} />
         </div>
       )}
     </div>

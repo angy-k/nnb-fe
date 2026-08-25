@@ -39,6 +39,7 @@ const AboutUsPage = async () => {
           styledTitle={true}
           illustration={false}
           image={true}
+          introText={s.mission_vision}
         />
         <div className="w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto z-1 bg-darkBlue">
           <Divider className="section-divider-light w-full"/>

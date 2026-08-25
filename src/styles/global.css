@@ -1251,6 +1251,20 @@ h6 {
     color: #261A54;
     text-align: left;
   }
+  /* Uvodna rečenica umesto naslova sekcije. Vrednosti su preuzete od podnaslova na
+     newsletteru (.newsletter-subtitle), koji je ugnježden u svoj wrapper pa se klasa
+     ne može deliti. Širina je ograničena da se duža rečenica ne razvuče preko cele
+     sekcije; boja se prosleđuje iz komponente preko sectionTitleColor. */
+  &-lead {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    color: #261A54;
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto 25px;
+    padding: 0 24px;
+  }
 }
 
 .contact-form {
@@ -1805,6 +1819,25 @@ a.office-contact-section-content:focus-visible {
   text-decoration-skip-ink: none;
   color: #56C4CF;
 }
+/* Uvodni tekst na stranici „O nama" — misija i vizija, ispod naslova.
+   Vrednosti preuzete od teksta uz „Prvi Novosadski noćni bazar" ispod hero slike:
+   bela boja, 18px, obostrano poravnanje. Širina prati hero kontejner (1400px). */
+.about-us-intro-text {
+  width: 100%;
+  max-width: 1400px;
+  padding: 0 40px;
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 1.6;
+  text-align: justify;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+.about-us-intro-text p {
+  margin: 0;
+}
+
 .about-us-hero-image {
   max-width: 100%;
   width: 100%;
@@ -2976,6 +3009,13 @@ a.office-contact-section-content:focus-visible {
   .about-us-hero-title {
     font-size: 36px !important;
     line-height: 1.2 !important;
+  }
+
+  /* Uvodni tekst: manji padding i veličina na mobilnom */
+  .about-us-intro-text {
+    padding: 0 24px !important;
+    font-size: 16px !important;
+    text-align: left !important;
   }
 
   /* Sekcija ispod hero slike: padding od ivica */

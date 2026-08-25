@@ -131,7 +131,7 @@ export default async function Home() {
       <div className='pb-24'>
         <ContactForm
           withImage={true}
-          sectionTitle="Kontaktirajte nas"
+          sectionLead="Ukoliko imate bilo kakvo pitanje, sugestiju, kritiku, ili samo želite da se dodatno informišete o našim dešavanjima, osećajte se slobodni da nam pišete u svako doba dana, odgovorićemo Vam u najbržem roku."
           sectionTitleColor="#ffffff"
           hideDivider={true}
           predefinedTitle="Kontaktirajte nas"
