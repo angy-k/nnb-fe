@@ -75,13 +75,24 @@ export const get = (
   const isBrowser = typeof window !== 'undefined'
   let url = `${base_url}${path}`
   if (Object.keys(queryParams).length > 0) {
-    url +=
-    '?' +
-    new URLSearchParams(
-      Object.fromEntries(
-        Object.entries(queryParams).filter(([_, v]) => v != null),
-      ),
-    )
+    const search = new URLSearchParams()
+
+    Object.entries(queryParams)
+      .filter(([, v]) => v != null)
+      .forEach(([key, value]) => {
+        // Nizovi idu kao `key[]=a&key[]=b` — inače bi URLSearchParams spojio
+        // vrednosti u "a,b" i Laravel bi ih primio kao jedan string.
+        if (Array.isArray(value)) {
+          value
+            .filter((v) => v != null)
+            .forEach((v) => search.append(`${key}[]`, v))
+          return
+        }
+        search.append(key, value)
+      })
+
+    const qs = search.toString()
+    if (qs) url += `?${qs}`
   }
 
   return fetch(url, {

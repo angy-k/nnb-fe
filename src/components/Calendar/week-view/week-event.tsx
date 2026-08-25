@@ -39,8 +39,8 @@ export const WeekEvent: React.FC<WeekEventProps> = ({
   return (
     <div
       style={{ ...definedStyle, ...(event.isPast ? { opacity: 0.35, filter: 'grayscale(0.5) blur(1px)' } : {}) }}
-      className={cn("h-full px-2 absolute z-10 rounded", event.isPast ? 'cursor-default' : 'cursor-pointer', event.variant === 'startup' ? 'bg-[#56C4CF]' : 'bg-[#261A54]')}
-      onClick={() => { if (!event.isPast) onEventClick?.(String(event.id)) }}
+      className={cn("h-full px-2 absolute z-10 rounded cursor-pointer", event.variant === 'startup' ? 'bg-[#56C4CF]' : 'bg-[#261A54]')}
+      onClick={() => onEventClick?.(String(event.id))}
     >
       <Image
         src={event.variant === 'startup' ? SingleEventLight : SingleEventDark}
@@ -49,7 +49,7 @@ export const WeekEvent: React.FC<WeekEventProps> = ({
         alt='single-event'
       />
       {/* <h1 className="text-white text-sm text-ellipsis overflow-hidden">
-        {`${format(event.start_date, "h:mm a")}, ${event.title}`}
+        {`${format(event.start_date, "HH:mm")}, ${event.title}`}
       </h1> */}
     </div>
   );

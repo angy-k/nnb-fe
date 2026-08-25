@@ -12,4 +12,7 @@ export const validateContact = Yup.object({
   message: Yup.string()
     .max(2047, 'Maksimalni dozvoljeni broj karaktera je 2047')
     .required(),
+  // Saglasnost za obradu podataka o ličnosti je obavezna
+  consent_accepted: Yup.boolean()
+    .oneOf([true], 'Saglasnost je obavezna za slanje poruke.'),
 })

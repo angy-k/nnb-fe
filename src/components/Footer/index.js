@@ -4,8 +4,20 @@ import FooterLogo from "../Logo/FooterLogo";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from "react";
+import useUser from '@/data/use-user';
+
+// Linkovi dostupni samo ulogovanim korisnicima (izlagačima)
+const AUTH_ONLY_LINKS = ['/paketi']
+
+/**
+ * Broj za `tel:` mora biti bez razmaka i crtica — „+381 66 80 03 969" telefon
+ * ne bi pozvao kako treba. Prikazani tekst ostaje formatiran radi čitljivosti.
+ */
+const toTelHref = (phone) => String(phone ?? '').replace(/[^\d+]/g, '')
 
 const Footer = () => {
+  const { user } = useUser()
+
   const footerItems = (() => {
     const raw = process.env.footerItems
     if (!raw) return []
@@ -16,6 +28,14 @@ const Footer = () => {
       return []
     }
   })()
+
+  // Posetilac (neulogovan) ne vidi linkove namenjene izlagačima.
+  // Dok useUser učitava, user je undefined → link je sakriven do potvrde prijave.
+  const visibleFooterItems = user
+    ? footerItems
+    : footerItems.filter((item) => !AUTH_ONLY_LINKS.includes(item.link))
+
+  const splitIndex = Math.ceil(visibleFooterItems.length / 2)
 
   const officeData = (() => {
     const raw = process.env.officeData
@@ -45,26 +65,39 @@ const Footer = () => {
         <div className="footer-subsection justify-space-between grid gap-y-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
           <div className="footer-list-container grid grid-cols-1 sm:grid-cols-1 sm:justify-center">
             <div className="footer-list-section sm:text-center">
-              {footerItems.slice(0, 4).map((item) => (
+              {visibleFooterItems.slice(0, splitIndex).map((item) => (
                   <Link href={item.link} key={`footer-item-${item.id}`} className="footer-list-item">{item.name}</Link>
               ))}
             </div>
             <div className="footer-list-section sm:text-center">
-              {footerItems.slice(4,8).map((item) => (
+              {visibleFooterItems.slice(splitIndex).map((item) => (
                   <Link  href={item.link} key={`footer-item-${item.id}`} className="footer-list-item">{item.name}</Link>
               ))}
             </div>
           </div>
           <div className="footer-list-container grid grid-cols-1 sm:grid-cols-1 sm:text-center" style={{display: 'flex', flexDirection: 'column'}}>
             {emails.map((email, index) => (
-                <span className="office-contact-section-content" key={`footer-email-contact-${index}`}>{email}</span>
+                <a
+                  href={`mailto:${email}`}
+                  className="office-contact-section-content"
+                  key={`footer-email-contact-${index}`}
+                >
+                  {email}
+                </a>
             ))}
             <p className="p-4"></p>
             {phones.map((phone, index) => (
-                <span className="office-contact-section-content" key={`footer-phone-contact-${index}`}>{phone}</span>
+                <a
+                  href={`tel:${toTelHref(phone)}`}
+                  className="office-contact-section-content"
+                  key={`footer-phone-contact-${index}`}
+                >
+                  {phone}
+                </a>
             ))}
             <p className="p-4"></p>
-            <Link href="/uslovi-koriscenja">{'Uslovi korišćenja i politika privatnosti'}</Link>
+            <Link href="/uslovi-koriscenja">{'Opšti uslovi izlaganja'}</Link>
+            <Link href="/politika-privatnosti">{'Politika privatnosti'}</Link>
           </div>
           <span className="pt-10 sm:text-center">{'© 2022 NOVOSADSKI NOĆNI BAZAR. Sva prava zadržava.'}</span>
         </div>

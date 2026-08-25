@@ -139,25 +139,59 @@ const ReservationMapPage = () => {
   })
   const [eventName, setEventName] = useState('')
 
-  const computeConfirmCosts = (electricityOpt, marketingOpt) => {
-    const cotization = Number(eventDetails?.downPayment) || 0
+  // ── Dani događaja ──────────────────────────────────────────────────────────
+  const [eventDays, setEventDays] = useState([])
+  const [allowPerDay, setAllowPerDay] = useState(false)
+  const [pricing, setPricing] = useState(null)
+  const [multiDayChecked, setMultiDayChecked] = useState(false)
+  const [selectedDayIds, setSelectedDayIds] = useState([])
 
-    // Zone additional cost for the selected stand
-    const allZones = Array.isArray(mapConfig?.zones) ? mapConfig.zones : []
-    const standNo = Number(selectedStand)
-    let zoneCost = null
-    if (Number.isFinite(standNo) && standNo > 0 && allZones.length > 0) {
-      for (const z of allZones) {
-        const from = Number(z?.stand_number_from)
-        const to = Number(z?.stand_number_to)
-        if (Number.isFinite(from) && Number.isFinite(to) && standNo >= Math.min(from, to) && standNo <= Math.max(from, to)) {
-          const cost = Number(z?.additional_zone_cost)
-          if (Number.isFinite(cost) && cost > 0) {
-            zoneCost = (zoneCost ?? 0) + cost
-          }
-        }
-      }
+  const isMultiDayEvent = eventDays.length > 1
+
+  // Dan iz URL-a (?day=) je onaj koji je korisnik kliknuo na kalendaru
+  const initialDayId = (() => {
+    const raw = Number(searchParams?.get('day'))
+    return Number.isFinite(raw) && raw > 0 ? raw : null
+  })()
+
+  /**
+   * Kotizacija za izabranu zonu i broj dana — ista logika kao na backendu:
+   * stepenasta cena, pa osnovna × dani, pa fallback.
+   */
+  const cotizationFor = (standNo, daysCount) => {
+    const count = Math.max(1, daysCount)
+    const zones = Array.isArray(pricing?.zones) ? pricing.zones : []
+
+    const zone = zones.find((z) => {
+      const from = Number(z?.stand_number_from)
+      const to = Number(z?.stand_number_to)
+      return Number.isFinite(from) && Number.isFinite(to)
+        && standNo >= Math.min(from, to) && standNo <= Math.max(from, to)
+    })
+
+    if (zone) {
+      const tier = zone?.tiers?.[count] ?? zone?.tiers?.[String(count)]
+      if (tier != null) return Number(tier)
+
+      const base = Number(zone?.base_cost)
+      if (Number.isFinite(base) && base > 0) return base * count
     }
+
+    return (Number(eventDetails?.downPayment) || 0) * count
+  }
+
+  const computeConfirmCosts = (electricityOpt, marketingOpt) => {
+    // Kotizacija zavisi od zone izabranog štanda i broja izabranih dana.
+    // Struja i marketing se naplaćuju jednom po prijavi, bez obzira na broj dana.
+    const standNo = Number(selectedStand)
+    const daysCount = Math.max(1, selectedDayIds.length)
+
+    const cotization = Number.isFinite(standNo) && standNo > 0
+      ? cotizationFor(standNo, daysCount)
+      : (Number(eventDetails?.downPayment) || 0) * daysCount
+
+    // Zonski dodatak je sada uračunat u kotizaciju
+    const zoneCost = null
 
     const rawElectricity = eventDetails?.electricityExtensionCoasts
     const electricityCostBase = rawElectricity != null && rawElectricity !== '' ? Number(rawElectricity) : null
@@ -167,11 +201,15 @@ const ReservationMapPage = () => {
     const rawIg = eventDetails?.ingMarketingCoasts
     const fb = rawFb != null && rawFb !== '' ? Number(rawFb) : null
     const ig = rawIg != null && rawIg !== '' ? Number(rawIg) : null
+    // Cena paketa za obe mreže je zasebna i niža od zbira pojedinačnih;
+    // sabiranje ostaje samo za događaje kojima ta cena nije uneta.
+    const rawBoth = event?.fbIngMarketingCoasts
+    const both = rawBoth != null && rawBoth !== '' ? Number(rawBoth) : null
 
     let marketing = null
     if (marketingOpt === 'facebook') marketing = fb
     else if (marketingOpt === 'instagram') marketing = ig
-    else if (marketingOpt === 'instagram_facebook') marketing = (fb ?? 0) + (ig ?? 0)
+    else if (marketingOpt === 'instagram_facebook') marketing = both ?? ((fb ?? 0) + (ig ?? 0))
 
     return { cotization, zoneCost, electricity, marketing }
   }
@@ -191,7 +229,9 @@ const ReservationMapPage = () => {
   const refreshAvailability = async () => {
     if (!eventId || !user) return
     if (sessionExpired || isPackageUser) return
-    const res = await eventService.getStandAvailability(eventId)
+    // Zauzetost se traži za izabrane dane — štand zauzet drugog dana
+    // ne sme da blokira prijavu za prvi.
+    const res = await eventService.getStandAvailability(eventId, selectedDayIds)
     if (!res.ok) return
     const data = await res.json()
     if (data?.success) {
@@ -269,15 +309,47 @@ const ReservationMapPage = () => {
           electricityExtensionCoasts: toNum(found?.electricityExtensionCoasts),
           fbMarketingCoasts: toNum(found?.fbMarketingCoasts),
           ingMarketingCoasts: toNum(found?.ingMarketingCoasts),
-          termsPdfUrl: found?.termsPdfUrl || null,
+          // Ručno uploadovan dokument ima prednost; inače idu generisani uslovi
+          termsPdfUrl: found?.termsPdfUrl || found?.generatedTermsUrl || null,
         })
         setEventName((found?.title || found?.name || '').toString())
+
+        const days = Array.isArray(found?.days) ? found.days : []
+        setEventDays(days)
+        setAllowPerDay(!!found?.allowPerDayApplications)
+
+        // Polazni izbor: dan iz URL-a ako postoji, inače svi dani.
+        // Kad prijava po danu nije dozvoljena, prijava uvek pokriva sve dane.
+        const allIds = days.map((d) => d.id)
+        if (!found?.allowPerDayApplications || allIds.length <= 1) {
+          setSelectedDayIds(allIds)
+        } else if (initialDayId && allIds.includes(initialDayId)) {
+          setSelectedDayIds([initialDayId])
+        } else {
+          setSelectedDayIds(allIds.slice(0, 1))
+        }
       } catch {
         return
       }
     }
 
     fetchEventDetails()
+  }, [eventId])
+
+  useEffect(() => {
+    const fetchPricing = async () => {
+      if (!eventId) return
+      try {
+        const res = await eventService.getEventPricing(eventId)
+        if (!res.ok) return
+        const data = await res.json()
+        if (data?.success) setPricing(data.data)
+      } catch {
+        return
+      }
+    }
+
+    fetchPricing()
   }, [eventId])
 
   // Pri svakom loadu/refreshu: oslobodi stari lock da štand ne ostane blokiran
@@ -289,8 +361,9 @@ const ReservationMapPage = () => {
   useEffect(() => {
     if (!user || !eventId) return
     if (isPackageUser || sessionExpired) return
+    // selectedDayIds je u zavisnostima — promena izbora dana osvežava zauzetost
     refreshAvailability()
-  }, [user, eventId, isPackageUser, sessionExpired])
+  }, [user, eventId, isPackageUser, sessionExpired, selectedDayIds])
 
   useEffect(() => {
     if (!user || !eventId) return
@@ -385,7 +458,9 @@ const ReservationMapPage = () => {
     }
 
     try {
-      const res = await eventService.lockStand({ eventId, standNumber })
+      // Isti štand se zaključava na svim izabranim danima — ako je zauzet
+      // makar jednog, backend vraća 409 sa nazivom dana koji blokira.
+      const res = await eventService.lockStand({ eventId, standNumber, eventDayIds: selectedDayIds })
       const data = await res.json().catch(() => null)
 
       if (!res.ok || !data?.success) {
@@ -462,6 +537,7 @@ const ReservationMapPage = () => {
         eventId,
         electricityOption,
         marketingOption,
+        eventDayIds: selectedDayIds,
       }
 
       if (!isPackageUser) {
@@ -578,6 +654,93 @@ const ReservationMapPage = () => {
           <div className="text-[#261A54] text-2xl font-bold">Izaberite mesto</div>
           <Button type="outlined-dark" name="Nazad" onClick={() => router.back()} />
         </div>
+
+        {/* Izbor dana — samo za višednevne događaje sa dozvoljenom prijavom po danu */}
+        {isMultiDayEvent && allowPerDay && !isPackageUser && (
+          <div className="mb-6 bg-white rounded-2xl shadow p-5">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={multiDayChecked}
+                onChange={(e) => {
+                  const checked = e.target.checked
+                  setMultiDayChecked(checked)
+                  if (!checked) {
+                    // Vraćamo se na jedan dan — onaj sa kojeg je korisnik došao
+                    const fallback = initialDayId && eventDays.some((d) => d.id === initialDayId)
+                      ? initialDayId
+                      : eventDays[0]?.id
+                    setSelectedDayIds(fallback ? [fallback] : [])
+                  }
+                  setSelectedStand(null)
+                  setLockId(null)
+                }}
+                className="w-5 h-5 accent-[#56C4CF] cursor-pointer"
+              />
+              <span className="text-[#261A54] font-semibold">Prijavljujem se za više dana</span>
+            </label>
+
+            <p className="text-sm text-[#666] mt-2">
+              {multiDayChecked
+                ? 'Izaberite dane. Isti štand se rezerviše za sve izabrane dane.'
+                : 'Događaj traje više dana. Prijava za više dana je povoljnija od zbira pojedinačnih.'}
+            </p>
+
+            <div className="flex flex-wrap gap-3 mt-4">
+              {eventDays.map((day) => {
+                const isSelected = selectedDayIds.includes(day.id)
+                const isOnly = selectedDayIds.length === 1 && isSelected
+
+                return (
+                  <button
+                    key={day.id}
+                    type="button"
+                    onClick={() => {
+                      if (!multiDayChecked) {
+                        // Bez štikliranog polja bira se tačno jedan dan
+                        setSelectedDayIds([day.id])
+                      } else if (isSelected) {
+                        // Poslednji izabrani dan se ne može odštiklirati
+                        if (isOnly) return
+                        setSelectedDayIds((prev) => prev.filter((id) => id !== day.id))
+                      } else {
+                        setSelectedDayIds((prev) => [...prev, day.id])
+                      }
+                      // Izbor dana menja zauzetost — stari izbor štanda više ne važi
+                      setSelectedStand(null)
+                      setLockId(null)
+                    }}
+                    className="rounded-xl border-2 px-4 py-3 text-left transition"
+                    style={{
+                      borderColor: isSelected ? '#56C4CF' : '#e0e0e0',
+                      background: isSelected ? '#eafafb' : '#ffffff',
+                      cursor: isOnly && multiDayChecked ? 'default' : 'pointer',
+                    }}
+                  >
+                    <div className="text-[#261A54] font-semibold text-sm">
+                      {day.dayNumber}. dan
+                    </div>
+                    <div className="text-[#555] text-sm">{day.date}</div>
+                    {day.timeRange && (
+                      <div className="text-[#888] text-xs mt-0.5">{day.timeRange}</div>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {selectedStand && (
+              <div className="mt-4 pt-4 border-t border-[#eee] text-[#261A54]">
+                Kotizacija za {selectedDayIds.length}{' '}
+                {selectedDayIds.length === 1 ? 'dan' : 'dana'}:{' '}
+                <strong>
+                  {cotizationFor(Number(selectedStand), selectedDayIds.length).toLocaleString('sr-RS')} RSD
+                </strong>
+                <span className="text-[#888] text-sm"> · struja i marketing se naplaćuju jednom</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {debugMode && (
           <div className="mb-4 bg-white rounded-2xl shadow p-4">

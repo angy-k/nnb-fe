@@ -121,7 +121,10 @@ const Events = ({
   const canApply = (event) => {
     if (!user) return false
     const isPackageUser = !!user?.active_package
-    const rawStart = isPackageUser ? event?.preApplicationStartDate : event?.applicationStartDate
+    // Pred-prijava je opciona — ako nije postavljena, paket korisnik koristi redovan datum
+    const rawStart = isPackageUser
+      ? (event?.preApplicationStartDate || event?.applicationStartDate)
+      : event?.applicationStartDate
     const applicationStart = parseAppDateTime(rawStart)
     const applicationEnd = parseAppDateTime(event?.applicationEndDate)
     if (!applicationStart || !applicationEnd) return false
@@ -220,11 +223,15 @@ const Events = ({
     const rawIg = event?.ingMarketingCoasts
     const fb = rawFb != null && rawFb !== '' ? Number(rawFb) : null
     const ig = rawIg != null && rawIg !== '' ? Number(rawIg) : null
+    // Cena paketa za obe mreže je zasebna i niža od zbira pojedinačnih;
+    // sabiranje ostaje samo za događaje kojima ta cena nije uneta.
+    const rawBoth = event?.fbIngMarketingCoasts
+    const both = rawBoth != null && rawBoth !== '' ? Number(rawBoth) : null
 
     let marketing = null
     if (marketingOpt === 'facebook') marketing = fb
     else if (marketingOpt === 'instagram') marketing = ig
-    else if (marketingOpt === 'instagram_facebook') marketing = (fb ?? 0) + (ig ?? 0)
+    else if (marketingOpt === 'instagram_facebook') marketing = both ?? ((fb ?? 0) + (ig ?? 0))
 
     return { cotization, electricity, marketing }
   }
@@ -431,7 +438,7 @@ const Events = ({
         showCancel={true}
         cancelLabel="Otkaži"
         timeRemaining={sessionSeconds}
-        termsPdfUrl={selectedEvent?.termsPdfUrl || null}
+        termsPdfUrl={selectedEvent?.termsPdfUrl || selectedEvent?.generatedTermsUrl || null}
       />
 
       <BoothReservationConfirmModal

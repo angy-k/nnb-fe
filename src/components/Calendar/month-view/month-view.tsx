@@ -68,7 +68,7 @@ export const MonthView: React.FC<MonthViewProps> = ({ date, events = [], onEvent
             weekStartDate.toISOString() + "-" + weekEndDate.toISOString();
           const props = { week, ...groups[weekKey] };
 
-          return <MonthWeekView {...props} key={weekKey} onEventClick={onEventClick} onDayClick={onDayClick} />;
+          return <MonthWeekView {...props} key={weekKey} monthDate={date} onEventClick={onEventClick} onDayClick={onDayClick} />;
         })}
       </div>
     </section>

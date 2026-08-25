@@ -62,8 +62,9 @@ const DayEventsModal = ({
     const details = eventDetailsById[eventId]
     if (!details) return { canApply: false, applicationStart: null }
 
+    // Pred-prijava je opciona — ako nije postavljena, paket korisnik koristi redovan datum
     const rawStart = isPackageUser
-      ? details?.preApplicationStartDate
+      ? (details?.preApplicationStartDate || details?.applicationStartDate)
       : details?.applicationStartDate
     const applicationStart = parseDateOnly(rawStart)
     const applicationEnd = parseDateOnly(details?.applicationEndDate)
@@ -121,7 +122,8 @@ const DayEventsModal = ({
                   {dayEvents.map((ev) => {
                     const details = eventDetailsById[ev.id]
                     const { canApply, applicationStart } = getEventState(ev.id)
-                    const titleStr = details?.name || details?.title || ev.title || ''
+                    // Kod višednevnog događaja naslov nosi i redni broj dana
+                    const titleStr = details?._dayLabel || details?.name || details?.title || ev.title || ''
 
                     return (
                       <li key={ev.id}>

@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { Modal, ModalContent, ModalBody } from '@nextui-org/modal'
+import LegalDocsModal from '@/components/Modal/LegalDocsModal'
+import { CONSENT_PARTICIPATION } from '@/utils/consentTexts'
 
 const RadioOption = ({ name, value, checked, onChange, label }) => (
   <label className="flex items-center gap-3 cursor-pointer" onClick={() => onChange(value)}>
@@ -56,6 +58,7 @@ const ReservationOptionsModal = ({
   termsPdfUrl = null,
 }) => {
   const [termsAccepted, setTermsAccepted] = useState(false)
+  const [isLegalOpen, setIsLegalOpen] = useState(false)
 
   return (
     <Modal
@@ -176,14 +179,37 @@ const ReservationOptionsModal = ({
                         className="underline text-[#56C4CF]"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        opšte uslove i pravila
+                        opšte uslove izlaganja
                       </a>
                     ) : (
-                      <span>opšte uslove i pravila</span>
-                    )}{' '}
-                    učešća na događaju.
+                      <span>opšte uslove izlaganja</span>
+                    )}
+                    {'. '}
+                    {/* Propisana saglasnost za obradu podataka o ličnosti */}
+                    {CONSENT_PARTICIPATION.before}
+                    <button
+                      type="button"
+                      className="underline text-[#56C4CF]"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        e.preventDefault()
+                        setIsLegalOpen(true)
+                      }}
+                    >
+                      {CONSENT_PARTICIPATION.linkLabel}
+                    </button>
+                    {CONSENT_PARTICIPATION.after}
                   </span>
                 </label>
+
+                {/* Uz opšta pravila ide i dokument sa cenama i satnicom ovog događaja */}
+                <LegalDocsModal
+                  isOpen={isLegalOpen}
+                  onOpenChange={setIsLegalOpen}
+                  termsPdfUrl={termsPdfUrl}
+                  acceptLabel="Prihvatam"
+                  onAccept={() => setTermsAccepted(true)}
+                />
 
                 <div className="flex items-center gap-4 sm:flex-col sm:w-full">
                   <button

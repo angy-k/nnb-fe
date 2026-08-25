@@ -12,8 +12,17 @@ const EventDetailsModal = ({
   reserveLabel = 'Rezerviši mesto',
   onReserve,
 }) => {
+  // Kod višednevnog događaja naslov nosi i redni broj dana ("… — 2. dan"),
+  // a datum i vreme se odnose na taj dan, ne na ceo događaj.
+  const day = event?._day || null
+  const title = event?._dayLabel || event?.name || event?.title || ''
+
+  const whenLine = day
+    ? [day.date, day.timeRange].filter(Boolean).join(' · ')
+    : event?.dateTime
+
   // Nema description polja u API-ju — komponujemo ga iz dostupnih podataka
-  const descriptionParts = [event?.dateTime, event?.eventAddress].filter(Boolean)
+  const descriptionParts = [whenLine, event?.eventAddress].filter(Boolean)
   const description = event?.description
     || event?.shortDescription
     || (descriptionParts.length ? descriptionParts.join(' · ') : null)
@@ -43,7 +52,7 @@ const EventDetailsModal = ({
                 {event?.coverImage ? (
                   <img
                     src={event.coverImage}
-                    alt={event?.name || event?.title}
+                    alt={title}
                     className="w-full h-full object-cover absolute inset-0"
                   />
                 ) : (
@@ -76,7 +85,7 @@ const EventDetailsModal = ({
                 {/* Tekst */}
                 <div className="flex flex-col gap-4 pr-8 sm:pr-0 sm:pt-9">
                   <h2 className="text-[#261A54] font-bold leading-snug" style={{ fontSize: '20px' }}>
-                    {event?.name || event?.title}
+                    {title}
                   </h2>
 
                   {description && (

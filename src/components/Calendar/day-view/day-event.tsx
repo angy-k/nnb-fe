@@ -69,11 +69,11 @@ export const DayEvent: React.FC<DayEventProps> = ({
       style={{ ...definedStyle, ...(event.isPast ? { opacity: 0.35, filter: 'grayscale(0.5) blur(1px)' } : {}) }}
       className={cn(
         "border border-white rounded absolute flex gap-2",
-        event.isPast ? 'cursor-default' : 'cursor-pointer',
+        'cursor-pointer',
         event.variant === 'startup' ? 'bg-[#56C4CF]' : 'bg-[#261A54]',
         showLargeIcon ? 'flex-col' : 'items-center'
       )}
-      onClick={() => { if (!event.isPast) onEventClick?.(event.id) }}
+      onClick={() => onEventClick?.(event.id)}
     >
       {showLargeIcon ? (
         <Image

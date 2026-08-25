@@ -6,6 +6,7 @@ const submitApplication = async ({
   marketingOption = 'none',
   standNumber = null,
   lockId = null,
+  eventDayIds = null,
 }) => {
   const payload = {
     event_id: eventId,
@@ -19,6 +20,11 @@ const submitApplication = async ({
 
   if (lockId != null) {
     payload.lock_id = lockId
+  }
+
+  // Bez dana backend podrazumeva sve dane događaja
+  if (Array.isArray(eventDayIds) && eventDayIds.length > 0) {
+    payload.event_day_ids = eventDayIds
   }
 
   return post(

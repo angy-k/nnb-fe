@@ -6,7 +6,8 @@ import EventOrange from '@/icons/event-orange.svg';
 
 import { Event } from "../types";
 
-const MAX_EVENTS_TO_DISPLAY = 6;
+// Bedževi se slažu vertikalno pored datuma — manji limit nego kod horizontalnog reda
+const MAX_EVENTS_TO_DISPLAY = 3;
 
 type MonthDayViewProps = {
   day?: Date;
@@ -54,7 +55,7 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
   }
 
   return (
-    <ul className="pl-4 pr-6 flex-1 flex flex-wrap gap-1 overflow-hidden">
+    <ul className="flex flex-col items-start gap-1 overflow-hidden">
       {eventsToDisplay.map((event) => {
         const isStartup = event.variant === 'startup';
         const isAway = event.variant === 'away';
@@ -66,10 +67,11 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                if (!event.isPast) onEventClick?.(event.id);
+                onEventClick?.(event.id);
               }}
               className="inline-flex items-center justify-center rounded-full transition-opacity"
-              style={event.isPast ? { opacity: 0.35, cursor: 'default', filter: 'grayscale(0.5) blur(1px)' } : { cursor: 'pointer' }}
+              // Prošli događaji su prigušeni, ali ostaju klikabilni radi pregleda detalja
+              style={event.isPast ? { opacity: 0.45, cursor: 'pointer', filter: 'grayscale(0.5)' } : { cursor: 'pointer' }}
               aria-label={badgeAlt}
             >
               <Image
@@ -77,6 +79,7 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
                 width={63}
                 height={26}
                 alt={badgeAlt}
+                className="w-[63px] h-[26px] sm:w-[40px] sm:h-[17px]"
               />
             </button>
           </li>
@@ -90,7 +93,7 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
               e.stopPropagation();
               onDayClick?.(day);
             }}
-            className="inline-flex items-center justify-center px-2 h-6 rounded-full bg-[#1B1B1B] text-white text-[11px] font-semibold"
+            className="inline-flex items-center justify-center px-2 h-6 rounded-full bg-[#1B1B1B] text-white text-[11px] font-semibold sm:px-1.5 sm:h-[17px] sm:text-[10px]"
           >
             +{moreEventsNumber}
           </button>

@@ -126,6 +126,29 @@ body {
    background: rgba(0, 0, 0, 0.3) !important;
  }
 
+ /* Modal otvoren iz drugog modala (politika privatnosti iz prijave na događaj).
+    Bez više vrednosti oba dele z-index 10000 i redosled zavisi od redosleda u DOM-u. */
+ .nnb-modal-wrapper--nested {
+   z-index: 10002 !important;
+ }
+
+ .nnb-modal-backdrop--nested {
+   z-index: 10001 !important;
+ }
+
+ /* Pravni modal ima svoj okvir — `nnb-modal-base` nameće fiksnih 982px visine,
+    a ovaj treba da raste sa sadržajem kad se „pročitaj više" proširi. */
+ .nnb-legal-modal-base {
+   width: min(1000px, calc(100vw - 2rem)) !important;
+   max-width: none !important;
+   max-height: min(86vh, 860px) !important;
+   margin: 0 !important;
+   background: #ffffff !important;
+   border-radius: 32px !important;
+   /* Blagi gradijent ka donjem desnom uglu, kao na dizajnu */
+   background-image: radial-gradient(120% 90% at 100% 100%, #e6f7f8 0%, #ffffff 55%) !important;
+ }
+
  /* NextUI modal base — same frame as WelcomeModal */
  .nnb-modal-base {
    width: var(--nnb-modal-w) !important;
@@ -1668,6 +1691,19 @@ h6 {
   padding: 10px;
   break-inside: avoid;
   text-transform: uppercase;
+}
+
+/* Kontakti u footeru su linkovi (mailto:/tel:) — izgled ostaje isti kao ranije,
+   hover samo nagoveštava da su klikabilni. */
+a.office-contact-section-content {
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+a.office-contact-section-content:hover,
+a.office-contact-section-content:focus-visible {
+  text-decoration: underline;
+  opacity: 0.85;
 }
 .footer-socials {
   display: flex;

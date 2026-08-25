@@ -7,6 +7,11 @@ const readFile = (directoryPath) => {
 
 const defaultConfig = {...JSON.parse(readFile(`./office-config/config.json`))};
 
+// Napomena: /paketi se namerno NE navodi ovde.
+// Stranica je javno dostupna (link se šalje mejlom), ali ne sme da se indeksira.
+// Indeksiranje sprečava `robots: { index: false }` meta tag u src/app/paketi/layout.js.
+// Disallow bi bio kontraproduktivan — blokirao bi crawler da uopšte pročita taj meta tag,
+// a putanju bi javno izložio svakome ko otvori /robots.txt.
 const crawlableRobotsTxt = (appUrl) => {return `User-Agent: *
 Disallow: /api/
 Disallow: /*?
@@ -14,7 +19,6 @@ Disallow: /prijava
 Disallow: /registracija
 Disallow: /profil
 Disallow: /reset-lozinke
-Disallow: /paketi
 Disallow: /moje-rezervacije
 Disallow: /prethodne-rezervacije
 

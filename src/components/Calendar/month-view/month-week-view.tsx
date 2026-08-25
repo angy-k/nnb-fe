@@ -1,10 +1,15 @@
 import { MonthDayView } from "./month-day-view";
-import { MonthWeekEventsView } from "./month-week-events-view";
 
 import { cn } from "../../../utils";
 import { cva } from "class-variance-authority";
-import { createWeekGroups } from "../week-view/group-events";
-import { format, isToday, isSameDay, startOfMonth } from "date-fns";
+import {
+  format,
+  isToday,
+  endOfDay,
+  startOfDay,
+  isSameMonth,
+  isWithinInterval,
+} from "date-fns";
 
 import { Event } from "../types";
 import { WeekEvent } from "./group-events";
@@ -13,21 +18,23 @@ type MonthWeekViewProps = {
   week: Date[];
   week_events: WeekEvent[];
   week_day_events: Record<string, Event[]>;
+  /** Mesec koji je trenutno prikazan — dani van njega se sivo boje */
+  monthDate?: Date;
   onEventClick?: (eventId: string) => void;
   onDayClick?: (date: Date) => void;
 };
 
 const dayLabelVariants = cva(
-  "my-2 flex justify-center items-center text-sm font-normal",
+  "shrink-0 flex justify-center items-center text-sm font-normal",
   {
     variants: {
       variant: {
         default: "bg-transparent text-[#1B1B1B]",
+        outside: "bg-transparent text-[#B0B0B0]",
         today: "bg-blue-400 text-white",
       },
       size: {
-        default: "w-6 h-6 rounded-full",
-        startOfMonth: "px-2 rounded-xl",
+        default: "w-6 h-6 rounded-full sm:w-5 sm:h-5 sm:text-xs",
       },
     },
     defaultVariants: {
@@ -41,64 +48,62 @@ export const MonthWeekView: React.FC<MonthWeekViewProps> = ({
   week,
   week_events = [],
   week_day_events = {},
+  monthDate,
   onEventClick,
   onDayClick,
 }) => {
-  const groups = createWeekGroups(week_events, week[3]);
-  const limitedGroups = groups.slice(0, 5);
-  const restEvents = groups.slice(5).flat(1);
-
   return (
     <div className="w-full h-full relative sm:h-auto">
       <div className="w-full h-full flex sm:h-auto">
         {week.map((day) => {
-          const isStartOfMonth = isSameDay(day, startOfMonth(day));
-
-          const variant = isToday(day) ? "today" : "default";
-          const size = isStartOfMonth ? "startOfMonth" : "default";
-          const text = isStartOfMonth
-            ? format(day, "d. MMM")
-            : format(day, "d");
-
-          const className = cn(dayLabelVariants({ variant, size }));
-
           const dayKey = day.toISOString();
-          const hasEvents = (week_day_events[dayKey]?.length ?? 0) > 0 ||
-            week_events.some(ev => isSameDay(ev.start_date, day))
+
+          const isOutsideMonth = monthDate ? !isSameMonth(day, monthDate) : false;
+          const variant = isToday(day)
+            ? "today"
+            : isOutsideMonth
+              ? "outside"
+              : "default";
+
+          // Jednodnevni događaji za taj dan + višednevni koji ga preklapaju
+          const dayEvents: Event[] = [
+            ...(week_day_events[dayKey] ?? []),
+            ...week_events.filter((event) =>
+              isWithinInterval(day, {
+                start: startOfDay(event.start_date),
+                end: endOfDay(event.end_date),
+              })
+            ),
+          ];
+
+          const hasEvents = dayEvents.length > 0;
 
           return (
             <div
-              key={"day-label-" + day.toISOString()}
-              className="flex-1 flex flex-col items-center [&:not(:last-child)]:border-r border-b text-[#B0B0B0] cursor-pointer hover:bg-black/5 transition-colors sm:aspect-square sm:justify-center"
+              key={"day-label-" + dayKey}
+              className="flex-1 min-w-0 flex flex-col overflow-hidden [&:not(:last-child)]:border-r border-b text-[#B0B0B0] cursor-pointer hover:bg-black/5 transition-colors sm:min-h-[64px]"
               onClick={() => onDayClick?.(day)}
             >
-              <h2 className={className}>{text}</h2>
-              {hasEvents && (
-                <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-[#261A54] mt-0.5" />
-              )}
+              {/* Datum u gornjem levom uglu, bedževi desno od njega — isto na desktopu i mobilnom */}
+              <div className="flex items-start gap-1.5 p-1.5 sm:gap-1 sm:p-1">
+                <h2 className={cn(dayLabelVariants({ variant }))}>
+                  {format(day, "d")}
+                </h2>
+
+                {hasEvents && (
+                  <div className="min-w-0 flex-1">
+                    <MonthDayView
+                      day={day}
+                      events={dayEvents}
+                      onEventClick={onEventClick}
+                      onDayClick={onDayClick}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
-      </div>
-      <div className="mt-10 mb-5 absolute inset-0 space-y-1 overflow-hidden sm:hidden">
-        <MonthWeekEventsView date={week[3]} groups={limitedGroups} onEventClick={onEventClick} />
-        <div className="min-h-6 flex">
-          {week.map((day) => {
-            const dayKey = day.toISOString();
-            const events = week_day_events[dayKey];
-            return (
-              <MonthDayView
-                day={day}
-                key={dayKey}
-                events={events}
-                restEvents={restEvents}
-                weekEventsShown={limitedGroups.length}
-                onEventClick={onEventClick}
-                onDayClick={onDayClick}
-              />
-            );
-          })}
-        </div>
       </div>
     </div>
   );

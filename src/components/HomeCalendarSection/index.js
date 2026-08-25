@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { add, parse, isWithinInterval, isSameDay, startOfToday } from 'date-fns'
+import { parse, isWithinInterval, isSameDay } from 'date-fns'
 import { Divider } from '@nextui-org/divider'
 import { useRouter } from 'next/navigation'
 
@@ -9,6 +9,7 @@ import { Calendar } from '@/components/Calendar'
 import UpcommingEvents from '@/components/UpcommingEvents'
 import Button from '@/components/Button'
 import { checkProfileReady } from '@/utils/profileValidation'
+import { buildCalendarItems } from '@/utils/eventDays'
 import EventDetailsModal from '@/components/Modal/EventDetailsModal'
 import DayEventsModal from '@/components/Modal/DayEventsModal'
 import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
@@ -64,45 +65,11 @@ const HomeCalendarSection = () => {
           ? data.data.data
           : []
 
-      const today = startOfToday()
-      const parseWithFallbacks = (value, formats) => {
-        for (const fmt of formats) {
-          const d = parse(value, fmt, new Date())
-          if (!Number.isNaN(d?.getTime?.())) return d
-        }
-        return null
-      }
-
-      const detailsMap = {}
-      const mapped = items
-        .map((item) => {
-          const rawStart = (item?.dateTime ?? '').toString().trim()
-          if (!rawStart) return null
-          const startDate = parseWithFallbacks(rawStart, [
-            'dd.MM.yyyy HH:mm', 'd.MM.yyyy HH:mm',
-            'd MMM yyyy HH:mm', 'd M yyyy HH:mm',
-            'dd MMM yyyy HH:mm', 'dd M yyyy HH:mm',
-          ])
-          if (!startDate) return null
-          const isActiveFromApi = typeof item?.isActive === 'boolean' ? item.isActive : null
-          if (isActiveFromApi === false) return null
-          const id = (item?.id ?? '').toString()
-          if (!id) return null
-          detailsMap[id] = item
-          const title = (item?.title ?? item?.name ?? '').toString()
-          return {
-            id,
-            title,
-            start_date: startDate,
-            end_date: add(startDate, { hours: 1 }),
-            variant: item?.eventType === 'startup_bazar' ? 'startup' : item?.eventType === 'nocni_bazar_mesto' ? 'away' : 'regular',
-            isPast: startDate < today,
-          }
-        })
-        .filter(Boolean)
+      // Višednevni događaj daje po jednu kalendarsku stavku za svaki dan
+      const { items: mapped, detailsById } = buildCalendarItems(items)
 
       setEvents(mapped)
-      setEventDetailsById(detailsMap)
+      setEventDetailsById(detailsById)
     } catch (e) {
       setEvents([])
       setEventDetailsById({})
@@ -138,8 +105,11 @@ const HomeCalendarSection = () => {
     return null
   }
 
+  // Pred-prijava je opciona — ako nije postavljena, paket korisnik koristi redovan datum
   const applicationStartRaw = selectedEvent
-    ? (isPackageUser ? selectedEvent?.preApplicationStartDate : selectedEvent?.applicationStartDate)
+    ? (isPackageUser
+        ? (selectedEvent?.preApplicationStartDate || selectedEvent?.applicationStartDate)
+        : selectedEvent?.applicationStartDate)
     : null
   const applicationStart = applicationStartRaw ? parseAppDateTime(applicationStartRaw) : null
   const applicationEnd = selectedEvent?.applicationEndDate ? parseAppDateTime(selectedEvent.applicationEndDate) : null
@@ -203,7 +173,9 @@ const HomeCalendarSection = () => {
       const data = await res.json()
       const hasMap = !!data?.data?.map_url && Array.isArray(data?.data?.hotspots) && data.data.hotspots.length > 0
       if (!hasMap) return false
-      router.push(`/rezervacija-mesta/${eventId}`)
+      // Izabrani dan se prosleđuje mapi da bi zauzetost i cena bile za taj dan
+      const dayId = event?._day?.id
+      router.push(`/rezervacija-mesta/${eventId}${dayId ? `?day=${dayId}` : ''}`)
       return true
     } catch { return false }
   }
@@ -219,11 +191,15 @@ const HomeCalendarSection = () => {
     const rawIg = event?.ingMarketingCoasts
     const fb = rawFb != null && rawFb !== '' ? Number(rawFb) : null
     const ig = rawIg != null && rawIg !== '' ? Number(rawIg) : null
+    // Cena paketa za obe mreže je zasebna i niža od zbira pojedinačnih;
+    // sabiranje ostaje samo za događaje kojima ta cena nije uneta.
+    const rawBoth = event?.fbIngMarketingCoasts
+    const both = rawBoth != null && rawBoth !== '' ? Number(rawBoth) : null
 
     let marketing = null
     if (marketingOpt === 'facebook') marketing = fb
     else if (marketingOpt === 'instagram') marketing = ig
-    else if (marketingOpt === 'instagram_facebook') marketing = (fb ?? 0) + (ig ?? 0)
+    else if (marketingOpt === 'instagram_facebook') marketing = both ?? ((fb ?? 0) + (ig ?? 0))
     return { cotization, electricity, marketing }
   }
 
@@ -298,7 +274,8 @@ const HomeCalendarSection = () => {
 
   const confirmReservation = async () => {
     if (!user) return
-    const eventId = selectedEventId
+    // selectedEventId je složeni ključ "eventId:dayId" — pravi id je u detaljima
+    const eventId = selectedEvent?.id
     if (!eventId) { setReservationError('Nedostaje događaj.'); return }
 
     const withMarketing = marketingOption && marketingOption !== 'none'
@@ -312,7 +289,12 @@ const HomeCalendarSection = () => {
       setReservationError(null)
       setReservationSuccess(null)
       setIsSubmittingReservation(true)
-      const res = await applicationService.submitApplication({ eventId, electricityOption, marketingOption })
+      const res = await applicationService.submitApplication({
+        eventId,
+        electricityOption,
+        marketingOption,
+        eventDayIds: selectedEvent?._day?.id ? [selectedEvent._day.id] : undefined,
+      })
       const contentType = res.headers.get('content-type') || ''
       const data = contentType.includes('application/json') ? await res.json() : null
       if (res.ok && data?.success) { setReservationSuccess('Prijava je uspešno poslata.'); return }
@@ -419,7 +401,7 @@ const HomeCalendarSection = () => {
         showCancel={true}
         cancelLabel="Otkaži"
         timeRemaining={sessionSeconds}
-        termsPdfUrl={selectedEvent?.termsPdfUrl || null}
+        termsPdfUrl={selectedEvent?.termsPdfUrl || selectedEvent?.generatedTermsUrl || null}
       />
 
       <BoothReservationConfirmModal

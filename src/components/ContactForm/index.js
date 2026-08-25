@@ -5,7 +5,9 @@ import Button from "../Button";
 import DefaultImage from "./assets/default-contact-form-image.png"
 import ContactFormLogo from "../Logo/ContactFormLogo";
 import { validateContact } from '@/validations/contact';
-import { Form, Formik } from 'formik';
+import { ErrorMessage, Form, Formik } from 'formik';
+import Link from 'next/link';
+import { CONSENT_CONTACT } from '@/utils/consentTexts';
 import MainTextAreaInput from '../Commons/MainTextAreaInput';
 import MainTextInput from '../Commons/MainTextInput';
 import ReCAPTCHA from 'react-google-recaptcha'
@@ -92,11 +94,12 @@ const ContactForm = ({
               phoneNumber: '',
               address: '',
               message: '',
+              consent_accepted: false,
             }}
             validationSchema={validateContact}
             onSubmit={onSubmit}
           >
-            {() => (
+            {({ values, setFieldValue }) => (
               <Form className="w-full">
                 {/* 2-kolumna grid: Ime/Prezime, E-mail/Telefon, Adresa/Naslov */}
                 <div className="contact-form-inputs grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-6 gap-y-5 mb-5">
@@ -183,6 +186,36 @@ const ContactForm = ({
                   </>
                 )}
 
+                {/* Obavezna saglasnost za obradu podataka o ličnosti */}
+                <div className="mt-4 mb-2">
+                  <label className="flex items-start gap-2 text-[#261A54] text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="consent_accepted"
+                      className="mt-0.5 flex-shrink-0 w-4 h-4 accent-[#56C4CF] cursor-pointer"
+                      checked={!!values.consent_accepted}
+                      onChange={(e) => setFieldValue('consent_accepted', e.target.checked)}
+                    />
+                    <span className="leading-snug">
+                      {CONSENT_CONTACT.before}
+                      <Link
+                        href="/politika-privatnosti"
+                        target="_blank"
+                        className="underline text-[#56C4CF]"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {CONSENT_CONTACT.linkLabel}
+                      </Link>
+                      {CONSENT_CONTACT.after}
+                    </span>
+                  </label>
+                  <ErrorMessage
+                    name="consent_accepted"
+                    component="div"
+                    className="text-sm text-negative-color mt-1"
+                  />
+                </div>
+
                 {formSuccess && (
                   <div className="text-sm text-green-600 py-2 mb-2">{formSuccess}</div>
                 )}
@@ -193,7 +226,7 @@ const ContactForm = ({
                   key="contact-form-button"
                   type="submit-outlined-dark"
                   name={isLoading ? 'Šalje se...' : 'Pošalji poruku'}
-                  disabled={isLoading}
+                  disabled={isLoading || !values.consent_accepted}
                   className="w-full mt-2"
                 />
               </Form>

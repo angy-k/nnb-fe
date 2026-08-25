@@ -12,6 +12,8 @@ import useUser from '@/data/use-user'
 
 import MainTextInput from '@/components/Commons/MainTextInput'
 import AuthValidationErrors from '@/components/Auths/AuthValidationErrors'
+import LegalDocsModal from '@/components/Modal/LegalDocsModal'
+import { CONSENT_PARTICIPATION } from '@/utils/consentTexts'
 
 const DEFAULT_TAB = 'login'
 
@@ -429,16 +431,16 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                   </div>
 
                   <div className="mb-3">
-                    <label className="flex items-center gap-2 text-[#261A54] text-sm cursor-pointer">
+                    <label className="flex items-start gap-2 text-[#261A54] text-sm cursor-pointer">
                       <input
                         type="checkbox"
                         name="terms_accepted"
-                        className="auth-legal-entity-checkbox"
+                        className="auth-legal-entity-checkbox mt-0.5 flex-shrink-0"
                         checked={!!values.terms_accepted}
                         onChange={e => setFieldValue('terms_accepted', e.target.checked)}
                       />
-                      <span>
-                        Slažem se sa{' '}
+                      <span className="leading-snug">
+                        {CONSENT_PARTICIPATION.before}
                         <button
                           type="button"
                           className="underline text-[#56C4CF]"
@@ -447,9 +449,9 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                             onLegalDocsOpen()
                           }}
                         >
-                          politikom privatnosti
+                          {CONSENT_PARTICIPATION.linkLabel}
                         </button>
-                        .
+                        {CONSENT_PARTICIPATION.after}
                       </span>
                     </label>
                     <AuthValidationErrors className="mb-1" errors={errors.terms_accepted} />
@@ -868,24 +870,24 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
 
                       {/* Terms */}
                       <div>
-                        <label className="flex items-center gap-2 text-[#261A54] text-sm cursor-pointer">
+                        <label className="flex items-start gap-2 text-[#261A54] text-sm cursor-pointer">
                           <input
                             type="checkbox"
                             name="terms_accepted"
-                            className="auth-legal-entity-checkbox"
+                            className="auth-legal-entity-checkbox mt-0.5 flex-shrink-0"
                             checked={!!values.terms_accepted}
                             onChange={e => setFieldValue('terms_accepted', e.target.checked)}
                           />
-                          <span>
-                            Slažem se sa{' '}
+                          <span className="leading-snug">
+                            {CONSENT_PARTICIPATION.before}
                             <button
                               type="button"
                               className="underline text-[#56C4CF]"
                               onClick={() => { setLegalDocsType('privacy'); onLegalDocsOpen() }}
                             >
-                              politikom privatnosti
+                              {CONSENT_PARTICIPATION.linkLabel}
                             </button>
-                            .
+                            {CONSENT_PARTICIPATION.after}
                           </span>
                         </label>
                         <ErrorMessage name="terms_accepted" component="div" className="text-sm text-negative-color mt-1" />
@@ -922,8 +924,9 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
         </Formik>
       )}
 
+      {/* Instrukcije za registraciju â zaseban, jednostavan modal */}
       <Modal
-        isOpen={isLegalDocsOpen}
+        isOpen={isLegalDocsOpen && legalDocsType === 'instructions'}
         onOpenChange={onLegalDocsOpenChange}
         onClose={onLegalDocsClose}
         backdrop="blur"
@@ -940,76 +943,31 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
             <>
               <ModalHeader className="p-0 h-0 min-h-0" />
               <ModalBody className="px-10 py-10 pt-12">
-                {legalDocsType === 'instructions' ? (
-                  <>
-                    <h2 className="text-[#261A54] text-2xl font-bold mb-4">Instrukcije za registraciju</h2>
-                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-6">
-                      Instrukcije za registraciju će biti dodate ovde.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={onClose}
-                      className="px-8 py-3 rounded-full bg-[#56C4CF] text-white font-semibold text-sm hover:bg-[#3db8c4] transition-colors"
-                    >
-                      Zatvori
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-[#261A54] text-2xl font-bold mb-4">Politika privatnosti</h2>
-
-                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Šta su podaci o ličnosti?</h3>
-                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2">
-                      Podatak o ličnosti je svaki podatak koji se odnosi na fizičko lice čiji je identitet određen ili odrediv, neposredno ili posredno. Obrada podataka o ličnosti odnosi se na bilo koju radnju koja se vrši sa podacima o ličnosti kao što su prikupljanje, beleženje, prepisivanje, umnožavanje, kopiranje, prenošenje, čuvanje, prilagođavanje, brisanje.
-                    </p>
-
-                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Rukovalac podacima</h3>
-                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2">
-                      Rukovalac podacima za obradu podataka je Udruženje Novosadski noćni bazar, Novi Sad, Vase Stajića br. 20b/38 (u daljem tekstu: NNB).
-                    </p>
-
-                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Razlozi zbog kojih prikupljamo podatke</h3>
-                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-1"><span className="font-medium">Internet sajt:</span> Prikupljanjem podataka na web stranici nocnibazar.rs nudimo vam mogućnost preciznije i lakše pretrage, kao i newsletter prijavu.</p>
-                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-1"><span className="font-medium">Izlagači:</span> Kako biste postali deo NNB-a kao izlagač, potrebno je da ostavite podatke na osnovu kojih možemo da vas kontaktiramo i izvršimo rezervaciju tezge.</p>
-                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2"><span className="font-medium">Kolačići:</span> Radi boljeg funkcionisanja sajta koristimo kolačiće i Google Analytics. Možete onemogućiti kolačiće putem podešavanja pretraživača.</p>
-
-                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Pravni osnov obrade podataka</h3>
-                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2">
-                      Vaše lične podatke obrađujemo na osnovu vašeg pristanka, ugovornog odnosa ili legitimnog interesa. Pristanak možete u bilo kom momentu povući, što za posledicu ima prestanak dalje obrade, ali ne utiče na legalnost prethodne obrade.
-                    </p>
-
-                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Pravo na korišćenje</h3>
-                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2">
-                      Pristup vašim podacima imaju samo članovi tima NNB-a kojima su potrebni za ispunjenje vaših zahteva. Naši eksterni partneri su obavezani ugovorom na čuvanje podataka u tajnosti i ne mogu ih koristiti za sopstvene svrhe.
-                    </p>
-
-                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Trajnost podataka</h3>
-                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-2">
-                      Podatke čuvamo samo onoliko koliko su nam potrebni da bismo ostvarili svrhu za koju ste nam ih dali, ili do vašeg opoziva. Vaši podaci se ne iznose u druge države.
-                    </p>
-
-                    <h3 className="text-[#261A54] font-semibold text-sm mb-1 mt-3">Vaša prava</h3>
-                    <p className="text-[#1B1B1B] text-sm leading-relaxed mb-6">
-                      Imate pravo na pristup, ispravku, brisanje i prenosivost vaših podataka, kao i pravo na prigovor i ograničenje obrade. Za sva pitanja stojimo vam na raspolaganju putem kontakt obrasca na sajtu.
-                    </p>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFieldValueRef.current?.('terms_accepted', true)
-                        onClose()
-                      }}
-                      className="px-8 py-3 rounded-full bg-[#56C4CF] text-white font-semibold text-sm hover:bg-[#3db8c4] transition-colors"
-                    >
-                      Slažem se
-                    </button>
-                  </>
-                )}
+                <h2 className="text-[#261A54] text-2xl font-bold mb-4">Instrukcije za registraciju</h2>
+                <p className="text-[#1B1B1B] text-sm leading-relaxed mb-6">
+                  Instrukcije za registraciju će biti dodate ovde.
+                </p>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-8 py-3 rounded-full bg-[#56C4CF] text-white font-semibold text-sm hover:bg-[#3db8c4] transition-colors"
+                >
+                  Zatvori
+                </button>
               </ModalBody>
             </>
           )}
         </ModalContent>
       </Modal>
+
+      {/* Uslovi korišćenja i politika privatnosti — zajednički modal,
+          isti koji se otvara i iz prijave na događaj */}
+      <LegalDocsModal
+        isOpen={isLegalDocsOpen && legalDocsType === 'privacy'}
+        onOpenChange={onLegalDocsOpenChange}
+        onClose={onLegalDocsClose}
+        onAccept={() => setFieldValueRef.current?.('terms_accepted', true)}
+      />
     </div>
   )
 }

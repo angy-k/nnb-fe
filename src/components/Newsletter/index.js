@@ -2,7 +2,9 @@
 import ShoppingBagIcon from "../../icons/shopping-bag-icon.svg"
 import ViberCommunity from '../Communities/ViberCommunity';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
+import { CONSENT_NEWSLETTER } from '@/utils/consentTexts';
 
 const Newsletter = () => {
     const [email, setEmail] = useState('');
@@ -124,8 +126,15 @@ const Newsletter = () => {
                                         onChange={(e) => setConsentChecked(e.target.checked)}
                                     />
                                     <label htmlFor="consent" className="newsletter-consent-text">
-                                        Saglasan/Saglasna sam da se prikupljeni lični podaci upotrebljavaju,
-                                        obrađuju i čuvaju u skladu s pravilima privatnosti, uz lični pristanak.
+                                        {CONSENT_NEWSLETTER.before}
+                                        <Link
+                                            href="/politika-privatnosti"
+                                            target="_blank"
+                                            className="underline"
+                                        >
+                                            {CONSENT_NEWSLETTER.linkLabel}
+                                        </Link>
+                                        {CONSENT_NEWSLETTER.after}
                                     </label>
                                 </div>
                             </>
