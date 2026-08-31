@@ -7,7 +7,7 @@ import { checkProfileReady } from '@/utils/profileValidation'
 import { useRouter } from 'next/navigation'
 import PageHeroSection from '@/components/Hero/pageOwl';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { parse, isWithinInterval } from 'date-fns';
+import { parse, isWithinInterval, startOfDay } from 'date-fns';
 import eventService from '@/services/eventService';
 import useUser from '@/data/use-user'
 import applicationService from '@/services/applicationService'
@@ -15,6 +15,7 @@ import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
 import EventDetailsModal from '@/components/Modal/EventDetailsModal'
 import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
 import GalleryWarningModal from '@/components/Modal/GalleryWarningModal'
+import { electricityOptionsOf, electricityPriceFor } from '@/utils/electricity'
 
 const Events = ({
   title,
@@ -215,9 +216,8 @@ const Events = ({
   const computeConfirmCosts = (event, electricityOpt, marketingOpt) => {
     const cotization = Number(event?.downPayment) || 0
 
-    const rawElectricity = event?.electricityExtensionCoasts
-    const electricityCostBase = rawElectricity != null && rawElectricity !== '' ? Number(rawElectricity) : null
-    const electricity = electricityOpt && electricityOpt !== 'none' ? electricityCostBase : null
+    // Cena zavisi od izabrane jačine priključka; „none" znači da struja nije tražena
+    const electricity = electricityPriceFor(event, electricityOpt)
 
     const rawFb = event?.fbMarketingCoasts
     const rawIg = event?.ingMarketingCoasts
@@ -321,8 +321,68 @@ const Events = ({
     console.log('preview all events')
   }
 
-  let limitedEvents = numberForDisplay ? events.slice(0,numberForDisplay) : events
-  
+  // Poslednji dan događaja. Višednevni bazar je aktuelan sve dok mu i poslednji
+  // dan nije prošao, pa se gleda kraj, ne početak. `dateTime` je rezerva za
+  // događaje kojima dani nisu uneti.
+  const eventLastDate = (event) => {
+    const days = Array.isArray(event?.days) ? event.days : []
+    const raw = days.length ? days[days.length - 1]?.date : event?.dateTime
+    return parseAppDateTime(raw)
+  }
+
+  // Poređenje ide po danu, a ne po satu — bazar koji traje večeras ostaje među
+  // aktuelnim do kraja dana. Događaj bez upotrebljivog datuma se ne sklanja
+  // među prošle; radije ostaje vidljiv nego da nestane zbog prazne kolone.
+  const today = startOfDay(new Date())
+  const isPastEvent = (event) => {
+    const d = eventLastDate(event)
+    return d ? startOfDay(d) < today : false
+  }
+
+  const byDate = (a, b) => (eventLastDate(a)?.getTime() ?? 0) - (eventLastDate(b)?.getTime() ?? 0)
+
+  // Aktuelni idu od najbližeg ka daljem, prošli obrnuto — od skoro održanog
+  // unazad, jer je to ono što posetioca zanima prvo.
+  const upcomingEvents = events.filter((e) => !isPastEvent(e)).sort(byDate)
+  const pastEventsAll = events.filter(isPastEvent).sort((a, b) => byDate(b, a))
+
+  // Ograničenje broja se primenjuje samo na prošle; aktuelni se prikazuju svi.
+  const pastEvents = numberForDisplay ? pastEventsAll.slice(0, numberForDisplay) : pastEventsAll
+
+  const limitedEvents = [...upcomingEvents, ...pastEvents]
+
+  const renderCards = (list, keyPrefix, grey = false) => (
+    <div className="blog-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+      {list.map((event, index) => (
+        <div className="event-card" key={`${keyPrefix}-${event.id ?? index}`}>
+          <CardComponent
+            key={`${keyPrefix}-card-${event.id ?? index}`}
+            {...(event.coverImage && { imageSrc: event.coverImage })}
+            imageWidth={438}
+            imageHeight={438}
+            imageSquare
+            imageGrey={grey}
+            imageRadius={"30px"}
+            imageAltText={`Događaj - ${event.name || event.title}`}
+            sectionType={'event'}
+            title={event.name || event.title}
+            buttonAction={() => goToSingleEvent(event)}
+            buttonText="Detaljnije"
+          />
+        </div>
+      ))}
+    </div>
+  )
+
+  // Naslov grupe se pokazuje tek kad postoje obe grupe — inače bi usamljen
+  // naslov iznad jedine liste samo dodavao buku.
+  const showGroupTitles = upcomingEvents.length > 0 && pastEvents.length > 0
+  // Bez horizontalnog odmaka na desktopu, jer ga ni mreža kartica nema — odmak
+  // od 16px dobija tek na mobilnom, gde ga `.blogs-container .blog-container`
+  // dodaje i karticama.
+  const groupTitleClass = 'w-full max-w-[1400px] nnb-gutter text-[#261A54] font-bold text-[36px] sm:text-[28px] text-left mb-6'
+
+
   if (loading) {
     return (
       <>
@@ -364,24 +424,21 @@ const Events = ({
             onClick={() => previewAllEvents()}
         />}
         {title && <Divider className="section-divider"/>}
-        <div className="blog-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-          {limitedEvents.map((event, index) => (
-            <div className="event-card" key={`event-card-${index}`}>
-              <CardComponent
-                key={`events-card-${index}`}
-                {...(event.coverImage && { imageSrc: event.coverImage })}
-                imageWidth={438}
-                imageHeight={344}
-                imageRadius={"30px"}
-                imageAltText={`Događaj - ${event.name || event.title}`}
-                sectionType={'event'}
-                title={event.name || event.title}
-                buttonAction={() => goToSingleEvent(event)}
-                buttonText="Detaljnije"
-              />
-            </div>
-          ))}
-        </div>
+        {upcomingEvents.length > 0 && (
+          <>
+            {showGroupTitles && <h2 className={groupTitleClass}>Aktuelni događaji</h2>}
+            {renderCards(upcomingEvents, 'upcoming-event')}
+          </>
+        )}
+
+        {pastEvents.length > 0 && (
+          <>
+            {showGroupTitles && (
+              <h2 className={groupTitleClass} style={{ marginTop: '70px' }}>Prošli događaji</h2>
+            )}
+            {renderCards(pastEvents, 'past-event', true)}
+          </>
+        )}
         {/* pagination */}
         {(pagination && events.length > 12) && <Divider className="section-divider w-1440" style={{marginTop: '35px'}}/>}
         {/* {(pagination || events.length > 12) && <PaginationComponent />} */}
@@ -392,8 +449,13 @@ const Events = ({
         isOpen={isModalOpen}
         onClose={closeModal}
         event={selectedEvent}
-        showReserveButton={!!user && canApply(selectedEvent)}
-        reserveLabel="Rezerviši mesto"
+                // Posetilac takođe vidi dugme, samo sa drugim tekstom — po zahtevu sa
+        // kartice „Događaji". Ranije se dugme uopšte nije prikazivalo dok se
+        // korisnik ne prijavi, pa posetilac nije imao odakle da krene.
+        // Sama radnja je već znala da razlikuje slučajeve: posetiocu otvara
+        // prozor za registraciju, izlagaču vodi na rezervaciju.
+        showReserveButton={!user || canApply(selectedEvent)}
+        reserveLabel={user ? 'Rezerviši mesto' : 'Postani izlagač i rezerviši mesto'}
         onReserve={() => {
           ;(async () => {
             if (!user) {
@@ -430,6 +492,7 @@ const Events = ({
         isOpen={isReserveModalOpen}
         onClose={cancelReserveModal}
         electricityOption={electricityOption}
+          electricityOptions={electricityOptionsOf(selectedEvent)}
         setElectricityOption={setElectricityOption}
         marketingOption={marketingOption}
         setMarketingOption={setMarketingOption}

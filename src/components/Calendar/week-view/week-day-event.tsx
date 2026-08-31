@@ -2,8 +2,10 @@ import { startOfDay, differenceInMinutes, format } from "date-fns";
 import { cn } from "@/utils";
 import { Event } from "../types";
 import Image from 'next/image';
-import SingleEventLight from '@/icons/event-light.svg';
-import SingleEventDark from '@/icons/event-dark.svg';
+// Sove umesto ranijih pilula sa natpisom „nnb"
+import OwlNnb from '@/icons/owl-nnb.svg';
+import OwlStartup from '@/icons/owl-startup.svg';
+import OwlDrugoMesto from '@/icons/owl-drugo-mesto.svg';
 
 const MINUTES_IN_DAY = 24 * 60;
 
@@ -65,9 +67,9 @@ export const WeekDayEvent: React.FC<WeekDayEventProps> = ({
       onClick={() => onEventClick?.(event.id)}
     >
       {definedStyle.height > 55 && <Image 
-        src={Number(index)%2 ? SingleEventLight : SingleEventDark}
-        width={126}
-        height={52}
+        src={event.variant === 'startup' ? OwlStartup : event.variant === 'away' ? OwlDrugoMesto : OwlNnb}
+        width={73}
+        height={53}
         alt='single-event'
       />}
       <h1 className="text-white text-xs">

@@ -1,4 +1,7 @@
-import LogoLight from "@/../public/logo-light.svg"
+// Kontakt forma stoji na beloj kartici, pa se koristi varijanta u kojoj je
+// „Novosadski" ljubičast. U `logo-light.svg` je taj deo beo i na beloj podlozi
+// se ne vidi — ostajao je samo „noćni bazar" sa listićem iznad.
+import LogoPurple from "@/../public/logo-purple.svg"
 import FacebookIcon from "@/icons/facebook-icon-dark.svg"
 import InstagramIcon from "@/icons/instagram-icon-dark.svg"
 import YouTubeIcon from "@/icons/youtube-icon-dark.svg"
@@ -29,7 +32,7 @@ const ContactFormLogo = () => {
   return(
     <div className="office-contact">
       <Image
-        src={LogoLight}
+        src={LogoPurple}
         width={260}
         height={81.8}
         alt={'Contact form office logo.'}

@@ -12,8 +12,17 @@ const PlayOverlay = ({ size = 56 }) => (
   </div>
 )
 
+/*
+ * Glavni snimak ide preko cele kolone sadržaja — u dizajnu je 1435 širok na
+ * okviru od 1920, isto kao i glavna fotografija u foto galeriji. Ovde je stajalo
+ * `maxWidth: 900px`, ista greška koja je i tamo sužavala glavnu sliku.
+ *
+ * Odnos ostaje 16:9. U dizajnu je nacrtan kao 2,09, ali se ugrađeni snimak ne
+ * može iseći bez crnih traka gore i dole, pa bi verno praćenje dizajna donelo
+ * gori prikaz nego odstupanje.
+ */
 const FeaturedVideo = ({ video }) => (
-  <div style={{ width: '100%', maxWidth: '900px' }}>
+  <div style={{ width: '100%' }}>
     <div style={{ borderRadius: '20px', overflow: 'hidden', aspectRatio: '16/9', background: '#000' }}>
       <iframe
         src={video.embed_url}
@@ -73,8 +82,11 @@ const VideoGallery = ({ videos = [] }) => {
         <FeaturedVideo video={featured} />
       </div>
       {rest.length > 0 && <Divider className="section-divider" />}
+      {/* Tri kolone, kartica 467 široka sa razmakom od 20px — mereno sa izvoza
+          Figme: kartice stoje na x 241, 727 i 1213, svaka 467, unutar kolone od
+          1440. Vodoravni razmak je ovde bio 32px. */}
       {rest.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px 32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px 20px' }}>
           {rest.map(video => (
             <VideoCard key={video.id} video={video} onClick={setFeatured} />
           ))}

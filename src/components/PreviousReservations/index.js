@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import applicationService from '@/services/applicationService'
 import useUser from '@/data/use-user'
 import { formatDate } from '@/utils/dateHelpers'
+import MERE_DUGMETA from '@/components/Reservations/headerActionStyle'
 
 const MyPreviousReservationsComponent = () => {
 
@@ -124,17 +125,20 @@ const MyPreviousReservationsComponent = () => {
               />
             </div>
             <div className="flex flex-col gap-1 pb-2 profile-page-header-name">
-              <span className="text-3xl font-bold leading-tight" style={{ color: '#ffffff' }}>Prethodne rezervacije</span>
+              <span className="text-[39px] font-bold leading-tight" style={{ color: '#ffffff' }}>Prethodne rezervacije</span>
             </div>
           </div>
-          <div className="flex items-end gap-3 pb-2 profile-page-header-actions">
+          {/* Mere su iste kao na „Mojim rezervacijama", odakle je ovo zaglavlje
+              i prepisano: naslov 39, dugmad jednake širine 272 × 57, razmak 20.
+              Ovde su bile zaostale stare vrednosti. */}
+          <div className="flex items-end gap-5 pb-2 profile-page-header-actions">
             <Link href="/profil">
-              <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', height: '44px', padding: '10px 24px', color: '#ffffff', display: 'inline-block', cursor: 'pointer' }}>
+              <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', ...MERE_DUGMETA }}>
                 Vrati se na profil
               </span>
             </Link>
             <Link href="/moje-rezervacije">
-              <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', height: '44px', padding: '10px 24px', color: '#ffffff', display: 'inline-block', cursor: 'pointer' }}>
+              <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', ...MERE_DUGMETA }}>
                 Aktuelne rezervacije
               </span>
             </Link>

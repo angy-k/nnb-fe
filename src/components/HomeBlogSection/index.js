@@ -65,8 +65,11 @@ const HomeBlogSection = () => {
 
   return (
     <div className="w-full blogs-container pt-32 grid place-items-center pb-64 z-1">
-      <div className="w-full" style={{ maxWidth: '1400px' }}>
-        <div className="flex items-center justify-between gap-6">
+      {/* Bočni odmak na mobilnom, isti kao kod kartica ispod. Naslov i dugme se
+          tamo i razdvajaju u dva reda — jedan pored drugog ostaje im po 150px,
+          pa se dugme lomi i oba dodiruju ivice. */}
+      <div className="w-full nnb-gutter" style={{ maxWidth: '1400px' }}>
+        <div className="flex sm:flex-col sm:items-start items-center justify-between gap-6 sm:gap-3">
           <span className="blog-title">Blog</span>
           <Button
             type={'outlined-dark'}

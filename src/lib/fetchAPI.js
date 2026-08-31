@@ -68,9 +68,22 @@ function getCSRFValue() {
   }
 }
 
+/**
+ * GET ka backendu.
+ *
+ * Podrazumevani keš je `no-store`. Ranije je bio `force-cache`, što je za ovaj
+ * sajt pogrešna pretpostavka: većina poziva su zauzetost štandova, cene, profil
+ * i prijave — podaci koji se menjaju iz minuta u minut. Svi postojeći pozivi su
+ * to i gazili ručno, osim potvrde mejla, pa je podrazumevana vrednost samo
+ * čekala prvi poziv koji zaboravi da je navede.
+ *
+ * Stranice koje treba da se keširaju to traže eksplicitno, preko `next`
+ * (`{ revalidate, tags }`) — tako je i sada na Događajima, Blogu, Projektima,
+ * Prijateljima, Galeriji, Kontaktu i O nama.
+ */
 export const get = (
   path,
-  { queryParams = {}, config = {}, next = {}, cache = 'force-cache' } = {}
+  { queryParams = {}, config = {}, next = {}, cache = 'no-store' } = {}
 ) => {
   const isBrowser = typeof window !== 'undefined'
   let url = `${base_url}${path}`
@@ -95,12 +108,16 @@ export const get = (
     if (qs) url += `?${qs}`
   }
 
+  // Next puca ako se `cache` i `next.revalidate` pošalju zajedno, pa kad
+  // pozivalac traži revalidaciju, keš opcija se izostavlja.
+  const trazaRevalidaciju = next?.revalidate != null
+
   return fetch(url, {
     headers: { ...base_headers(), ...config.headers },
     credentials: config.credentials ?? 'include',
     redirect: config.redirect ?? (isBrowser ? 'manual' : 'follow'),
     next,
-    cache
+    ...(trazaRevalidaciju ? {} : { cache })
   })
 }
 

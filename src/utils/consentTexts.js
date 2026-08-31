@@ -4,9 +4,9 @@
  * Formulacije su dostavljene od strane organizatora i ne smeju se menjati bez
  * njihove saglasnosti — zato stoje na jednom mestu, a ne raštrkane po formama.
  *
- * Napomena: u mejlu je rečenica napisana sa „te se u druge svrhe se ne mogu
- * koristiti" (dvaput „se"). U priloženom obrascu Opštih uslova ista rečenica
- * stoji bez te greške, pa je ovde preuzeta ispravna varijanta.
+ * Napomena: u mejlu je rečenica bila napisana sa „te se u druge svrhe se ne
+ * mogu koristiti" (dvaput „se"). Organizator je potvrdio da je reč o omašci u
+ * kucanju, pa ovde stoji ispravna varijanta — kao i u obrascu Opštih uslova.
  */
 
 /** Svuda gde se prikupljaju podaci radi učešća na manifestaciji (registracija, prijava na događaj) */

@@ -55,43 +55,62 @@ const PhotosGallery = ({ photos = [] }) => {
   const featured = photos[current]
 
   return (
-    <div style={{ width: '100%', maxWidth: '1400px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', justifyContent: 'center', marginBottom: '24px' }}>
-        <ArrowBtn dir="prev" onClick={prev} disabled={current === 0} />
-        <div style={{ flex: 1, maxWidth: '900px', borderRadius: '20px', overflow: 'hidden', aspectRatio: '16/9', background: '#ddd', position: 'relative' }}>
+    <>
+      {/* Glavna fotografija — cela kolona sadržaja.
+
+          Mereno sa izvoza Figme (okvir 1920): fotografija je 1440 × 754, dakle
+          preko cele kolone i u odnosu 1,91. Ovde je ranije stajalo
+          `maxWidth: 900px`, pa je glavna slika bila uža od trake ispod nje.
+
+          Strelice su u dizajnu izvan kolone, u marginama okvira (na x 174 i
+          1745). Toliko mesta ima tek na širokom ekranu, pa su ovde apsolutno
+          postavljene uz ivice: na 1920 padnu u marginu kao u dizajnu, a na užem
+          ekranu blago pređu preko same fotografije. */}
+      <div className="galerija-glavna">
+        <div className="galerija-glavna-okvir">
           <img
             src={featured.url}
             alt={featured.alt_text || `Fotografija ${current + 1}`}
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         </div>
-        <ArrowBtn dir="next" onClick={next} disabled={current === photos.length - 1} />
+        <div className="galerija-strelica galerija-strelica--levo">
+          <ArrowBtn dir="prev" onClick={prev} disabled={current === 0} />
+        </div>
+        <div className="galerija-strelica galerija-strelica--desno">
+          <ArrowBtn dir="next" onClick={next} disabled={current === photos.length - 1} />
+        </div>
       </div>
-      <div style={{ display: 'flex', gap: '4px', width: '100%', overflow: 'hidden' }}>
-        {photos.map((photo, i) => (
-          <button
-            key={photo.id}
-            onClick={() => setCurrent(i)}
-            style={{
-              flex: 1, aspectRatio: '16/9', border: 'none', padding: 0,
-              cursor: 'pointer', borderRadius: '8px', overflow: 'hidden',
-              outline: i === current ? '3px solid #261A54' : 'none',
-              outlineOffset: '2px',
-              opacity: i === current ? 1 : 0.75,
-              transition: 'opacity 0.2s, outline 0.15s',
-              position: 'relative',
-            }}
-            aria-label={`Fotografija ${i + 1}`}
-          >
-            <img
-              src={photo.url}
-              alt={photo.alt_text || `thumb-${i}`}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            />
-          </button>
-        ))}
+
+      {/* Traka sa umanjenim prikazima — preko cele širine prozora, sa trenutnim
+          po sredini i susednima koji se prelivaju preko obe ivice.
+
+          U dizajnu je umanjeni prikaz 448 × 300 na okviru od 1920, dakle 23,3%
+          širine i odnos 1,49, sa razmakom od 24px (1,25%). Ranije je svaki imao
+          `flex: 1`, pa se pri jednoj fotografiji razvlačio preko cele širine i
+          ispadao veći od glavne slike. */}
+      <div className="galerija-traka">
+        <div
+          className="galerija-traka-red"
+          style={{ transform: `translateX(calc(50vw - ${current} * (23.3vw + 1.25vw) - 11.65vw))` }}
+        >
+          {photos.map((photo, i) => (
+            <button
+              key={photo.id}
+              onClick={() => setCurrent(i)}
+              className={'galerija-umanjena' + (i === current ? ' galerija-umanjena--tekuca' : '')}
+              aria-label={`Fotografija ${i + 1}`}
+            >
+              <img
+                src={photo.url}
+                alt={photo.alt_text || `thumb-${i}`}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

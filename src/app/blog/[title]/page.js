@@ -6,8 +6,11 @@ import CardComponent from '@/components/CardComponent';
 import blogService from '@/services/blogService';
 import { formatTitleForUri } from '@/utils/transform-helper';
 import Image from 'next/image';
+import Link from 'next/link';
 import HomeIcon from '@/icons/home-icon.svg';
-import AvatarIcon from '@/icons/avatar-default.svg';
+// Naša sova umesto zatečenog avatara iz šablona dizajna.
+import OwlIcon from '@/icons/owl-icon.svg';
+import { teamAnchorId, findTeamMemberByName } from '@/utils/team';
 
 const BlogDetailPage = () => {
   const params = useParams();
@@ -19,10 +22,27 @@ const BlogDetailPage = () => {
   const [nextBlog, setNextBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Tim se dovlači da bi se autorka objave mogla povezati sa svojom karticom na
+  // stranici „O nama". Ako poziv ne uspe, lista ostaje prazna i autor se
+  // prikazuje kao običan tekst — objava se zbog toga ne kvari.
+  const [team, setTeam] = useState([]);
 
   useEffect(() => {
     fetchBlogData();
   }, [title]);
+
+  useEffect(() => {
+    let otkazano = false;
+
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/index/about-us`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!otkazano) setTeam(data?.data?.team ?? []);
+      })
+      .catch(() => {});
+
+    return () => { otkazano = true };
+  }, []);
 
   const fetchBlogData = async () => {
     try {
@@ -97,7 +117,10 @@ const BlogDetailPage = () => {
     return (
       <>
         <PageHeroSection title={"Blog"} />
-        <div className="w-full pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
+        {/* `relative` je ovde uslov, ne ukras: bez njega je element statičan, pa
+            mu z-index ništa ne znači i hero sekcija (relative, z-index 1) se crta
+            preko sadržaja — sova je zbog toga padala preko naslova objave. */}
+        <div className="relative z-[2] w-full pt-24 grid place-items-center pb-48 bg-[#F0F0F0]">
           <div className="text-center">Učitavanje objave...</div>
         </div>
       </>
@@ -107,10 +130,15 @@ const BlogDetailPage = () => {
   return (
     <>
       <PageHeroSection title="Blog" />
-      <div className="w-full pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
+      {/* `relative` je ovde uslov, ne ukras. Na stranicama sa listom hero i
+          sadržaj su ćelije iste mreže, gde z-index važi i bez pozicioniranja, pa
+          sadržaj prekriva sovu koja se preliva. Ovde su oba obično deca `main`
+          elementa, pa z-index na statičnom sadržaju ne znači ništa i sova pada
+          preko naslova objave. */}
+      <div className="relative z-[2] w-full pt-24 grid place-items-center pb-48 bg-[#F0F0F0]">
         {error && (
           <div className="text-red-500 text-center mb-4">
-            Error loading blog: {error}
+            Greška prilikom učitavanja objave.
           </div>
         )}
         <div className="max-w-7xl mx-auto px-6 w-full">
@@ -119,7 +147,13 @@ const BlogDetailPage = () => {
             {blog && (
               <>
                 {/* Breadcrumb and Publication Date */}
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center items-start gap-4 mb-8 p-8 pb-0">
+                {/* `md:` u ovom projektu znači 600–1299px, a ne „od 600 naviše" —
+                    tako su podešene prelomne tačke u `tailwind.config`. Zbog toga
+                    su se ovi redovi na 1440 slagali u kolonu, pa su datum, autor
+                    i bočna kolona završavali levo ispod naslova umesto desno.
+                    Zato je red podrazumevano vodoravan, a `sm:` ga slaže samo na
+                    mobilnom. */}
+                <div className="flex flex-row sm:flex-col justify-between items-center sm:items-start gap-4 mb-8 p-8 pb-0">
                   <div className="text-sm text-[#1B1B1B]">
                     Objavljeno: {blog.creationDate}
                   </div>
@@ -150,22 +184,11 @@ const BlogDetailPage = () => {
                 </div>
 
                 {/* Title and Author */}
-                <div className="flex flex-col md:flex-row md:justify-between md:items-end items-start mb-8 px-8 gap-4 md:gap-18">
+                <div className="flex flex-row sm:flex-col justify-between items-end sm:items-start mb-8 px-8 gap-18 sm:gap-4">
                   <h1 className="single-blog-title flex-1 min-w-0" style={{wordWrap: 'break-word', whiteSpace: 'normal'}}>
                     {blog.title}
                   </h1>
-                  <div className="flex items-center gap-2 self-start md:self-end">
-                    <span className="text-sm text-[#1B1B1B] whitespace-nowrap">
-                      Autor: {blog.author}
-                    </span>
-                    <Image
-                      src={AvatarIcon}
-                      alt={blog.author}
-                      width={36}
-                      height={36}
-                      style={{ borderRadius: '50%' }}
-                    />
-                  </div>
+                  <AuthorBadge author={blog.author} team={team} />
                 </div>
 
                 <div className="px-8 pb-10">
@@ -177,7 +200,7 @@ const BlogDetailPage = () => {
                   />
 
                   {/* Content + sidebar */}
-                  <div className="flex flex-col md:flex-row gap-8">
+                  <div className="flex flex-row sm:flex-col gap-8">
                     {/* Blog Content */}
                     <div className="flex-1">
                       <div className="prose prose-lg max-w-none pb-8">
@@ -190,7 +213,7 @@ const BlogDetailPage = () => {
 
                     {/* Similar Blogs Sidebar */}
                     {similarBlogs && similarBlogs.length > 0 && (
-                      <div className="w-full md:w-72 flex-shrink-0">
+                      <div className="w-72 sm:w-full flex-shrink-0">
                         <h3 className="text-sm font-semibold text-[#1B1B1B] mb-3">Pročitaj još:</h3>
                         <div className="bg-[#261A54] rounded-xl p-5 md:sticky md:top-28">
                           <ul className="flex flex-col gap-2">
@@ -278,6 +301,54 @@ const BlogDetailPage = () => {
         </div>
       </div>
     </>
+  );
+};
+
+/**
+ * Ime autorke uz malu sliku. Kad se ime poklopi sa članom tima, ceo blok postaje
+ * link do njene kartice na stranici „O nama" — čitalac odatle može da vidi ko je
+ * pisao objavu. Kad se ne poklopi, ostaje običan tekst, bez linka koji ne vodi
+ * nikuda.
+ */
+const AuthorBadge = ({ author, team }) => {
+  if (!author) return null;
+
+  const clan = findTeamMemberByName(team, author);
+  const slika = clan?.photo || null;
+
+  const sadrzaj = (
+    <>
+      <span className="text-sm text-[#1B1B1B] whitespace-nowrap">
+        Autor: {author}
+      </span>
+      {slika ? (
+        <img
+          src={slika}
+          alt={author}
+          width={36}
+          height={36}
+          style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }}
+        />
+      ) : (
+        <Image src={OwlIcon} alt={author} width={36} height={36} />
+      )}
+    </>
+  );
+
+  const klase = 'flex items-center gap-2 self-end sm:self-start';
+
+  if (!clan) {
+    return <div className={klase}>{sadrzaj}</div>;
+  }
+
+  return (
+    <Link
+      href={`/o-nama#${teamAnchorId(author)}`}
+      className={`${klase} hover:opacity-70 transition-opacity`}
+      title={`Pogledaj ${author} u našem timu`}
+    >
+      {sadrzaj}
+    </Link>
   );
 };
 

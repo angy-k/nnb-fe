@@ -16,12 +16,15 @@ import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
 import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
 import GalleryWarningModal from '@/components/Modal/GalleryWarningModal'
 import Image from 'next/image'
-import EventDark from '@/icons/event-dark.svg'
-import EventLight from '@/icons/event-light.svg'
-import EventOrange from '@/icons/event-orange.svg'
+// Legenda ispod kalendara — iste sove kao bedževi u ćelijama
+import OwlNnb from '@/icons/owl-nnb.svg'
+import OwlStartup from '@/icons/owl-startup.svg'
+import OwlDrugoMesto from '@/icons/owl-drugo-mesto.svg'
 import eventService from '@/services/eventService'
 import applicationService from '@/services/applicationService'
 import useUser from '@/data/use-user'
+import { electricityOptionsOf, electricityPriceFor } from '@/utils/electricity'
+import RegistrationInstructionsModal from '@/components/Modal/RegistrationInstructionsModal'
 
 const HomeCalendarSection = () => {
   const router = useRouter()
@@ -46,6 +49,7 @@ const HomeCalendarSection = () => {
   const [reservationSuccess, setReservationSuccess] = useState(null)
   const [sessionSeconds, setSessionSeconds] = useState(null)
   const [isGalleryWarningOpen, setIsGalleryWarningOpen] = useState(false)
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState(false)
   const sessionIntervalRef = useRef(null)
   const sessionActiveRef = useRef(false)
 
@@ -183,9 +187,8 @@ const HomeCalendarSection = () => {
   const computeConfirmCosts = (event, electricityOpt, marketingOpt) => {
     const cotization = Number(event?.downPayment) || 0
 
-    const rawElectricity = event?.electricityExtensionCoasts
-    const electricityCostBase = rawElectricity != null && rawElectricity !== '' ? Number(rawElectricity) : null
-    const electricity = electricityOpt && electricityOpt !== 'none' ? electricityCostBase : null
+    // Cena zavisi od izabrane jačine priključka; „none" znači da struja nije tražena
+    const electricity = electricityPriceFor(event, electricityOpt)
 
     const rawFb = event?.fbMarketingCoasts
     const rawIg = event?.ingMarketingCoasts
@@ -315,16 +318,33 @@ const HomeCalendarSection = () => {
           <Divider className="section-divider" />
         </div>
 
-        <div className="hidden md:block lg:block" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
-          <Calendar view={'month'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
-        </div>
-        <div className="block md:hidden lg:hidden" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
+        {/* Tabelarni prikaz ide ispred kalendara — najavljeni događaji su ono što
+            posetilac najčešće traži, pa mu ne treba prvo ceo mesec da preskoči. */}
+        <UpcommingEvents />
+
+        {/* Jedna instanca — ranije su stajale dve identične, za desktop i mobilni,
+            pa se kalendar renderovao dvaput iako je jedna uvek bila sakrivena. */}
+        <div style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
           <Calendar view={'month'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
         </div>
 
+        {/* `sm:px-4` je bočni odmak na mobilnom — bez njega link i dugme
+            dodiruju ivicu ekrana, a zaobljena strana dugmeta ispada van
+            vidljivog dela. */}
         {!user && (
-          <div className="pt-12 sm:pt-6 flex flex-row sm:flex-col justify-between items-center sm:items-start gap-4" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
-            <span className="text-[darkBlue] underline text-[22px] sm:text-[18px]">Pogledajte instrukcije za registraciju</span>
+          <div className="pt-12 sm:pt-6 nnb-gutter flex flex-row sm:flex-col justify-between items-center sm:items-start gap-4" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
+            {/* Naglašeno, po zahtevu sa kartice „Kalendar". Ranije je ovo bio
+                  običan `span` koji se nije mogao kliknuti, a boja se nije ni
+                  primenjivala: `text-[darkBlue]` u uglastim zagradama znači
+                  doslovnu CSS vrednost, a `darkBlue` to nije — ispravno je
+                  `text-darkBlue`, jer je definisan u Tailwind konfiguraciji. */}
+            <button
+              type="button"
+              onClick={() => setIsInstructionsOpen(true)}
+              className="text-darkBlue underline underline-offset-4 decoration-2 font-bold text-[22px] sm:text-[18px] hover:opacity-80 transition-opacity text-left"
+            >
+              Pogledajte instrukcije za registraciju
+            </button>
             <Button
               type={'outlined-orange'}
               name={'Postani izlagač'}
@@ -340,28 +360,37 @@ const HomeCalendarSection = () => {
         {/* Legenda */}
         <div className="flex items-center gap-6 mt-2 mb-2 px-4 sm:flex-col sm:items-start sm:gap-3" style={{ width: '100%', maxWidth: '1400px' }}>
           <div className="flex items-center gap-2">
-            <Image src={EventDark} width={100} height={41} alt="Novosadski noćni bazar" />
+            <Image src={OwlNnb} width={44} height={33} alt="Novosadski noćni bazar" />
             <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Novosadski noćni bazar</span>
           </div>
           <div className="flex items-center gap-2">
-            <Image src={EventLight} width={100} height={41} alt="Novosadski noćni bazar — startup" />
+            <Image src={OwlStartup} width={44} height={33} alt="Novosadski noćni bazar — startup" />
             <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Novosadski noćni bazar - startup</span>
           </div>
           <div className="flex items-center gap-2">
-            <Image src={EventOrange} width={100} height={41} alt="Noćni bazar u drugom mestu" />
+            <Image src={OwlDrugoMesto} width={44} height={33} alt="Noćni bazar u drugom mestu" />
             <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Noćni bazar u drugom mestu</span>
           </div>
         </div>
-
-        <UpcommingEvents />
       </div>
+
+      <RegistrationInstructionsModal
+        isOpen={isInstructionsOpen}
+        onOpenChange={setIsInstructionsOpen}
+        onClose={() => setIsInstructionsOpen(false)}
+      />
 
       <EventDetailsModal
         isOpen={isEventModalOpen}
         onClose={closeEventModal}
         event={selectedEvent}
-        showReserveButton={!!user && canApply}
-        reserveLabel="Rezerviši mesto"
+                // Posetilac takođe vidi dugme, samo sa drugim tekstom — po zahtevu sa
+        // kartice „Događaji". Ranije se dugme uopšte nije prikazivalo dok se
+        // korisnik ne prijavi, pa posetilac nije imao odakle da krene.
+        // Sama radnja je već znala da razlikuje slučajeve: posetiocu otvara
+        // prozor za registraciju, izlagaču vodi na rezervaciju.
+        showReserveButton={!user || canApply}
+        reserveLabel={user ? 'Rezerviši mesto' : 'Postani izlagač i rezerviši mesto'}
         onReserve={handleReserve}
       />
 
@@ -393,6 +422,7 @@ const HomeCalendarSection = () => {
         isOpen={isReserveModalOpen}
         onClose={() => { setIsReserveModalOpen(false); resetReservationState() }}
         electricityOption={electricityOption}
+          electricityOptions={electricityOptionsOf(selectedEvent)}
         setElectricityOption={setElectricityOption}
         marketingOption={marketingOption}
         setMarketingOption={setMarketingOption}

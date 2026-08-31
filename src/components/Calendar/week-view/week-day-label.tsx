@@ -1,6 +1,7 @@
 import { isToday, format } from "date-fns";
 
 import { cn } from "../../../utils";
+import { formatDanUNedelji } from '@/utils/dateHelpers';
 
 export type WeekDayLabelProps = {
   day: Date;
@@ -12,9 +13,7 @@ export const WeekDayLabel: React.FC<WeekDayLabelProps> = ({ day }) => {
   return (
     <div className="flex-1 min-w-36 flex flex-col items-center">
       <span aria-hidden className="text-md text-[#1B1B1B] capitalize">
-      {day.toLocaleDateString('sr-Latn', {
-                  weekday: 'long'
-              })}
+      {formatDanUNedelji(day)}
       </span>
       <div
         aria-label={day.toDateString()}

@@ -11,12 +11,24 @@ import profileService from '@/services/profileService'
 import activityGroupService from '@/services/activityGroupService'
 
 // ─── Activity grouped select ─────────────────────────────────────────────────
-const ActivitySelect = ({ value, onChange, groups }) => (
+// Izabrano „Nema na spisku". Uz oznaku ide i grupa, jer se stavka nudi na dnu
+// svake grupe posebno — pa se iz same izabrane vrednosti zna gde upisana
+// delatnost pripada, bez dodatnog spiska za grupu.
+const DRUGA_DELATNOST = '__druga__'
+const jeDrugaDelatnost = (vrednost) => String(vrednost || '').startsWith(`${DRUGA_DELATNOST}:`)
+const grupaIzVrednosti = (vrednost) => jeDrugaDelatnost(vrednost) ? String(vrednost).split(':')[1] : null
+
+const ActivitySelect = ({ value, onChange, groups, customName, onCustomNameChange }) => (
+  <>
   <div className="flex items-center justify-between bg-[#ffffff] rounded-full px-5 py-3 gap-3 w-full">
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="flex-1 outline-none border-0 text-sm bg-transparent appearance-none cursor-pointer"
+      // `min-w-0` je uslov, ne ukras: `flex-1` ne može da smanji element ispod
+      // širine njegovog sadržaja dok `min-width` stoji na `auto`. Najduža od 253
+      // delatnosti razvlačila je polje na 1146px, pa je na telefonu ispadalo iz
+      // kartice — vidljivo je ostajalo samo zato što ga predak odseca.
+      className="flex-1 min-w-0 truncate outline-none border-0 text-sm bg-transparent appearance-none cursor-pointer"
       style={{ color: value ? '#261A54' : '#aaa', boxShadow: 'none', border: 'none', padding: 0 }}
     >
       <option value="">Izaberite delatnost</option>
@@ -25,6 +37,7 @@ const ActivitySelect = ({ value, onChange, groups }) => (
           {(group.activities || []).map(a => (
             <option key={a.id} value={String(a.id)}>{a.name}</option>
           ))}
+          <option value={`${DRUGA_DELATNOST}:${group.id}`}>Nema na spisku — upišite svoju</option>
         </optgroup>
       ))}
     </select>
@@ -32,6 +45,28 @@ const ActivitySelect = ({ value, onChange, groups }) => (
       <polyline points="6 9 12 15 18 9"/>
     </svg>
   </div>
+  {jeDrugaDelatnost(value) && (
+    <input
+      type="text"
+      value={customName}
+      onChange={e => onCustomNameChange(e.target.value)}
+      placeholder="Upišite delatnost"
+      maxLength={255}
+      className="w-full bg-[#ffffff] rounded-full px-5 py-3 text-sm outline-none border-0 text-[#261A54]"
+      style={{ boxShadow: 'none' }}
+    />
+  )}
+  </>
+)
+
+// Puna olovka, kakva stoji u dizajnu (`Profil-izmena.png`) — nagnuta, sa
+// odvojenim vrhom gore desno i zašiljenim krajem dole levo. Ranije je ovde bila
+// obrisna „olovka u kvadratu", što je drugi znak.
+const PunaOlovka = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M3.2 20.8 4.6 15.6 15.1 5.1 18.9 8.9 8.4 19.4z" />
+    <path d="M20.2 7.6 16.4 3.8l1.5-1.5a2.2 2.2 0 0 1 3.1 0l0.7 0.7a2.2 2.2 0 0 1 0 3.1z" />
+  </svg>
 )
 
 // ─── Inline editable field ────────────────────────────────────────────────────
@@ -40,7 +75,7 @@ const EditableField = ({ value, onChange, placeholder, type = 'text', readOnly =
   const [fieldError, setFieldError] = useState(null)
   const inputRef = useRef(null)
 
-  const handlePencilClick = () => {
+  const pocniIzmenu = () => {
     if (readOnly) return
     setEditing(true)
     setTimeout(() => inputRef.current?.focus(), 0)
@@ -60,7 +95,21 @@ const EditableField = ({ value, onChange, placeholder, type = 'text', readOnly =
 
   return (
     <div className="flex flex-col gap-1 w-full">
-      <div className="flex items-center justify-between bg-[#ffffff] rounded-full px-5 py-3 gap-3 w-full">
+      {/* Izmena počinje klikom bilo gde po polju, ne samo na olovku. Olovka
+          ostaje kao znak da je polje izmenljivo, ali više nije jedina meta —
+          pogotovo što je 16px široka, pa je na dodir bilo teško pogoditi.
+          Polja koja se ne menjaju (email, lozinka) ostaju bez ikakvog odziva. */}
+      <div
+        className={`flex items-center justify-between bg-[#ffffff] rounded-full px-5 py-3 gap-3 w-full ${readOnly ? '' : 'cursor-text'}`}
+        onClick={pocniIzmenu}
+        {...(readOnly || editing ? {} : {
+          role: 'button',
+          tabIndex: 0,
+          onKeyDown: (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pocniIzmenu() }
+          },
+        })}
+      >
         {editing ? (
           <input
             ref={inputRef}
@@ -77,18 +126,14 @@ const EditableField = ({ value, onChange, placeholder, type = 'text', readOnly =
             {(displayValue ?? value) || placeholder}
           </span>
         )}
-        <button
-          type="button"
-          onClick={handlePencilClick}
-          disabled={readOnly}
-          className={`flex-shrink-0 transition ${readOnly ? 'text-[#261A54] opacity-20 cursor-default' : 'text-[#261A54] opacity-60 hover:opacity-100 cursor-pointer'}`}
-          aria-label="Izmeni"
+        {/* Znak, ne dugme — klik hvata celo polje iznad, pa bi zasebno dugme
+            samo udvostručilo isti posao i zbunilo čitače ekrana. */}
+        <span
+          aria-hidden="true"
+          className={`flex-shrink-0 ${readOnly ? 'text-[#261A54] opacity-20' : 'text-[#261A54] opacity-60'}`}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-        </button>
+          <PunaOlovka />
+        </span>
       </div>
       {fieldError && (
         <p className="text-xs pl-5" style={{ color: '#EC4923' }}>{fieldError}</p>
@@ -115,7 +160,7 @@ const DatePickerField = ({ value, onChange, placeholder }) => {
     onChange(d ? format(d, 'dd.MM.yyyy') : iso)
   }
 
-  const handlePencilClick = () => {
+  const otvoriKalendar = () => {
     if (inputRef.current?.showPicker) {
       inputRef.current.showPicker()
     } else {
@@ -125,8 +170,13 @@ const DatePickerField = ({ value, onChange, placeholder }) => {
 
   return (
     <div
-      className="flex items-center justify-between bg-[#ffffff] rounded-full px-5 py-3 gap-3 w-full"
+      className="flex items-center justify-between bg-[#ffffff] rounded-full px-5 py-3 gap-3 w-full cursor-pointer"
       style={{ position: 'relative' }}
+      onClick={otvoriKalendar}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); otvoriKalendar() } }}
+      aria-label="Izmeni datum rođenja"
     >
       <span className={`flex-1 text-sm ${value ? 'text-[#261A54]' : 'text-[#aaa]'}`}>
         {value || placeholder}
@@ -149,17 +199,9 @@ const DatePickerField = ({ value, onChange, placeholder }) => {
         tabIndex={-1}
         aria-hidden="true"
       />
-      <button
-        type="button"
-        onClick={handlePencilClick}
-        className="flex-shrink-0 transition text-[#261A54] opacity-60 hover:opacity-100 cursor-pointer"
-        aria-label="Izmeni datum rođenja"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-        </svg>
-      </button>
+      <span aria-hidden="true" className="flex-shrink-0 text-[#261A54] opacity-60">
+        <PunaOlovka />
+      </span>
     </div>
   )
 }
@@ -292,6 +334,7 @@ const ProfileEdit = () => {
   )
   const [activityId, setActivityId] = useState(String(user?.activity_id || user?.activity?.id || ''))
   const [activityGroups, setActivityGroups] = useState([])
+  const [customActivityName, setCustomActivityName] = useState('')
 
   // Podaci o pravnom licu / gazdinstvu
   // entityType: 'legal' | 'agricultural' | null (null = ni jedno nije selektovano)
@@ -375,6 +418,8 @@ const ProfileEdit = () => {
   // Naziv trenutno izabrane delatnosti (za hero prikaz)
   const currentActivityName = (() => {
     if (!activityId) return user?.activity?.name || user?.activity_group?.name || ''
+    // Upisane delatnosti još nema u spisku, pa je pretraga ispod ne bi našla.
+    if (jeDrugaDelatnost(activityId)) return customActivityName.trim() || user?.activity?.name || ''
     for (const group of activityGroups) {
       const found = (group.activities || []).find(a => String(a.id) === String(activityId))
       if (found) return found.name
@@ -433,7 +478,18 @@ const ProfileEdit = () => {
       if (phone !== (user?.phone_number || '')) payload.phone_number = phone
       if (address !== (user?.address || '')) payload.address = address
       const origActivityId = String(user?.activity_id || user?.activity?.id || '')
-      if (activityId !== origActivityId) payload.activity_id = activityId ? Number(activityId) : null
+      if (jeDrugaDelatnost(activityId)) {
+        // Upisana delatnost: šalje se ime i grupa, a `activity_id` izostaje —
+        // backend je pronađe ili napravi i sam upiše vezu. Prazan upis se
+        // preskače, da čuvanje ne obriše postojeću delatnost.
+        const upisano = customActivityName.trim()
+        if (upisano) {
+          payload.activity_name = upisano
+          payload.activity_group_id = Number(grupaIzVrednosti(activityId))
+        }
+      } else if (activityId !== origActivityId) {
+        payload.activity_id = activityId ? Number(activityId) : null
+      }
       const origEntityType = user?.legal_entity ? (user.legal_entity.entity_type || 'legal') : null
       if (entityType === 'legal') {
         // is_legal_entity se šalje samo kada se tip promenio; inače backend
@@ -673,8 +729,15 @@ const ProfileEdit = () => {
             />
             <ActivitySelect
               value={activityId}
-              onChange={setActivityId}
+              onChange={(v) => {
+                setActivityId(v)
+                // Povratak na delatnost sa spiska briše ono što je upisano, da
+                // ne otputuje uz čuvanje posle predomišljanja.
+                if (!jeDrugaDelatnost(v)) setCustomActivityName('')
+              }}
               groups={activityGroups}
+              customName={customActivityName}
+              onCustomNameChange={setCustomActivityName}
             />
             <EditableField
               value={user?.email || ''}
@@ -733,8 +796,14 @@ const ProfileEdit = () => {
             />
           </Section>
 
-          {/* Podaci o pravnom licu */}
-          <Section title="Podaci o pravnom licu">
+          {/* Podaci o pravnom licu / gazdinstvu
+
+              Naslov prati štiklirano polje, isto kao na pregledu profila
+              (`accountData.js`). Ranije je ovde stajalo zakucano „Podaci o
+              pravnom licu", pa je gazdinstvu naslov protivrečio poljima ispod
+              njega — pisalo je „pravno lice", a tražili se naziv, adresa i broj
+              gazdinstva. */}
+          <Section title={entityType === 'agricultural' ? 'Podaci o poljoprivrednom gazdinstvu' : 'Podaci o pravnom licu'}>
             {/* Tip entiteta — mutually exclusive checkboxes */}
             <label
               className="flex items-center gap-3 cursor-pointer"

@@ -20,12 +20,13 @@ const NotFoundPage = () => {
       }}
     >
       {/* Logo */}
-      <div style={{ paddingTop: '48px', paddingBottom: '0' }}>
+      {/* Logo je na izvozu 264 × 74, na 76 od vrha — dakle 257 ovde. */}
+      <div style={{ paddingTop: '74px', paddingBottom: '0' }}>
         <Image
           src="/logo-light.svg"
           alt="Novosadski noćni bazar"
-          width={220}
-          height={70}
+          width={257}
+          height={72}
           priority
         />
       </div>
@@ -41,7 +42,9 @@ const NotFoundPage = () => {
           flex: 1,
           width: '100%',
           maxWidth: '1400px',
-          padding: '40px 80px',
+          // Bez bočnog razmaka: u dizajnu tekst kreće tačno od leve ivice
+          // kolone sadržaja (238 na okviru od 1920), a ne 80px unutar nje.
+          padding: '40px 0',
           gap: '40px',
         }}
       >
@@ -50,7 +53,7 @@ const NotFoundPage = () => {
           <h1
             className="error-page-title"
             style={{
-              fontSize: '48px',
+              fontSize: '44px',
               fontWeight: '800',
               color: '#ffffff',
               lineHeight: '1.2',
@@ -63,9 +66,9 @@ const NotFoundPage = () => {
           <p
             className="error-page-desc"
             style={{
-              fontSize: '18px',
+              fontSize: '20px',
               fontWeight: '400',
-              color: 'rgba(255,255,255,0.75)',
+              color: 'rgba(255,255,255,0.85)',
               lineHeight: '1.6',
               margin: 0,
             }}
@@ -82,9 +85,10 @@ const NotFoundPage = () => {
               marginTop: '12px',
               background: '#EC4923',
               color: '#ffffff',
-              borderRadius: '30px',
-              padding: '16px 40px',
-              fontSize: '17px',
+              borderRadius: '29px',
+              width: '384px',
+              height: '57px',
+              fontSize: '18px',
               fontWeight: '600',
               border: 'none',
               cursor: 'pointer',
@@ -95,12 +99,14 @@ const NotFoundPage = () => {
         </div>
 
         {/* Right — owls illustration */}
-        <div className="error-page-owls" style={{ flex: '1 1 auto', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        {/* Sove se u dizajnu prelivaju preko desne ivice kolone, sve do ivice
+            ekrana. `overflow: visible` na roditelju to dozvoljava. */}
+        <div className="error-page-owls" style={{ flex: '1 1 auto', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginRight: '-20px' }}>
           <Image
             src="/owls.svg"
             alt="Sove noćnog bazara"
-            width={680}
-            height={412}
+            width={845}
+            height={585}
             priority
             style={{ maxWidth: '100%', height: 'auto' }}
           />

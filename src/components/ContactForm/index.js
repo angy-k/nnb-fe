@@ -6,8 +6,8 @@ import DefaultImage from "./assets/default-contact-form-image.png"
 import ContactFormLogo from "../Logo/ContactFormLogo";
 import { validateContact } from '@/validations/contact';
 import { ErrorMessage, Form, Formik } from 'formik';
-import Link from 'next/link';
 import { CONSENT_CONTACT } from '@/utils/consentTexts';
+import LegalDocsModal from '@/components/Modal/LegalDocsModal';
 import MainTextAreaInput from '../Commons/MainTextAreaInput';
 import MainTextInput from '../Commons/MainTextInput';
 import ReCAPTCHA from 'react-google-recaptcha'
@@ -32,6 +32,7 @@ const ContactForm = ({
   const [errors, setErrors] = useState([])
   const [formSuccess, setFormSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const { user } = useUser();
   const recaptchaRef = useRef();
 
@@ -39,6 +40,12 @@ const ContactForm = ({
     if (isLoading) return
 
     values.recaptcha_token = await recaptchaRef.current?.getValue()
+
+    // Bez unetog naslova poruka bi stigla bez konteksta — koristi se predlog
+    // stranice sa koje je poslata („Želim da sarađujem sa vama" i slično).
+    if (!String(values.title ?? '').trim()) {
+      values.title = predefinedTitle
+    }
     setIsLoading(true)
     setFormSuccess('')
     setErrors([])
@@ -69,8 +76,12 @@ const ContactForm = ({
   }
 
   return (
-    <div className="w-full contact-section grid place-items-center pt-24 mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto">
-      {sectionTitle && <span className="contact-section-title block w-full" style={sectionTitleColor ? { color: sectionTitleColor } : undefined}>{sectionTitle}</span>}
+    // `pt-24` i `mt-24` na kartici daju zajedno oko 190px praznine, što je na
+    // telefonu skoro pola ekrana pre nego što se forma pojavi.
+    <div className="w-full contact-section grid place-items-center pt-24 sm:pt-8 mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto">
+      {/* `nnb-gutter` — naslov sekcije je dodirivao levu ivicu na svakoj širini
+          ispod 1400px, dok polja forme ispod imaju odmak. */}
+      {sectionTitle && <span className="contact-section-title block w-full nnb-gutter" style={sectionTitleColor ? { color: sectionTitleColor } : undefined}>{sectionTitle}</span>}
       {sectionTitle && !hideDivider && <Divider className="section-divider w-1440"/>}
       {sectionLead && (
         <p className="contact-section-lead" style={sectionTitleColor ? { color: sectionTitleColor } : undefined}>
@@ -78,7 +89,7 @@ const ContactForm = ({
         </p>
       )}
       <div
-        className={`flex flex-col-reverse lg:flex-row ${withImage ? '' : 'place-items-center'} justify-center gap-1 ${withImage ? 'sm:gap-24 md:gap-[24px] lg:gap-[24px]' : 'sm:gap-4 md:gap-60 lg:gap-60 sm:py-8 sm:px-4 py-20 px-20 md:px-40'} lg:w-1440 contact-from bg-[#ffffff] mt-24 2xl:max-w-screen-2xl 2xl:mx-auto rounded-3xl overflow-hidden`}
+        className={`flex flex-col-reverse lg:flex-row ${withImage ? '' : 'place-items-center'} justify-center gap-1 ${withImage ? 'sm:gap-24 md:gap-[24px] lg:gap-[24px]' : 'sm:gap-4 md:gap-16 lg:gap-60 sm:py-8 sm:px-4 py-20 px-20 md:px-10 md:py-12'} w-full lg:max-w-[1440px] contact-from bg-[#ffffff] mt-24 sm:mt-6 2xl:max-w-screen-2xl 2xl:mx-auto rounded-3xl overflow-hidden`}
       >
         {withImage ? (
           <div className="relative w-full min-h-[300px] lg:min-h-0 lg:self-stretch lg:w-[45%] flex-shrink-0 overflow-hidden rounded-b-3xl lg:rounded-b-none lg:rounded-l-3xl sm:hidden">
@@ -95,7 +106,9 @@ const ContactForm = ({
         <div className={`w-[100%] ${withImage ? 'sm:p-5 p-[48px]' : 'p-0'}`}>
           <Formik
             initialValues={{
-              title: predefinedTitle,
+              // Prazno kao na dizajnu; ako korisnik ne upiše naslov, pri slanju
+              // se koristi predlog vezan za stranicu sa koje je forma poslata.
+              title: '',
               email: '',
               firstName: '',
               lastName: '',
@@ -157,13 +170,17 @@ const ContactForm = ({
                     />
                   </div>
                   <div>
+                    {/* Po dizajnu obično tekstualno polje, isto kao Adresa pored njega.
+                        Bilo je zaključano, pa korisnik nije mogao da napiše naslov.
+                        Ostaje prazno; predloženi naslov stoji kao placeholder i
+                        koristi se ako ga korisnik ne izmeni. */}
                     <MainTextInput
                       error={errors.title}
                       setErrors={setErrors}
                       label="Naslov"
                       name="title"
                       type="text"
-                      disabled={true}
+                      placeholder={predefinedTitle}
                     />
                   </div>
                 </div>
@@ -206,14 +223,21 @@ const ContactForm = ({
                     />
                     <span className="leading-snug">
                       {CONSENT_CONTACT.before}
-                      <Link
-                        href="/politika-privatnosti"
-                        target="_blank"
-                        className="underline text-[#56C4CF]"
-                        onClick={(e) => e.stopPropagation()}
+                      {/* Modal umesto nove stranice — korisnik ne napušta formu
+                          koju je već počeo da popunjava. `preventDefault` je tu
+                          jer je dugme unutar `label`, pa bi klik inače čekirao
+                          saglasnost, a `stopPropagation` da se ne prosledi dalje. */}
+                      <button
+                        type="button"
+                        className="underline text-[#56C4CF] hover:opacity-80 transition-opacity"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setIsPrivacyOpen(true)
+                        }}
                       >
                         {CONSENT_CONTACT.linkLabel}
-                      </Link>
+                      </button>
                       {CONSENT_CONTACT.after}
                     </span>
                   </label>
@@ -242,6 +266,15 @@ const ContactForm = ({
           </Formik>
         </div>
       </div>
+
+      {/* `onOpenChange` je dovoljan za kontrolisani modal — isto tako ga koristi
+          i prijava na događaj. */}
+      <LegalDocsModal
+        isOpen={isPrivacyOpen}
+        onOpenChange={setIsPrivacyOpen}
+        sections={['privacy']}
+        acceptLabel="Zatvori"
+      />
     </div>
   )
 }

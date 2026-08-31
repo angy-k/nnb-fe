@@ -61,7 +61,12 @@ const EventDetailsModal = ({
       classNames={{
         backdrop: 'nnb-modal-backdrop',
         wrapper: 'nnb-modal-wrapper items-center justify-center',
-        base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[860px]',
+        // Modal je u dizajnu 1273 × 851 na okviru od 1920 — dakle 66% širine
+        // okvira i odnos 1,50. Visina se ovde ne zadaje: prati je kvadratni
+        // vizual sa uvlačenjem, pa odnos ispada sam od sebe.
+        // `bg-white` bez uzvičnika ne prolazi — NextUI svojoj `bg-content1`
+        // postavlja #F0F0F0, a leva strana je u dizajnu čisto bela.
+        base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[955px] !bg-white',
         body: 'p-0',
       }}
     >
@@ -70,30 +75,49 @@ const EventDetailsModal = ({
           <ModalBody className="p-0">
             <div className="flex flex-row sm:flex-col">
 
-              {/* Leva strana — cover slika */}
-              <div className="w-1/2 sm:w-full relative overflow-hidden bg-[#261A54] flex-shrink-0 min-h-[420px] sm:min-h-[200px]">
-                {event?.coverImage ? (
-                  <img
-                    src={event.coverImage}
-                    alt={title}
-                    className="w-full h-full object-cover absolute inset-0"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-[#261A54] flex items-end justify-center pb-0">
+              {/* Leva strana — kvadratni vizual događaja na beloj podlozi.
+
+                  Mereno sa izvoza Figme (okvir 1920): modal je 1273 × 851, a
+                  vizual kvadrat 716 × 716 uvučen 61px sa leve strane i 68px
+                  odozgo — dakle 56,2% i 4,8% širine modala. Procenti u padding-u
+                  se računaju od širine reditelja, a to je ovde ceo modal, pa
+                  jedna vrednost drži i uvlačenje i veličinu.
+
+                  Ranije je ovde stajala tamnoljubičasta ploha preko cele visine
+                  sa slikom u `object-cover` — dakle druga zamisao, a vizual nije
+                  bio kvadratan. */}
+              <div
+                className="w-[61%] sm:w-full flex-shrink-0 flex items-center justify-center pl-[4.8%] pt-[5.3%] pb-[5.3%] pr-0 sm:p-5"
+                style={{ backgroundColor: '#ffffff' }}
+              >
+                <div className="w-full aspect-square rounded-[30px] overflow-hidden bg-[#261A54] flex items-center justify-center">
+                  {event?.coverImage ? (
+                    <img
+                      src={event.coverImage}
+                      alt={title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
                     <Image
                       src={ExhibitorIcon}
                       width={220}
                       height={251}
                       alt="Izlagač"
+                      className="w-[42%] h-auto"
                     />
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               {/* Desna strana — sadržaj */}
+              {/* Desna strana — sadržaj.
+
+                  U dizajnu naslov, opis i dugme stoje kao jedna grupa po sredini
+                  visine, a ne razmaknuti na vrh i dno. Odmak sa strane je 78px
+                  na modalu od 1273, dakle 6,1%. */}
               <div
-                className="w-1/2 sm:w-full relative flex flex-col justify-between p-8 sm:p-5"
-                style={{ background: 'linear-gradient(to bottom, #ffffff 60%, #dff4f5 100%)' }}
+                className="w-[39%] sm:w-full relative flex flex-col justify-center gap-[67px] px-[6.1%] py-8 sm:gap-4 sm:p-5"
+                style={{ background: 'linear-gradient(to bottom, #ffffff 40%, #dbf2f5 100%)' }}
               >
                 {/* X close */}
                 <button
@@ -106,7 +130,14 @@ const EventDetailsModal = ({
                 </button>
 
                 {/* Tekst */}
-                <div className="flex flex-col gap-4 pr-8 sm:pr-0 sm:pt-9">
+                {/* Razmaci su iz dizajna: naslov → opis 63px i opis → dugme 89px
+                    na modalu od 1273. Naš modal je 955, dakle 0,75 od toga —
+                    otuda 47 i 67 piksela.
+
+                    Procenti ovde ne rade: razmak u koloni se računa od visine
+                    panela, a nju određuje susedna kolona, pa nema unapred poznatu
+                    vrednost i pravilo tiho ispadne nula. */}
+                <div className="flex flex-col gap-[47px] sm:gap-4 sm:pt-9">
                   <h2 className="text-[#261A54] font-bold leading-snug" style={{ fontSize: '20px' }}>
                     {title}
                   </h2>
@@ -120,7 +151,7 @@ const EventDetailsModal = ({
 
                 {/* Dugme */}
                 {showReserveButton && (
-                  <div className="mt-8 sm:mt-4">
+                  <div className="sm:mt-4">
                     <button
                       type="button"
                       onClick={() => onReserve?.()}

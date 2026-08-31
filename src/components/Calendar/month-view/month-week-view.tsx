@@ -78,20 +78,36 @@ export const MonthWeekView: React.FC<MonthWeekViewProps> = ({
 
           const hasEvents = dayEvents.length > 0;
 
+          // Visina ćelije je merena sa izvoza stranice Kalendar iz Figme, 1:1 na
+          // okviru od 1920: mreža ide od x 240 do 1675 sa uspravnim linijama na
+          // svakih 205px, a vodoravne su na 961, 1080, 1199, 1319, 1438, 1557 i
+          // 1677 — dakle red je visok 119px pri praznom mesecu.
+          //
+          // Kalendar na sajtu je širok 1400px, što je 0,976 od dizajnovih 1435,
+          // pa red ispada 116px.
+          //
+          // Ovo je donja granica, ne gornja: dan sa bedževima i dalje razvlači
+          // ceo red, kao i u dizajnu, gde red sa sovama naraste na oko 150px.
+          //
+          // Ranije je ovde stajalo 168px, pa 144px — ta druga vrednost je bila
+          // očitana sa druge table u Figmi, koja prikazuje mesec sa bedževima,
+          // pa je merila već razvučen red umesto praznog.
           return (
             <div
               key={"day-label-" + dayKey}
-              className="flex-1 min-w-0 flex flex-col overflow-hidden [&:not(:last-child)]:border-r border-b text-[#B0B0B0] cursor-pointer hover:bg-black/5 transition-colors sm:min-h-[64px]"
+              className="flex-1 min-w-0 flex flex-col overflow-hidden [&:not(:last-child)]:border-r border-b text-[#B0B0B0] cursor-pointer hover:bg-black/5 transition-colors min-h-[116px] sm:min-h-[64px]"
               onClick={() => onDayClick?.(day)}
             >
-              {/* Datum u gornjem levom uglu, bedževi desno od njega — isto na desktopu i mobilnom */}
-              <div className="flex items-start gap-1.5 p-1.5 sm:gap-1 sm:p-1">
-                <h2 className={cn(dayLabelVariants({ variant }))}>
+              {/* Po dizajnu: datum u gornjem levom uglu, bedževi pri donjoj desnoj
+                  ivici ćelije. Ranije su stajali desno od broja, u istom redu, pa
+                  su se kod dva događaja gurali u stranu. */}
+              <div className="flex flex-col h-full gap-1 p-1.5 pb-[18px] sm:p-1 sm:pb-2">
+                <h2 className={cn(dayLabelVariants({ variant }), "self-start")}>
                   {format(day, "d")}
                 </h2>
 
                 {hasEvents && (
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 flex items-end justify-end">
                     <MonthDayView
                       day={day}
                       events={dayEvents}

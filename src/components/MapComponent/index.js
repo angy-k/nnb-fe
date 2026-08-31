@@ -33,7 +33,9 @@ const MapComponent = ({
         </div>
         <div className='w-full grid place-items-center bg-[#f0f0f0]'>
           <div style={{width: '100%', maxWidth: '1400px'}}>
-            <div className="pl-64" style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifySelf: 'self-start'}}>
+            {/* `pl-64` je 256px — na telefonu širem od samog ekrana, pa je red
+                sa adresom gurao stranicu 30px preko desne ivice. */}
+            <div className="pl-64 sm:pl-4 md:pl-10" style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifySelf: 'self-start'}}>
               <Image
                 src={locationIcon}
                 width={39}
@@ -47,7 +49,8 @@ const MapComponent = ({
           </div>
         </div>
         <div className='w-full bg-[#f0f0f0]'>
-          <div className="pl-48" style={{maxWidth: '1400px'}}>
+          {/* Isto i ovde — `pl-48` je 192px, previše za uži ekran. */}
+          <div className="pl-48 sm:pl-4 md:pl-10" style={{maxWidth: '1400px'}}>
             <div className='bg-[#ffffff] p-[30px] w-[228px]'>
               <span className='font-normal font-[36px] text-[#261A54] pb-[30px]'>{`Legenda`}</span>
               <div style={{display: 'flex', flexDirection: 'row', gap: '20px'}}>

@@ -33,6 +33,37 @@ const submitApplication = async ({
   )
 }
 
+/**
+ * Predračun za izabrane opcije — backend vraća stavke koje će i naplatiti.
+ *
+ * Ne pravi prijavu. Postoji da bi se iznos u potvrdi uzimao iz istog izvora kao
+ * i onaj koji se upisuje; ranije je frontend sam sabirao cene iz `/pricing`, pa
+ * su se prikaz i naplata mogli razići.
+ */
+const quoteApplication = async ({
+  eventId,
+  electricityOption = 'none',
+  marketingOption = 'none',
+  standNumber = null,
+  eventDayIds = null,
+}) => {
+  const payload = {
+    event_id: eventId,
+    electricity_option: electricityOption,
+    marketing_option: marketingOption,
+  }
+
+  if (standNumber != null) {
+    payload.stand_number = standNumber
+  }
+
+  if (Array.isArray(eventDayIds) && eventDayIds.length > 0) {
+    payload.event_day_ids = eventDayIds
+  }
+
+  return post('/api/v1/applications/quote', payload)
+}
+
 const getMyApplications = async ({ active = true, past = false, page = 1, perPage = 5 } = {}) => {
   return get('/api/v1/applications', {
     queryParams: { active: active ? 1 : 0, past: past ? 1 : 0, page, per_page: perPage },
@@ -47,6 +78,7 @@ const cancelApplication = (id, body = {}) => post(
 
 export default {
   submitApplication,
+  quoteApplication,
   getMyApplications,
   cancelApplication,
 }

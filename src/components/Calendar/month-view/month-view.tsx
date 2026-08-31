@@ -13,6 +13,7 @@ import {
 import { createMonthGroups } from "./group-events";
 
 import { Event } from "../types";
+import { formatDanUNedelji } from '@/utils/dateHelpers';
 
 type MonthViewProps = {
   date: Date;
@@ -41,8 +42,11 @@ export const MonthView: React.FC<MonthViewProps> = ({ date, events = [], onEvent
 
   const groups = createMonthGroups(events, weeks);
 
+  // Visinu određuju same ćelije, koje moraju da prime datum i dva bedža od 53px.
+  // Ranije je stajalo `min-h-[800px] max-h-[888px]` — gornja granica bi odsekla
+  // drugi bedž u danima sa dva događaja.
   return (
-    <section id="calendar-month-view" className="flex-1 flex flex-col min-h-[800px] max-h-[888px] sm:min-h-0 sm:max-h-none">
+    <section id="calendar-month-view" className="flex-1 flex flex-col sm:min-h-0">
       <div className="w-full flex">
         {days.map((day) => (
           <div
@@ -51,10 +55,10 @@ export const MonthView: React.FC<MonthViewProps> = ({ date, events = [], onEvent
           >
             <span className="mt-2 text-sm font-normal text-[#1B1B1B] capitalize sm:text-[11px] sm:mt-1">
               <span className="sm:hidden">
-                {day.toLocaleDateString('sr-Latn', { weekday: 'long' })}
+                {formatDanUNedelji(day)}
               </span>
               <span className="hidden sm:inline">
-                {day.toLocaleDateString('sr-Latn', { weekday: 'short' })}
+                {formatDanUNedelji(day, true)}
               </span>
             </span>
           </div>

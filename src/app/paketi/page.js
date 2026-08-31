@@ -162,7 +162,13 @@ const PaketiHero = () => (
   <div style={{
     position: 'relative',
     width: '100%',
-    minHeight: '520px',
+    // U dizajnu je hero 1080px na okviru od 1920 — dakle 56,25% širine. Ranije
+    // je ovde stajalo fiksnih 520px, pa je na 1440 bio niži za skoro 300px i
+    // fotografija je ispadala pliće isečena nego u dizajnu.
+    //
+    // Donja granica od 520px čuva zatečeno ponašanje na uskim ekranima, gde bi
+    // 56% širine dalo hero previše nizak za logo, naslov i uvodni tekst.
+    minHeight: 'max(520px, 56.25vw)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

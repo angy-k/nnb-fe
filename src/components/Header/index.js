@@ -138,7 +138,7 @@ const Header = ({bgColor = '#261A54'}) => {
           {user ? (
             <>
               <button
-                className="button-outlined-orange flex items-center gap-2"
+                className="button-outlined-orange header-reserve-btn flex items-center"
                 onClick={() => {
                   const { ok } = checkProfileReady(user)
                   if (!ok) {
@@ -232,7 +232,7 @@ const Header = ({bgColor = '#261A54'}) => {
                       base: 'data-[hover=true]:bg-transparent',
                       title: 'text-[#EC4923]/70 data-[hover=true]:text-[#EC4923] transition-colors',
                     }}
-                  >Logout</DropdownItem>
+                  >Odjavi se</DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             </>

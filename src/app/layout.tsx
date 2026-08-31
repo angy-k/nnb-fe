@@ -6,6 +6,7 @@ import GoogleAnalytics from '@/components/GoogleAnalytics/GoogleAnalytics'
 import Providers from './providers'
 import WelcomeModal from '@/components/WelcomeModal'
 import ProfileCompletionModal from '@/components/ProfileCompletionModal'
+import BackToTop from '@/components/BackToTop'
 
 // const opensans = OpenSans({ subsets: ['latin'] })
 
@@ -62,6 +63,7 @@ export default function RootLayout({
           </ConditionalChrome>
           <WelcomeModal />
           <ProfileCompletionModal />
+          <BackToTop />
         </Providers>
         
       </body>

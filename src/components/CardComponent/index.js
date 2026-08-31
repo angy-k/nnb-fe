@@ -8,6 +8,10 @@ const CardComponent = ({
   imageSrc = DefaultImage,
   imageWidth = 438,
   imageHeight = 344,
+  // Kvadratni vizual — koristi se na karticama događaja (format 1080×1080)
+  imageSquare = false,
+  // Prigušen vizual — prošli događaji, da se na prvi pogled razlikuju od aktuelnih
+  imageGrey = false,
   imageRadius = '30px',
   imageAltText = 'Card component image alt text',
   sectionType,
@@ -16,6 +20,10 @@ const CardComponent = ({
   title,
   subtitle,
   description,
+  // Kad kartici treba opis koji je više od običnog teksta — na primer skraćen
+  // na tri reda sa dugmetom „Pročitaj više" u sekciji tima — prosleđuje se
+  // gotov element umesto niske. Ostale kartice i dalje šalju običan `description`.
+  descriptionSlot = null,
   buttonText = 'Detaljnije',
   buttonIcon,
   buttonIconSize,
@@ -46,6 +54,8 @@ const CardComponent = ({
         imageSrc={imageSrc}
         width={imageWidth}
         height={imageHeight}
+        square={imageSquare}
+        isGrey={imageGrey}
         radius={imageRadius}
         altText={imageAltText}
       />
@@ -55,7 +65,9 @@ const CardComponent = ({
       </>
       {title && <span className={author ? "card-component-title-blog mb-30" : "card-component-title"}>{title}</span>}
       {subtitle && <span style={sectionType === 'our-team' ? {color: '#1B1B1B', fontWeight: '400', fontSize: '17'} : {}}>{subtitle}</span>}
-      {description && <span style={sectionType === 'our-team' ? {color: '#616161', fontWeight: '400', fontSize: '17'} : {}}>{description}</span>}
+      {descriptionSlot
+        ? descriptionSlot
+        : description && <span style={sectionType === 'our-team' ? {color: '#616161', fontWeight: '400', fontSize: '17'} : {}}>{description}</span>}
       {buttonAction && <Button
         key={`card-component-button-${sectionType}`}
         type={buttonIcon ? 'outlined-icon' : 'outlined-dark'}

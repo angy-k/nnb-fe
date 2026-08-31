@@ -110,7 +110,9 @@ const resetPassword = ({ ...props }) => {
 }
 
 const verifyEmail = (id, hash) => {
-  return get(`/verify-email/${id}/${hash}`)
+  // Jednokratna radnja — odgovor se ne sme keširati, inače bi ponovni pokušaj
+  // vratio ranije zapamćen ishod umesto da stvarno potvrdi adresu.
+  return get(`/verify-email/${id}/${hash}`, { cache: 'no-store' })
 }
 
 export default {

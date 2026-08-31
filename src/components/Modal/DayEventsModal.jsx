@@ -3,6 +3,7 @@
 import { Modal, ModalContent, ModalBody } from '@nextui-org/modal'
 import { isSameDay, endOfDay, isWithinInterval, parse } from 'date-fns'
 import { startOfToday } from 'date-fns'
+import { formatPunDatum, formatDate } from '@/utils/dateHelpers'
 
 // ── Styled event title: "68. noćni bazar u Novom Sadu" ────────────────────────
 const StyledEventTitle = ({ title = '' }) => {
@@ -10,17 +11,17 @@ const StyledEventTitle = ({ title = '' }) => {
   if (match) {
     const [, num, nocni, bazar, rest] = match
     return (
-      <span style={{ fontSize: '20px', lineHeight: '1.2' }}>
+      <span style={{ fontSize: '35px', lineHeight: '1.2' }}>
         <span style={{ color: '#ffffff', fontWeight: '700' }}>{num}</span>
         <span style={{ color: '#56C4CF', fontWeight: '700' }}>{nocni}</span>
         <span style={{ color: '#EC4923', fontWeight: '700' }}>{bazar}</span>
-        <span style={{ color: '#ffffff', fontFamily: "'MADE GoodTime Script', cursive", fontWeight: '400', fontSize: '22px' }}>
+        <span style={{ color: '#ffffff', fontFamily: "'MADE GoodTime Script', cursive", fontWeight: '400', fontSize: '39px' }}>
           {rest}
         </span>
       </span>
     )
   }
-  return <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '20px' }}>{title}</span>
+  return <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '35px' }}>{title}</span>
 }
 
 // ── DayEventsModal ─────────────────────────────────────────────────────────────
@@ -37,12 +38,7 @@ const DayEventsModal = ({
 }) => {
   if (!date) return null
 
-  const formattedDate = date.toLocaleDateString('sr-Latn', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+  const formattedDate = formatPunDatum(date)
 
   const dayEvents = events.filter((ev) => isSameDay(ev.start_date, date))
   const today = startOfToday()
@@ -89,7 +85,7 @@ const DayEventsModal = ({
       classNames={{
         backdrop: 'nnb-modal-backdrop',
         wrapper: 'nnb-modal-wrapper items-center justify-center',
-        base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[700px]',
+        base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[1400px]',
         body: 'p-0',
       }}
     >
@@ -99,26 +95,32 @@ const DayEventsModal = ({
       >
         {(modalOnClose) => (
           <ModalBody className="p-0">
-            <div className="relative px-10 pt-10 pb-12 sm:px-5 sm:pt-7 sm:pb-8">
+            {/* Razmaci sa izvoza dizajna: redovi su 1288 široki u modalu od 1440,
+                  dakle 76 sa svake strane (74 ovde), naslov kreće 67 od vrha, a
+                  ispod poslednjeg reda ostaje 148 praznine. */}
+              <div className="relative px-[74px] pt-[57px] pb-[144px] sm:px-5 sm:pt-7 sm:pb-8">
               {/* X close */}
               <button
                 type="button"
                 onClick={modalOnClose}
-                className="absolute top-5 right-6 z-20 text-[#555] text-xl font-light w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 transition"
+                className="absolute top-[44px] right-[50px] z-20 text-[#261A54] opacity-75 flex items-center justify-center transition hover:opacity-100"
                 aria-label="Zatvori"
               >
-                ✕
+                <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round">
+                  <line x1="4" y1="4" x2="20" y2="20" />
+                  <line x1="20" y1="4" x2="4" y2="20" />
+                </svg>
               </button>
 
               {/* Date header */}
-              <h2 className="text-[#1B1B1B] text-[22px] sm:text-[18px] font-bold capitalize mb-8 sm:mb-5 pr-10">
+              <h2 className="text-[#1B1B1B] text-[33px] sm:text-[20px] font-bold capitalize mb-8 sm:mb-5 pr-10">
                 {formattedDate}
               </h2>
 
               {dayEvents.length === 0 ? (
                 <p className="text-[#555] text-sm">Nema događaja za ovaj dan.</p>
               ) : (
-                <ul className="flex flex-col gap-4">
+                <ul className="flex flex-col" style={{ gap: '29px' }}>
                   {dayEvents.map((ev) => {
                     const details = eventDetailsById[ev.id]
                     const { canApply, applicationStart } = getEventState(ev.id)
@@ -132,9 +134,9 @@ const DayEventsModal = ({
                           className="day-event-pill"
                           style={{
                             background: '#261A54',
-                            borderRadius: '60px',
-                            padding: '0 12px 0 28px',
-                            minHeight: '70px',
+                            borderRadius: '29px',
+                            padding: '0 36px 0 42px',
+                            minHeight: '97px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
@@ -161,11 +163,12 @@ const DayEventsModal = ({
                                 }}
                                 style={{
                                   background: '#56C4CF',
-                                  borderRadius: '30px',
-                                  padding: '10px 22px',
+                                  borderRadius: '29px',
+                                  width: '243px',
+                                  height: '58px',
                                   color: '#ffffff',
                                   fontWeight: '600',
-                                  fontSize: '14px',
+                                  fontSize: '17px',
                                   border: 'none',
                                   cursor: 'pointer',
                                   whiteSpace: 'nowrap',
@@ -174,13 +177,9 @@ const DayEventsModal = ({
                                 Rezerviši mesto
                               </button>
                             ) : user && applicationStart && !canApply ? (
-                              <span style={{ color: '#aaaaaa', fontSize: '14px', whiteSpace: 'nowrap', paddingRight: '8px' }}>
+                              <span style={{ color: '#ffffff', fontSize: '18px', whiteSpace: 'nowrap', paddingRight: '21px' }}>
                                 Prijava počinje{' '}
-                                {applicationStart.toLocaleDateString('sr-Latn', {
-                                  day: '2-digit',
-                                  month: '2-digit',
-                                  year: 'numeric',
-                                })}
+                                {formatDate(applicationStart)}
                                 .
                               </span>
                             ) : null

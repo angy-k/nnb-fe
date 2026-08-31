@@ -11,6 +11,7 @@ import { Divider } from "@nextui-org/divider";
 import { add, sub, endOfWeek, startOfWeek } from "date-fns";
 
 import type { Event } from "./types";
+import { formatDanMesecGodina, formatMesecGodina, formatMesecKratko, formatGodina } from '@/utils/dateHelpers';
 
 type View = "day" | "week" | "month";
 
@@ -56,28 +57,22 @@ export const Calendar: React.FC<CalendarProps> = ({
         return setCurDate((prev) => add(prev, { months: 1 }));
     }, [curView]);
 
+    // Nazivi meseca dolaze iz zajedničkog mesta (`dateHelpers`), koje koristi
+    // `date-fns` sa srpskom latinicom. Ranije je ovde stajao `toLocaleDateString`
+    // pa je trebalo ručno skidati završnu tačku koju srpska lokalizacija dodaje
+    // uz godinu — a ishod je zavisio od pregledača.
     const formatDateForView = useCallback((date: Date) => {
         if (curView === "day") {
-            return date.toLocaleDateString('sr-Latn', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-            });
+            return formatDanMesecGodina(date);
         }
 
         if (curView === "week") {
             const weekStart = startOfWeek(date, { weekStartsOn: 1 });
             const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
 
-            const startMonth = weekStart.toLocaleDateString('sr-Latn', {
-                month: 'short',
-            });
-            const endMonth = weekEnd.toLocaleDateString('sr-Latn', {
-                month: 'short',
-            });
-            const year = weekStart.toLocaleDateString('sr-Latn', {
-                year: 'numeric',
-            });
+            const startMonth = formatMesecKratko(weekStart);
+            const endMonth = formatMesecKratko(weekEnd);
+            const year = formatGodina(weekStart);
 
             if (startMonth !== endMonth) {
                 return `${startMonth} – ${endMonth} ${year}`;
@@ -86,21 +81,41 @@ export const Calendar: React.FC<CalendarProps> = ({
             }
         }
 
-        return date.toLocaleDateString('sr-Latn', {
-            month: 'long',
-            year: 'numeric',
-        });
+        return formatMesecGodina(date);
     }, [curView]);
 
+// Gornji razmak je ranije bio `pt-60` (240px) — toliko je trebalo dok je kalendar
+// stajao odmah ispod hero sekcije, da se ne sudari sa sovom koja se preliva preko
+// granice. Sada iznad njega stoji tabelarni prikaz, pa je toliki razmak ostavljao
+// praznu površinu. Na mobilnom je i dalje `sm:pt-4`.
 return (
-    <div key={"calendar-component"} className={"2xl:max-w-screen-2xl w-full h-full flex-1 flex flex-col overflow-hidden sm:overflow-visible pt-60 sm:pt-4 sm:h-auto"}>
-        <section id="calendar-header" className="mb-6 sm:mb-3 w-full flex justify-between gap-2 pb-24 sm:pb-4">
-            <div className="flex gap-2 items-center flex-1 min-w-0 justify-center">
+    <div key={"calendar-component"} className={"2xl:max-w-screen-2xl w-full h-full flex-1 flex flex-col overflow-hidden sm:overflow-visible pt-16 sm:pt-4 sm:h-auto"}>
+        {/* `sm:px-4` — dugmad za prethodni/sledeći mesec su na mobilnom
+            dodirivala desnu ivicu ekrana. Sama mreža dana ostaje od ivice do
+            ivice, jer su ćelije uske pa im svaki piksel znači. */}
+        {/* Naziv meseca je bio pomeren ulevo za 48px u odnosu na dizajn.
+
+            Uzrok je bio raspored: zaglavlje je `justify-between`, a naslov je
+            stajao u delu sa `flex-1`, pa se centrirao unutar *preostale* širine
+            — one bez strelica. Pomeraj je zato bio tačno pola širine bloka sa
+            strelicama.
+
+            Mreža sa tri kolone, gde su leva i desna jednake (`1fr`), centrira
+            naslov po punoj širini. Prazna leva kolona služi samo kao protivteža
+            strelicama u desnoj.
+
+            Na telefonu se vraća stari raspored. Sa mrežom bi se dug naziv, kao
+            „septembar 2026.", uvukao pod strelice — mereno do 36px preklopa na
+            320px širine. Ispod 600px nema ni smisla brinuti za centriranje, a
+            ima smisla da se tekst ne sudara. */}
+        <section id="calendar-header" className="mb-6 sm:mb-3 nnb-gutter w-full flex md:grid lg:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] justify-between items-center gap-2 pb-8 sm:pb-4">
+            <div aria-hidden="true" />
+            <div className="flex gap-2 items-center min-w-0 justify-center flex-1 md:flex-none lg:flex-none">
                 <span className="calendar-title capitalize sm:text-[20px]">
                     {formatDateForView(curDate).toLowerCase()}
                 </span>
             </div>
-            <div className="flex gap-2 calendar-buttons h-[48px] flex-shrink-0">
+            <div className="flex gap-2 calendar-buttons h-[48px] flex-shrink-0 justify-self-end">
                 <button onClick={onPrev} aria-label={`prev ${curView}`} className="w-[42px] aspect-square border-none button-one font-semibold flex justify-center items-center hover:bg-[lightBlue] hover:opacity-75 transition-colors duration-300">
                     <Image
                         src={ArrowLeft}

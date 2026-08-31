@@ -14,8 +14,17 @@ import MainTextInput from '@/components/Commons/MainTextInput'
 import AuthValidationErrors from '@/components/Auths/AuthValidationErrors'
 import LegalDocsModal from '@/components/Modal/LegalDocsModal'
 import { CONSENT_PARTICIPATION } from '@/utils/consentTexts'
+import RegistrationInstructionsModal from '@/components/Modal/RegistrationInstructionsModal'
 
 const DEFAULT_TAB = 'login'
+
+/**
+ * Oznaka poslednje stavke u spisku delatnosti — „Nema na spisku".
+ *
+ * Namerno nije prazan niz ni broj, da se ne pomeša sa stvarnim `id`-jem
+ * delatnosti niti sa neizabranom stavkom.
+ */
+const DRUGA_DELATNOST = '__druga__'
 
 const getAppEnv = () => process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV || ''
 const isDevEnv = () => ['development', 'dev', 'testing', 'test', 'local'].includes(getAppEnv())
@@ -89,6 +98,7 @@ const registerSchema = Yup.object({
       return d >= oldest
     }),
   activity_group_id: Yup.string().required('Grupa delatnosti je obavezna.'),
+  activity_choice: Yup.string().required('Izaberite delatnost.'),
   activity_name: Yup.string()
     .required('Delatnost je obavezna.')
     .min(2, 'Naziv delatnosti mora imati najmanje 2 karaktera.')
@@ -302,6 +312,9 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
       payload.append('address', values.address || '')
       payload.append('city', values.city || values.address || '')
 
+      payload.append('facebook', values.facebook || '')
+      payload.append('instagram', values.instagram || '')
+
       payload.append('is_legal_entity', values.is_legal_entity ? '1' : '0')
       payload.append('is_agricultural', values.is_agricultural ? '1' : '0')
       payload.append('terms_accepted', values.terms_accepted ? '1' : '0')
@@ -381,7 +394,13 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
             style={{ backgroundImage: "url('/about-us-hero-image.png')" }}
           />
 
-          <div className="w-full md:w-1/2 lg:w-1/2 h-full flex flex-col justify-center bg-white px-6 md:px-12 lg:px-12 py-10 overflow-y-auto">
+          {/* `justify-center` uz `overflow-y: auto` je zamka: kad je sadržaj viši
+              od okvira, centriranje ga odseca sa oba kraja, a vrh se ne može
+              doskrolovati. Na ekranu visine 723px naslov „Prijavite se" bio je
+              odsečen odozgo, a link sa instrukcijama odozdo. `justify-start` uz
+              `my-auto` na sadržaju daje isto centriranje kad ima mesta, a uredno
+              skrolovanje kad nema. */}
+          <div className="w-full md:w-1/2 lg:w-1/2 h-full flex flex-col justify-start [&>*]:my-auto bg-white px-6 md:px-12 lg:px-12 py-10 overflow-y-auto">
             <h2 className="text-[#261A54] font-bold mb-1" style={{ fontSize: '32px', lineHeight: 1.2 }}>Prijavite se</h2>
             <p className="text-sm mb-6" style={{ color: '#4B5563' }}>Prijavite se na vaš nalog</p>
 
@@ -520,6 +539,12 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
             birth_date: '',
             is_legal_entity: false,
             is_agricultural: false,
+            facebook: '',
+            instagram: '',
+            // Izbor iz spiska delatnosti. Čuva se odvojeno od `activity_name`,
+            // jer se na kraju šalje naziv delatnosti kao tekst — bilo da je
+            // izabran sa spiska ili upisan ručno.
+            activity_choice: '',
             mb: '',
             pib: '',
             farm_number: '',
@@ -653,6 +678,7 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                           onChange={e => {
                             setFieldValue('activity_group_id', e.target.value)
                             setFieldValue('activity_name', '')
+                            setFieldValue('activity_choice', '')
                           }}
                         >
                           <option value="">
@@ -666,17 +692,71 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                         <AuthValidationErrors className="mb-1" errors={errors.activity_group_id} />
                       </div>
 
-                      {/* Delatnost — free text */}
+                      {/* Delatnost — spisak delatnosti izabrane grupe.
+
+                          Delatnosti već stižu ugnežđene uz grupe sa istog
+                          poziva, pa nema dodatnog dohvatanja. Na dnu spiska
+                          stoji stavka za slučaj da izlagač svoju delatnost ne
+                          nađe — tek tada se otvara polje za upis.
+
+                          Na kraju se u oba slučaja šalje `activity_name` kao
+                          tekst, pa se dogovor sa zaleđem ne menja. */}
                       <div>
-                        <MainTextInput
-                          name="activity_name"
-                          type="text"
-                          error={errors.activity_name}
-                          setErrors={setErrors}
-                          placeholder="Delatnost"
-                          className="line-flex w-full"
-                          disabled={!values.activity_group_id}
-                        />
+                        {(() => {
+                          const grupa = activityGroups.find(
+                            g => String(g.id) === String(values.activity_group_id)
+                          )
+                          const delatnosti = grupa?.activities || []
+
+                          return (
+                            <>
+                              <select
+                                name="activity_choice"
+                                className="auth-select"
+                                value={values.activity_choice}
+                                disabled={!values.activity_group_id}
+                                onChange={e => {
+                                  const izbor = e.target.value
+                                  setFieldValue('activity_choice', izbor)
+
+                                  if (izbor === DRUGA_DELATNOST) {
+                                    // Polje za upis kreće prazno.
+                                    setFieldValue('activity_name', '')
+                                  } else {
+                                    const d = delatnosti.find(x => String(x.id) === izbor)
+                                    setFieldValue('activity_name', d?.name || '')
+                                  }
+                                }}
+                              >
+                                <option value="">
+                                  {values.activity_group_id ? 'Delatnost' : 'Prvo izaberite grupu'}
+                                </option>
+                                {delatnosti.map(d => (
+                                  <option key={d.id} value={d.id}>{d.name}</option>
+                                ))}
+                                <option value={DRUGA_DELATNOST}>
+                                  Nema na spisku — upišite svoju
+                                </option>
+                              </select>
+
+                              {values.activity_choice === DRUGA_DELATNOST && (
+                                <div className="mt-3">
+                                  <MainTextInput
+                                    name="activity_name"
+                                    type="text"
+                                    error={errors.activity_name}
+                                    setErrors={setErrors}
+                                    placeholder="Upišite delatnost"
+                                    className="line-flex w-full"
+                                  />
+                                </div>
+                              )}
+
+                              <ErrorMessage name="activity_name" component="div" className="text-sm text-negative-color mt-1" />
+                              <AuthValidationErrors className="mb-1" errors={errors.activity_name} />
+                            </>
+                          )
+                        })()}
                       </div>
 
                       {/* Adresa i mesto stanovanja — combined */}
@@ -712,6 +792,32 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                           onChange={e => setFieldValue('gallery_images', Array.from(e.currentTarget.files || []))}
                         />
                         <AuthValidationErrors className="mb-1" errors={errors.gallery_images} />
+                      </div>
+
+                      {/* Društvene mreže — iz dizajna, iznad sekcije za pravno
+                          lice. Stoje uvek, bez obzira na to da li se izlagač
+                          prijavljuje kao fizičko lice, pravno lice ili
+                          gazdinstvo, pa nisu deo nijedne uslovne sekcije. */}
+                      <div>
+                        <MainTextInput
+                          name="facebook"
+                          type="text"
+                          error={errors.facebook}
+                          setErrors={setErrors}
+                          placeholder="Facebook"
+                          className="line-flex w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <MainTextInput
+                          name="instagram"
+                          type="text"
+                          error={errors.instagram}
+                          setErrors={setErrors}
+                          placeholder="Instagram"
+                          className="line-flex w-full"
+                        />
                       </div>
 
                       {/* Legal entity toggle */}
@@ -924,41 +1030,11 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
         </Formik>
       )}
 
-      {/* Instrukcije za registraciju â zaseban, jednostavan modal */}
-      <Modal
+      <RegistrationInstructionsModal
         isOpen={isLegalDocsOpen && legalDocsType === 'instructions'}
         onOpenChange={onLegalDocsOpenChange}
         onClose={onLegalDocsClose}
-        backdrop="blur"
-        scrollBehavior="inside"
-        hideCloseButton
-        classNames={{
-          wrapper: 'nnb-modal-wrapper items-center justify-center',
-          backdrop: 'nnb-modal-backdrop',
-          base: 'nnb-modal-base max-h-[85vh]',
-        }}
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="p-0 h-0 min-h-0" />
-              <ModalBody className="px-10 py-10 pt-12">
-                <h2 className="text-[#261A54] text-2xl font-bold mb-4">Instrukcije za registraciju</h2>
-                <p className="text-[#1B1B1B] text-sm leading-relaxed mb-6">
-                  Instrukcije za registraciju će biti dodate ovde.
-                </p>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-8 py-3 rounded-full bg-[#56C4CF] text-white font-semibold text-sm hover:bg-[#3db8c4] transition-colors"
-                >
-                  Zatvori
-                </button>
-              </ModalBody>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      />
 
       {/* Uslovi korišćenja i politika privatnosti — zajednički modal,
           isti koji se otvara i iz prijave na događaj */}

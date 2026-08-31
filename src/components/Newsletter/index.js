@@ -2,9 +2,9 @@
 import ShoppingBagIcon from "../../icons/shopping-bag-icon.svg"
 import ViberCommunity from '../Communities/ViberCommunity';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useState } from 'react';
 import { CONSENT_NEWSLETTER } from '@/utils/consentTexts';
+import LegalDocsModal from '@/components/Modal/LegalDocsModal';
 
 const Newsletter = () => {
     const [email, setEmail] = useState('');
@@ -12,6 +12,7 @@ const Newsletter = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
 
     const validateEmail = (email) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -127,13 +128,21 @@ const Newsletter = () => {
                                     />
                                     <label htmlFor="consent" className="newsletter-consent-text">
                                         {CONSENT_NEWSLETTER.before}
-                                        <Link
-                                            href="/politika-privatnosti"
-                                            target="_blank"
-                                            className="underline"
+                                        {/* Modal umesto nove stranice — korisnik ostaje
+                                            na formi. `preventDefault` je nužan jer je
+                                            dugme unutar `label`, pa bi klik inače
+                                            čekirao saglasnost. */}
+                                        <button
+                                            type="button"
+                                            className="underline hover:opacity-80 transition-opacity"
+                                            onClick={(e) => {
+                                                e.preventDefault()
+                                                e.stopPropagation()
+                                                setIsPrivacyOpen(true)
+                                            }}
                                         >
                                             {CONSENT_NEWSLETTER.linkLabel}
-                                        </Link>
+                                        </button>
                                         {CONSENT_NEWSLETTER.after}
                                     </label>
                                 </div>
@@ -144,6 +153,14 @@ const Newsletter = () => {
                     <ViberCommunity type="light" />
                 </div>
             </div>
+
+            {/* `onOpenChange` je dovoljan za kontrolisani modal. */}
+            <LegalDocsModal
+                isOpen={isPrivacyOpen}
+                onOpenChange={setIsPrivacyOpen}
+                sections={['privacy']}
+                acceptLabel="Zatvori"
+            />
         </div>
     );
 };

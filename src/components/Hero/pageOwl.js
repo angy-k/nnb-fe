@@ -6,6 +6,7 @@ import photoGaleryIcon from '@/icons/photo-galery-icon.svg';
 import videoGaleryIcon from '@/icons/video-galery-icon.svg';
 import { cn } from '@/utils';
 import HeroOwlWithEyes from '@/components/Hero/HeroOwlWithEyes';
+import { uPasuse } from '@/utils/tekst'
 
 const PageHiroSection = ({
   title,
@@ -19,6 +20,14 @@ const PageHiroSection = ({
   // Uvodni tekst ispod naslova (misija i vizija na stranici „O nama").
   // Prazan prop znači da se sekcija ne prikazuje, pa ostale stranice ostaju netaknute.
   introText,
+  /*
+   * Stranica ispod hero-a ima panel koji prelazi preko njegove donje ivice
+   * (Kontakt, panel sa čestim pitanjima). Taj preklop je iz dizajna, ali bez
+   * ovoga panel pojede donjih 190px sove, pa se od nje vidi glava i tek trag
+   * tela. Sa oznakom sova ide više, da i telo ostane iznad panela — kao na
+   * Galeriji, gde panela nema.
+   */
+  panelPrekoHeroa = false,
 }) => {
 
   const formatTitle = (styledWords, classStyle) => {
@@ -66,7 +75,9 @@ const PageHiroSection = ({
   }
   // Hero height accounts for the fixed transparent header (paddingTop 116px + logo ~61px + paddingBottom 60px = ~237px).
   // Content in HeroLeft uses pt-[240px] to start just below the header.
-  const heroHeight = tall || icons || description
+  const visokHero = !!(tall || icons || description)
+
+  const heroHeight = visokHero
     ? 'md:h-[750px] lg:h-[750px]'
     : image
     ? 'md:h-[1374px] lg:h-[1374px]'
@@ -75,6 +86,11 @@ const PageHiroSection = ({
   return (
     <div
       className={cn("w-full h-auto bg-[#261A54] page-hero-section relative", heroHeight)}
+      // Sova je viša od hero sekcije i preliva se 306px preko donje ivice. Na
+      // `zIndex: 1` ostaje iza svetle sekcije ispod (koja je na `zIndex: 2`), pa
+      // se vidi samo do granice. Podizanje iznad je probano — tada sova pada
+      // preko tabele i kalendara, što je gore. Pravo rešenje traži odluku o
+      // dizajnu: viši hero da sova stane cela, ili manja sova.
       style={type !== 'image' ? { overflow: 'visible', zIndex: 1 } : undefined}
     >
       {type === 'image' ? (
@@ -97,6 +113,8 @@ const PageHiroSection = ({
           <HeroRight
             illustration={illustration}
             description={description}
+            visokHero={visokHero}
+            panelPrekoHeroa={panelPrekoHeroa}
           />
         </div>
       )}
@@ -121,7 +139,10 @@ export default PageHiroSection
 const HeroLeft = ({ title, description, icons }) => {
   return (
     <div
-      className="flex-1 w-full pt-[240px] sm:pt-[100px]"
+      // `sm:px-4` — naslov stranice je na mobilnom stajao zalepljen uz levu
+      // ivicu ekrana. Važi za sve stranice sa ovim hero-om (Kalendar, Događaji,
+      // Blog, Galerija, Projekti, Prijatelji).
+      className="flex-1 w-full pt-[240px] sm:pt-[100px] nnb-gutter"
       style={{alignSelf: 'flex-start'}}
     >
       {title && <div 
@@ -166,9 +187,9 @@ const HeroLeft = ({ title, description, icons }) => {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
               }}>
-                <img src={videoGaleryIcon.src} alt="Video zapisi" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <img src={videoGaleryIcon.src} alt="Video snimci" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
-              <span>{`Video zapisi`}</span>
+              <span>{`Video snimci`}</span>
             </Link>
         </div>}
         {description && <span
@@ -181,10 +202,27 @@ const HeroLeft = ({ title, description, icons }) => {
   )
 }
 
-const HeroRight = ({ description, illustration }) => (
+/**
+ * Sova uz naslov stranice.
+ *
+ * Hero ima dve visine — 750px kad ima opis ili ikonice (Kontakt, Kalendar,
+ * Galerija) i 450px kad ima samo naslov (Blog, Događaji, Projekti, Prijatelji).
+ * Sova je uvek počinjala 237px od vrha, pa je na niskom hero-u svetla sekcija
+ * sekla kroz oči i ostavljala vrh kljuna kao usamljen narandžast trougao.
+ *
+ * Na niskom hero-u zato ide više, tako da presek padne ispod kljuna — na donjoj
+ * ivici tirkizne glave. Visok hero ostaje netaknut; tamo sova staje cela.
+ */
+const HeroRight = ({ description, illustration, visokHero, panelPrekoHeroa }) => (
   <div
-    className="flex-1 w-full page-hero-right"
-    style={{ alignSelf: 'flex-start', maxWidth: '541px' }}
+    className={cn(
+      'flex-1 w-full page-hero-right',
+      !visokHero && 'page-hero-right--nizak',
+      panelPrekoHeroa && 'page-hero-right--pod-panelom',
+    )}
+    // Okvir sove se preliva preko donje ivice hero sekcije, pa bi hvatao klikove
+    // namenjene sadržaju ispod. `pointer-events: none` ih propušta.
+    style={{ alignSelf: 'flex-start', maxWidth: '541px', pointerEvents: 'none' }}
   >
     {illustration && <HeroOwlWithEyes />}
   </div>
@@ -194,28 +232,45 @@ const HeroRight = ({ description, illustration }) => (
 const HeroWithImage = ({ title, formatTitle, image, illustration, introText }) => {
   return (
     <div
-      className="w-full items-center pt-80 sm:pt-[88px]"
+      // Zaglavlje je na mobilnom visoko 84px; sa 88px odmaka naslov mu je bio
+      // zalepljen uz donju ivicu.
+      className="w-full items-center pt-80 sm:pt-[116px]"
       style={{display: 'flex', flexDirection: 'column', gap: '50px'}}
     >
-      {title && <div className="page-hero-section-title">
-        {formatTitle('Novosadski \n noćni bazar?', 'aboutUs')}
-      </div>}
-      {/* Uvodni tekst — isti stil kao tekst uz „Prvi Novosadski noćni bazar" ispod slike.
-          Prazan red u tekstu razdvaja pasuse, da se duži unos iz admina ne slije u blok. */}
+      {/* Uvodni tekst stoji IZNAD naslova.
+
+          Prazan red razdvaja pasuse, a `white-space: pre-line` čuva i obične
+          prelome reda — ranije su se gubili, pa je unos iz admina ispadao kao
+          jedan zbijen blok bez obzira kako je otkucan. */}
       {introText && (
         <div className="about-us-intro-text">
-          {String(introText).split('\n\n').map((pasus, i) => (
+          {uPasuse(introText).map((pasus, i) => (
             <p key={`intro-${i}`}>{pasus}</p>
           ))}
         </div>
       )}
-      {image && <Image
-        src={'/about-us-hero-image.png'}
-        className="about-us-hero-image"
-        width={1440}
-        height={486}
-        alt='about-us-hero-image'
-      />}
+      {title && <div className="page-hero-section-title">
+        {formatTitle('Novosadski \n noćni bazar?', 'aboutUs')}
+      </div>}
+      {/* Fotografija sa dugmetom „Pogledaj galeriju" u donjem levom uglu.
+
+          Mereno sa izvoza Figme: fotografija je 1439 × 485 na (240, 655), a
+          dugme počinje 60px od njene leve ivice i stoji 40px iznad donje —
+          otuda udeli ispod, da prate fotografiju na svakoj širini. */}
+      {image && (
+        <div className="about-us-hero-image-wrap">
+          <Image
+            src={'/about-us-hero-image.png'}
+            className="about-us-hero-image"
+            width={1440}
+            height={486}
+            alt='about-us-hero-image'
+          />
+          <Link href="/galerija" className="about-us-gallery-btn">
+            Pogledaj galeriju
+          </Link>
+        </div>
+      )}
       {!illustration && <div
         className="flex flex-row grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 about-us-hero-content"
         style={{width: '100%', height: '100%', maxWidth: '1400px'}}
@@ -232,8 +287,8 @@ const HeroWithImage = ({ title, formatTitle, image, illustration, introText }) =
           <span className="about-us-hero-title max-w-[400px]">{`Prvi Novosadski noćni bazar`}</span>
         </div>
         <span
-          className="w-full content-center font-[18px] text-[#ffffff]"
-          style={{ whiteSpace: 'normal', textAlign: 'justify'}}
+          className="about-us-hero-text w-full content-center font-[18px] text-[#ffffff]"
+          style={{ whiteSpace: 'normal' }}
         >
           <span
             className="flex content-center font-bold"

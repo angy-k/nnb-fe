@@ -5,10 +5,15 @@
     "youtube": "https://www.youtube.com/channel/UC07-tu4kyCykHjvi4Ns7FJQ/videos?view_as=subscriber",
     "viberCommunityLink": "https://invite.viber.com/?g2=AQBR%2B5ef5lKUX1MxICpe2OAUY8lYMdQcNtmvse9JE0D1fZBOi8mWfzr3nMxcOCSU&lang=en"
   },
-  "officeData":{
+  "officeData": {
     "fullName": "Novosadski noćni bazar",
-    "emails": ["office@nocnibazar.rs", "rezervacije@nocnibazar.rs"],
-    "phones": ["+381 66 80 03 969"]
+    "emails": [
+      "office@nocnibazar.rs",
+      "rezervacije@nocnibazar.rs"
+    ],
+    "phones": [
+      "+381 66 80 03 969"
+    ]
   },
   "envs": {
     "dev": {
@@ -44,38 +49,38 @@
       },
       {
         "id": 2,
-        "name": "Događaji",
-        "link": "/dogadjaji"
-      },
-      {
-        "id": 3,
-        "name": "Projekti",
-        "link": "/projekti"
-      },
-      {
-        "id": 4,
-        "name": "Blog",
-        "link": "/blog"
-      },
-      {
-        "id": 5,
-        "name": "Galerija",
-        "link": "/galerija"
-      },
-      {
-        "id": 6,
         "name": "Kalendar",
         "link": "/kalendar-dogadjaja"
       },
       {
-          "id": 7,
-          "name": "Prijatelji",
-          "link": "/prijatelji"
+        "id": 3,
+        "name": "Događaji",
+        "link": "/dogadjaji"
       },
       {
-          "id": 8,
-          "name": "Kontakt",
-          "link": "/kontakt"
+        "id": 4,
+        "name": "Galerija",
+        "link": "/galerija"
+      },
+      {
+        "id": 5,
+        "name": "Blog",
+        "link": "/blog"
+      },
+      {
+        "id": 6,
+        "name": "Projekti",
+        "link": "/projekti"
+      },
+      {
+        "id": 7,
+        "name": "Prijatelji",
+        "link": "/prijatelji"
+      },
+      {
+        "id": 8,
+        "name": "Kontakt",
+        "link": "/kontakt"
       }
     ],
     "footerItems": [

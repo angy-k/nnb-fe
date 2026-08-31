@@ -3,15 +3,18 @@ const AccountData = ({
 }) => {
   return (
     <div
-      className='w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 pt-10 gap-8'
+      className='w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 pt-10 gap-16'
       style={{maxWidth: '1400px'}}
     >
       <div className='flex-1 w-full gap-3' style={{display: 'flex', flexDirection: 'column'}}>
         <span className='edit-profile-subtitle'>{`Podaci o vlasniku`}</span>
-        <div className='edit-profile-container'>
-          <span className='edit-profile-name'>{account.brandName || account.owner.fullName}</span>
-          {account.type && <span className='edit-profile-data'>{account.type}</span>}
-          <span className='edit-profile-data'>{account.owner.fullName}</span>
+        {/* Naziv izlagača i delatnost stoje u zaglavlju iznad, pa se u kartici
+            ne ponavljaju — u dizajnu kartica počinje imenom vlasnika. Ranije je
+            prvi red bio `brandName || fullName`, pa je izlagaču bez unetog
+            naziva pisalo doslovno „-" (tako ga postavlja `Profile/index.js`
+            kad naziva nema). */}
+        <div className='edit-profile-container flex-1'>
+          <span className='edit-profile-name'>{account.owner.fullName}</span>
           <span className='edit-profile-data'>{account.owner.email}</span>
           <span className='edit-profile-data'>{account.owner.phone}</span>
           <span className='edit-profile-data'>{account.owner.address}</span>
@@ -34,7 +37,9 @@ const AccountData = ({
             ? 'Podaci o poljoprivrednom gazdinstvu'
             : 'Podaci o pravnom licu'}
         </span>
-        <div className='edit-profile-container'>
+        {/* `flex-1` na obe kartice poravnava im donje ivice, kao u dizajnu, iako
+            leva ima više redova od desne. */}
+        <div className='edit-profile-container flex-1'>
           <span className='edit-profile-name'>{account.company.name}</span>
           <span className='edit-profile-data'>{account.company.address}</span>
           {account.company.entityType === 'agricultural' ? (

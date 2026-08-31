@@ -68,13 +68,20 @@ const ProjectDetailPage = () => {
   return (
     <>
       {/* Full-width hero — no owl, project title */}
+      {/* Zaglavlje je providno i visoko 237px, a hero je imao najmanju visinu od
+          372px sa sadržajem prislonjenim uz dno — pa je naslov počinjao na 169px
+          i gornjih 68 piksela mu je ostajalo pod zaglavljem.
+
+          U dizajnu je razmak od dna navigacije do vrha naslova 187px na okviru
+          od 1920, dakle 140px na 1440. Otuda odmak odozgo od 352px: 237 za
+          zaglavlje, 140 razmaka, minus 25 koje naslov već ima. */}
       <div
         className="w-full bg-[#261A54] page-hero-section"
-        style={{ minHeight: '372px', display: 'flex', alignItems: 'flex-end' }}
+        style={{ minHeight: '580px', display: 'flex' }}
       >
         <div
-          className="2xl:max-w-screen-2xl 2xl:mx-auto mx-auto w-full"
-          style={{ maxWidth: '1440px', padding: '80px 60px 60px' }}
+          className="2xl:max-w-screen-2xl 2xl:mx-auto mx-auto w-full pt-[352px] sm:pt-[120px]"
+          style={{ maxWidth: '1440px', paddingLeft: '60px', paddingRight: '60px', paddingBottom: '60px' }}
         >
           <div className="page-hero-section-title" style={{ paddingTop: '25px' }}>
             {heroTitle}

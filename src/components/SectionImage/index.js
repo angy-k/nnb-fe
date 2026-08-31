@@ -7,7 +7,10 @@ const SectionImage = ({
   height = 540,
   radius = '5px',
   altText = 'Section image alt text',
-  isGrey = false
+  isGrey = false,
+  // Kvadratni okvir, bez obzira na širinu kolone. Fiksna visina uz `width: 100%`
+  // daje kvadrat samo na jednoj širini ekrana, pa se koristi odnos stranica.
+  square = false
 }) => {
   const sharedStyle = {
     borderRadius: `${radius}`,
@@ -15,7 +18,10 @@ const SectionImage = ({
     filter: isGrey ? 'grayscale(100%)' : '',
     opacity: isGrey ? '0.6' : '1',
     width: '100%',
-    height: `${height}px`,
+    ...(square
+      ? { aspectRatio: '1 / 1', height: 'auto' }
+      : { height: `${height}px` }),
+    // Slika se seče umesto da se izobliči kad odnos ne odgovara okviru
     objectFit: 'cover',
     display: 'block',
   }

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Divider } from '@nextui-org/divider';
 import { add, parse, startOfToday } from 'date-fns';
 import eventService from '@/services/eventService';
+import { formatDate } from '@/utils/dateHelpers';
 
 const UpcommingEvents = ({
   title = 'Očekivani događaji',
@@ -69,11 +70,7 @@ const UpcommingEvents = ({
               id: (item?.id ?? '').toString(),
               name: (item?.title ?? item?.name ?? '').toString(),
               location: (item?.eventAddress ?? item?.location ?? item?.address ?? '').toString(),
-              date: startDate.toLocaleDateString('sr-RS', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-              }),
+              date: formatDate(startDate),
               applicationStart: (() => {
                 const raw = (item?.applicationStartDate ?? '').toString().trim();
                 if (!raw) return '—';
@@ -82,7 +79,7 @@ const UpcommingEvents = ({
                   'd MMM yyyy', 'd M yyyy', 'dd MMM yyyy', 'dd M yyyy',
                 ]) ?? new Date(raw);
                 if (!d || isNaN(d.getTime())) return '—';
-                return d.toLocaleDateString('sr-RS', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                return formatDate(d);
               })(),
             };
           })
@@ -103,9 +100,12 @@ const UpcommingEvents = ({
   // Sakrij komponentu ako nema događaja (i nije u toku učitavanje)
   if (!loading && events.length === 0) return null;
 
+  // Donji razmak je izjednačen sa gornjim. Ranije je bio `pb-48` (192px), što je
+  // odgovaralo dok je tabela stajala poslednja na stranici; sada ide ispred
+  // kalendara, pa je toliki razmak pravio praznu površinu između njih.
   return (
     <div
-      className="w-full blogs-container pt-24 sm:pt-8 grid place-items-start mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-48 sm:pb-16"
+      className="w-full blogs-container pt-24 sm:pt-8 grid place-items-start mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-24 sm:pb-16"
       style={{ justifySelf: 'center', maxWidth: '1400px' }}
     >
       <span className="our-team-title">{title}</span>

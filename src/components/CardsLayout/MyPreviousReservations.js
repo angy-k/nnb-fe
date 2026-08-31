@@ -10,6 +10,34 @@ const statusLabel = {
 // Prethodne rezervacije koriste istu sivu boju za sve statuse
 const STATUS_BG = '#C5C4C2'
 
+/**
+ * Mere sa izvoza dizajna (`Prethodne-rezervacije.png`, okvir 1920).
+ *
+ * Kartica je tamo široka koliko cela kolona sadržaja (1440), a kod nas 1352 —
+ * kolona od 1400 umanjena za bočni razmak. Činilac je 0,94.
+ *
+ * Sve je ranije bilo osetno sitnije: kartica 120 umesto 208, slika 240 umesto
+ * 462, naslov 16 umesto 34, pilula 44 umesto 55.
+ */
+const MERE = {
+  visinaKartice: 208,   // 222
+  radijus: 20,
+  razmakKartica: 38,    // 41
+  sirinaSlike: 462,     // 492
+  tekstOdSlike: 51,     // 54
+  vrhTeksta: 50,        // ink naslova na 57,5 od vrha kartice
+  naslov: 34,           // 36
+  naslovDoDatuma: 4,
+  tekst: 21,            // 22
+  datumDoPoslate: 32,
+  pilulaSirina: 263,    // 280
+  pilulaVisina: 55,     // 59
+  pilulaVrh: 44,        // 47
+  pilulaDesno: 46,      // 49,5
+  pilulaTekst: 17,      // 18
+  razmakStranica: 47,   // 50
+}
+
 // ── Pagination ─────────────────────────────────────────────────────────────────
 const Pagination = ({ page, totalPages, onPageChange }) => {
   if (totalPages <= 1) return null
@@ -35,12 +63,16 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
 
   const btnBase = {
     minWidth: '36px', height: '36px', borderRadius: '50%', border: 'none',
-    fontSize: '15px', fontWeight: '500', cursor: 'pointer', transition: 'background 0.15s',
+    fontSize: '19px', fontWeight: '500', cursor: 'pointer', transition: 'opacity 0.15s',
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    background: 'transparent',
   }
 
+  // U dizajnu je paginacija uz desnu ivicu kolone, a ne po sredini, i nijedan
+  // broj nema ispunjen krug — sve je običan tekst. Tekuća strana se ovde ipak
+  // razlikuje debljinom, jer bi inače korisnik ostao bez ijednog znaka gde je.
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', paddingTop: '48px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: `${MERE.razmakStranica - 36}px`, paddingTop: '48px' }}>
       {/* Prev */}
       <button
         type="button"
@@ -62,8 +94,8 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
               onClick={() => onPageChange(p)}
               style={{
                 ...btnBase,
-                background: p === page ? '#261A54' : 'transparent',
-                color: p === page ? '#ffffff' : '#261A54',
+                color: '#261A54',
+                fontWeight: p === page ? '700' : '400',
               }}
             >
               {p}
@@ -89,47 +121,58 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
 const MyPreviousReservations = ({ events = [], page = 1, totalPages = 1, onPageChange }) => {
   return (
     <div className="w-full pt-6 pb-4">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col" style={{ gap: `${MERE.razmakKartica}px` }}>
         {events.map((event, index) => (
           <div
             key={`prev-res-${index}`}
-            className="flex flex-row bg-white rounded-[16px] overflow-hidden shadow-sm prev-reservation-card"
-            style={{ minHeight: '120px' }}
+            className="flex flex-row bg-white overflow-hidden shadow-sm prev-reservation-card"
+            style={{ height: `${MERE.visinaKartice}px`, borderRadius: `${MERE.radijus}px` }}
           >
-            {/* Image left */}
-            <div className="flex-shrink-0 w-[200px] md:w-[240px] prev-reservation-card-image">
+            {/* Slika levo — u dizajnu ide preko cele visine kartice */}
+            <div className="flex-shrink-0 prev-reservation-card-image" style={{ width: `${MERE.sirinaSlike}px`, height: '100%' }}>
               <SectionImage
                 imageSrc={event.coverImage || '/card-component-default-image.png'}
                 isGrey={true}
-                width={240}
-                height={160}
+                width={MERE.sirinaSlike}
+                height={MERE.visinaKartice}
                 radius="0"
                 altText="cover"
               />
             </div>
 
             {/* Content center */}
-            <div className="flex flex-col justify-center flex-1 px-6 py-4 gap-1">
+            <div
+              className="flex flex-col flex-1"
+              style={{ paddingLeft: `${MERE.tekstOdSlike}px`, paddingTop: `${MERE.vrhTeksta}px` }}
+            >
               {event.title && (
-                <span className="text-[16px] font-semibold text-[#C5C4C2] leading-snug">
+                <span className="font-semibold text-[#C5C4C2]" style={{ fontSize: `${MERE.naslov}px`, lineHeight: 1.2 }}>
                   {event.title}
                 </span>
               )}
               {event.date && (
-                <span className="text-[13px] text-[#C5C4C2]">{event.date}</span>
+                <span className="text-[#C5C4C2]" style={{ fontSize: `${MERE.tekst}px`, lineHeight: 1, marginTop: `${MERE.naslovDoDatuma}px` }}>
+                  {event.date}
+                </span>
               )}
               {event.applicationDate && (
-                <span className="text-[13px] text-[#261A54]/40 mt-1">
+                // Boja izvedena sa izvoza: (146,140,169) je #261A54 na oko 50%
+                // providnosti preko belog. Ranije je stajalo 40%.
+                <span className="text-[#261A54]/50" style={{ fontSize: `${MERE.tekst}px`, lineHeight: 1, marginTop: `${MERE.datumDoPoslate}px` }}>
                   {`Rezervacija poslata ${event.applicationDate}`}
                 </span>
               )}
             </div>
 
-            {/* Status button right */}
-            <div className="flex-shrink-0 flex items-center pr-6 prev-reservation-card-status">
+            {/* Status pilula desno — u dizajnu je poravnata uz vrh, ne po sredini */}
+            <div className="flex-shrink-0 prev-reservation-card-status" style={{ paddingTop: `${MERE.pilulaVrh}px`, paddingRight: `${MERE.pilulaDesno}px` }}>
               <div
-                style={{ background: STATUS_BG, cursor: 'default' }}
-                className="h-[44px] px-5 rounded-full text-white font-semibold text-[13px] whitespace-nowrap flex items-center justify-center"
+                style={{
+                  background: STATUS_BG, cursor: 'default',
+                  width: `${MERE.pilulaSirina}px`, height: `${MERE.pilulaVisina}px`,
+                  fontSize: `${MERE.pilulaTekst}px`,
+                }}
+                className="rounded-full text-white font-semibold whitespace-nowrap flex items-center justify-center"
               >
                 {statusLabel[event.applicationStatus] || statusLabel.approved}
               </div>

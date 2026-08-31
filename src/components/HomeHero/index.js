@@ -4,9 +4,12 @@ import Image from 'next/image';
 import EventIcon from '@/icons/event-icon.svg';
 import MarketIcon from '@/icons/market-icon.svg';
 import UsersGroupIcon from '@/icons/users-group-icon.svg';
-import LeafTopLeft from '@/icons/leaf-top-left.svg';
-import LeafBottomLeft from '@/icons/leaf-bottom-left.svg';
-import LeafBottomRight from '@/icons/leaf-bottom-right.svg';
+// Četiri lista iz dizajna. Crteži su sve vreme stajali u projektu, samo nikad
+// nisu bili priključeni — umesto njih su korišćene ikonice iz `icons/leaf-*.svg`.
+import ListGoreLevo from '@/components/Hero/illustrations/list-gore-levo.svg';
+import ListSredina from '@/components/Hero/illustrations/list-sredina.svg';
+import ListLevo from '@/components/Hero/illustrations/list-levo.svg';
+import ListDesno from '@/components/Hero/illustrations/list-desno.svg';
 import MoonIcon from '@/icons/moon-icon.svg';
 import WhiteStarIcon from '@/icons/white-star-icon.svg';
 import YellowStarIcon from '@/icons/yellow-star-icon.svg';
@@ -79,16 +82,7 @@ const HomeHero = ({
   return (
     <div className="home-hero-wrapper" style={{ position: 'relative', overflow: 'hidden' }}>
 
-      {/* ── Dekorativni listovi ─────────────────── */}
-      <div className="home-hero-decor home-hero-decor--leaf-tl" aria-hidden="true">
-        <Image src={LeafTopLeft} width={220} height={196} alt="" />
-      </div>
-      <div className="home-hero-decor home-hero-decor--leaf-bl" aria-hidden="true">
-        <Image src={LeafBottomLeft} width={240} height={140} alt="" />
-      </div>
-      <div className="home-hero-decor home-hero-decor--leaf-br" aria-hidden="true">
-        <Image src={LeafBottomRight} width={180} height={210} alt="" />
-      </div>
+      {/* Listovi su premešteni dole, uz brojače — tamo im je mesto po dizajnu. */}
 
       {/* ── Mesec ───────────────────────────────── */}
       <div className="home-hero-decor home-hero-decor--moon" aria-hidden="true">
@@ -145,6 +139,36 @@ const HomeHero = ({
       {/* Stats section — centered, below hero content, alternating cards/icons */}
       <div className="home-hero-stats-section" style={{ position: 'relative', zIndex: 1 }}>
         <div className="home-hero-stats-grid" ref={gridRef}>
+          {/* ── Dekorativni listovi ───────────────────────────────────────────
+              Sva četiri lista iz dizajna stoje oko bloka sa brojačima, a ne po
+              uglovima hero sekcije kako je dosad bilo.
+
+              Položaji su izmereni sa izvoza Figme (okvir 1920 × 10286, izvezen
+              1:1). Blok sa brojačima u dizajnu ide od (377, 1187) do (1543, 1611),
+              dakle 1166 × 424. Središta listova, mereno sa iste slike:
+
+                1. list-gore-levo  55 × 40   sredina (612, 1026)
+                2. list-sredina    41 × 24   sredina (772, 1060)
+                3. list-levo       59 × 111  sredina (272, 1350)
+                4. list-desno     143 × 167  sredina (1609, 1640)
+
+              Ti brojevi su ovde pretvoreni u udele bloka sa brojačima, pa listovi
+              prate brojače na svakoj širini ekrana umesto da budu zakucani u
+              pikselima. Crteži se koriste u veličini u kojoj su izvezeni — tako
+              su i nacrtani u dizajnu, sa nagibom već ucrtanim u sam vektor. */}
+          <div className="home-hero-list home-hero-list--1" aria-hidden="true">
+            <Image src={ListGoreLevo} width={55} height={40} alt="" />
+          </div>
+          <div className="home-hero-list home-hero-list--2" aria-hidden="true">
+            <Image src={ListSredina} width={41} height={24} alt="" />
+          </div>
+          <div className="home-hero-list home-hero-list--3" aria-hidden="true">
+            <Image src={ListLevo} width={59} height={111} alt="" />
+          </div>
+          <div className="home-hero-list home-hero-list--4" aria-hidden="true">
+            <Image src={ListDesno} width={143} height={167} alt="" />
+          </div>
+
           {/* Row 1: card | icon | card */}
           <div className="home-hero-stat-card" style={{ gridColumn: 1, gridRow: 1, background: '#56C4CF', border: 'none' }}>
             <span className="home-hero-stat-card-value" style={{ color: '#261A54' }}>{formatNum(counts.events)}{ev.suffix}</span>

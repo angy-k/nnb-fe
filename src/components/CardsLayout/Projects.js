@@ -109,14 +109,19 @@ const Projects = ({
             onClick={() => previewAllProjects()}
         />}
         {title && <Divider className="section-divider"/>}
-        <div className="blog-container grid  sm:grid-template-1 md:grid-template-2">
+        {/* Stranica projekata prati dizajn stranice događaja — ista mreža od tri
+            kolone sa istim razmakom. Ovde su ranije stajale klase
+            `sm:grid-template-1 md:grid-template-2`, kojih nema u Tailwind-u, pa
+            mreža nije ni dobijala kolone odavde. */}
+        <div className="blog-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
           {limitedProjects.map((project, index) => (
             <div className="blog-card" key={`project-card-${index}`}>
               <CardComponent
                 key={`project-card-${index}`}
                 {...(project.coverImage && { imageSrc: project.coverImage })}
                 imageWidth={438}
-                imageHeight={344}
+                imageHeight={438}
+                imageSquare
                 imageRadius={"30px"}
                 imageAltText={`Projekat - ${project.title}`}
                 sectionType={'project'}

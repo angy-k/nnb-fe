@@ -125,7 +125,18 @@ const ProfileComponent = ({
         <div className="max-w-[1400px] mx-auto px-6">
           <AccountData account={mappedAccount} />
           <div id="profil-galerija">
-            <ProfileGallery account={mappedAccount} editable={!!user && !account} />
+            {/* Ovo je stranica za pregled profila; izmena živi na
+                `/profil/izmeni`, do koje vodi dugme „Izmenite profil" iznad.
+
+                Ranije je ovde stajalo `editable={!!user && !account}`, pa je
+                sopstveni profil bio izmenljiv i u pregledu: pored sličica su
+                stajale pločice „Dodajte još fotografija" i „Dodajte još video
+                snimaka", i dugmad za brisanje fotografija. U dizajnu pregled ima
+                samo sličice i vezu „Vidi više...".
+
+                Sama `ProfileGallery` već razlikuje ta dva stanja — u pregledu i
+                naslov glasi „Galerija fotografija", a u izmeni samo „Galerija". */}
+            <ProfileGallery account={mappedAccount} editable={false} />
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@
  * and legacy formats (d MMM yyyy HH:mm) for backward compatibility.
  */
 import { parse, isValid, format } from 'date-fns'
+import { srLatn } from 'date-fns/locale'
 
 const PARSE_FORMATS = [
   // ISO 8601 (API date_of_birth: yyyy-MM-dd)
@@ -27,6 +28,8 @@ const PARSE_FORMATS = [
 /** Parse a date string using known API formats, fallback to native Date. */
 export function parseDate(dateStr) {
   if (!dateStr) return null
+  // Pozivaoci ponekad već imaju `Date` (kalendar radi sa objektima, ne stringovima).
+  if (dateStr instanceof Date) return isValid(dateStr) ? dateStr : null
   const s = String(dateStr).trim()
   if (!s) return null
   for (const fmt of PARSE_FORMATS) {
@@ -81,4 +84,62 @@ export function formatDateTime(dateStr) {
   const d = parseDate(dateStr)
   if (!d) return String(dateStr)
   return format(d, 'dd.MM.yyyy HH:mm')
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Nazivi meseca i dana
+ *
+ * Ovo su jedina mesta gde sme da se izvede naziv meseca ili dana u nedelji.
+ * `toLocaleDateString` se namerno nigde ne koristi:
+ *
+ *   - `sr-RS` daje ćirilicu („4. септембар 2026."), a sajt je latinični;
+ *   - i `sr-RS` i `sr-Latn` dodaju završnu tačku uz godinu („04.09.2026."),
+ *     pa se isti datum negde prikazivao sa tačkom a negde bez;
+ *   - tačan ishod zavisi od verzije pregledača i ugrađenih podataka o jeziku.
+ *
+ * `date-fns` sa `srLatn` daje isti rezultat svuda — i na serveru i u pregledaču,
+ * bez obzira na uređaj i podešavanja korisnika.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/** Sat i minut: `17:00` */
+export function formatTime(value) {
+  const d = value instanceof Date ? value : parseDate(value)
+  return d ? format(d, 'HH:mm') : ''
+}
+
+/** `4. septembar 2026` */
+export function formatDanMesecGodina(value) {
+  const d = value instanceof Date ? value : parseDate(value)
+  return d ? format(d, 'd. MMMM yyyy', { locale: srLatn }) : ''
+}
+
+/** `septembar 2026` */
+export function formatMesecGodina(value) {
+  const d = value instanceof Date ? value : parseDate(value)
+  return d ? format(d, 'MMMM yyyy', { locale: srLatn }) : ''
+}
+
+/** `sep` — skraćen naziv meseca, za zaglavlje nedeljnog prikaza */
+export function formatMesecKratko(value) {
+  const d = value instanceof Date ? value : parseDate(value)
+  return d ? format(d, 'MMM', { locale: srLatn }) : ''
+}
+
+/** `2026` */
+export function formatGodina(value) {
+  const d = value instanceof Date ? value : parseDate(value)
+  return d ? format(d, 'yyyy') : ''
+}
+
+/** `petak`, odnosno `pet` kad je `kratko` */
+export function formatDanUNedelji(value, kratko = false) {
+  const d = value instanceof Date ? value : parseDate(value)
+  if (!d) return ''
+  return format(d, kratko ? 'EEEEEE' : 'EEEE', { locale: srLatn })
+}
+
+/** `petak, 4. septembar 2026` */
+export function formatPunDatum(value) {
+  const d = value instanceof Date ? value : parseDate(value)
+  return d ? format(d, 'EEEE, d. MMMM yyyy', { locale: srLatn }) : ''
 }

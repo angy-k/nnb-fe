@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { uPasuse } from '@/utils/tekst'
 
 const OrganizerWord = ({
     name      = 'Marija Radojčić',
@@ -9,7 +10,7 @@ const OrganizerWord = ({
     bio       = null,
 }) => {
   const bioContent = bio
-    ? bio.split('\n\n').map((p, i) => <p key={i} style={{ whiteSpace: 'pre-wrap' }}>{p}</p>)
+    ? uPasuse(bio).map((p, i) => <p key={i} style={{ whiteSpace: 'pre-wrap' }}>{p}</p>)
     : <DefaultBio />;
 
   return (

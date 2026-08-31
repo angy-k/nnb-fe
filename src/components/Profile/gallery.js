@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import galleryService from '@/services/galleryService'
 import MediaUploadModal from './MediaUploadModal'
 
@@ -32,6 +33,43 @@ function getYouTubeId(url) {
     return null
   }
 }
+
+// Mereno sa izvoza Figme (`Profil.png`): sličica je 338 × 311 u koloni od 1440,
+// a razmak među njima 30 — četiri u redu ispune kolonu. Sličica je dakle nešto
+// šira nego viša, ne kvadrat.
+const OKVIR_SLICICE = 'aspect-[338/311]'
+// Pločica za dodavanje: u dizajnu je puna linija 1px u boji teksta, ne
+// isprekidana i ne dvostruka. Provereno na izvozu — ivica je 528 uzastopnih
+// piksela bez prekida.
+const OKVIR_DODAVANJA = 'border border-solid border-[#261A54]'
+
+// Strelica iz posude, obrisna — mereno na izvozu je 48 × 47 na okviru od 1920,
+// sa linijom debljine 4. Srazmerno koloni sajta to je 44px, a `strokeWidth={2}`
+// u okviru od 24 daje upravo liniju od ~3,7px na toj veličini.
+const IkonaOtpremanja = () => (
+  <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
+  </svg>
+)
+// 28px je 30 srazmerno umanjeno na kolonu sajta od 1400 sa unutrašnjim
+// razmakom (1352 upotrebljivih). Time sličica sama ispadne 317, tačno koliko i
+// dizajn traži — širina se ne zadaje ručno.
+const MREZA_SLICICA = 'w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7 pb-2'
+
+// Prazna galerija na pregledu profila. Izgleda kao pločica za dodavanje iz
+// izmene, ali ovde ne otvara otpremanje — pregled profila nije izmenljiv, pa
+// vodi na `/profil/izmeni`, gde dodavanje i živi.
+const PraznaPlocica = ({ tekst }) => (
+  <Link
+    href="/profil/izmeni"
+    className={`rounded-[20px] ${OKVIR_SLICICE} flex flex-col items-center justify-center gap-2 ${OKVIR_DODAVANJA} text-[#261A54]/70 hover:border-[#56C4CF] hover:text-[#56C4CF] transition`}
+  >
+    <IkonaOtpremanja />
+    <span className="text-xs font-medium text-center leading-tight px-2">{tekst}</span>
+  </Link>
+)
 
 const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
   const [images, setImages] = useState(account?.gallery_images || [])
@@ -129,9 +167,9 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
           )}
         </div>
 
-        <div className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-2">
+        <div className={MREZA_SLICICA}>
           {images.map((img) => (
-            <div key={img.id} className="relative group rounded-[20px] overflow-hidden aspect-square bg-gray-100">
+            <div key={img.id} className={`relative group rounded-[20px] overflow-hidden ${OKVIR_SLICICE} bg-gray-100`}>
               <Image
                 src={img.url}
                 fill
@@ -144,7 +182,8 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
                   type="button"
                   disabled={deletingId === img.id}
                   onClick={() => handleDelete(img.id, 'image')}
-                  className="absolute top-2 left-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-black/80 disabled:opacity-40"
+                  className="absolute top-3 left-3 text-white flex items-center justify-center transition hover:opacity-70 disabled:opacity-40"
+                  style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.55))' }}
                   aria-label="Obriši fotografiju"
                 >
                   <TrashIcon />
@@ -159,38 +198,33 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
               type="button"
               disabled={uploading}
               onClick={() => setImageModalOpen(true)}
-              className="rounded-[20px] aspect-square flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#261A54]/20 text-[#261A54]/50 hover:border-[#56C4CF] hover:text-[#56C4CF] transition disabled:opacity-40"
+              className={`relative rounded-[20px] ${OKVIR_SLICICE} flex flex-col items-center justify-center gap-2 ${OKVIR_DODAVANJA} text-[#261A54]/70 hover:border-[#56C4CF] hover:text-[#56C4CF] transition disabled:opacity-40`}
             >
               {uploading ? (
                 <span className="text-xs">Otpremanje...</span>
               ) : (
                 <>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                  </svg>
+                  <IkonaOtpremanja />
                   <span className="text-xs font-medium text-center leading-tight px-2">Dodajte još fotografija</span>
-                  <span className="text-[11px] opacity-70">Prevucite ovde</span>
+                  {/* U dizajnu ovaj red stoji pri dnu pločice, odvojen od
+                      ikone i natpisa koji su usredišteni. */}
+                  <span className="text-[11px] opacity-70 absolute bottom-4 left-0 right-0 text-center">Prevucite ovde</span>
                 </>
               )}
             </button>
           )}
 
           {images.length === 0 && !editable && (
-            <div
-              className="rounded-[20px] opacity-60 aspect-square flex items-center justify-center col-span-1"
-              style={{ border: '1px dashed #261A64', minHeight: '140px' }}
-            >
-              <span className="text-xs text-[#261A54]/50">Nema fotografija</span>
-            </div>
+            <PraznaPlocica tekst="Dodajte fotografije" />
           )}
         </div>
 
 
-        {images.length > 0 && (
-          <span className="edit-profile-about flex justify-end mt-2">Vidi više...</span>
-        )}
+        {/* „Vidi više..." je uklonjeno. U dizajnu je stajalo dok je galerija
+            bila zamišljena kao veća; sada je najviše tri fotografije i sve tri
+            staju u jedan red, pa nema šta da otkrije. Uz to nikad i nije bilo
+            veza — običan `span` bez rukovaoca, koji je izgledao kao da vodi
+            negde. Isto važi i za video ispod. */}
       </div>
 
       {/* ── Video galerija ──────────────────────────────────── */}
@@ -203,11 +237,11 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
         </div>
 
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-2">
+        <div className={MREZA_SLICICA}>
           {videos.map((vid) => {
             const ytId = getYouTubeId(vid.url)
             return (
-              <div key={vid.id} className="relative group rounded-[20px] overflow-hidden aspect-video bg-gray-100">
+              <div key={vid.id} className={`relative group rounded-[20px] overflow-hidden ${OKVIR_SLICICE} bg-gray-100`}>
                 {ytId ? (
                   <iframe
                     src={`https://www.youtube.com/embed/${ytId}`}
@@ -231,7 +265,8 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
                     type="button"
                     disabled={deletingId === vid.id}
                     onClick={() => handleDelete(vid.id, 'video')}
-                    className="absolute top-2 left-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-black/80 disabled:opacity-40"
+                    className="absolute top-3 left-3 text-white flex items-center justify-center transition hover:opacity-70 disabled:opacity-40"
+                  style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.55))' }}
                     aria-label="Obriši video"
                   >
                     <TrashIcon />
@@ -244,31 +279,19 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
           {/* Upload slot za video (edit mode) */}
           {editable && videos.length < MAX_VIDEOS && (
             <div
-              className="rounded-[20px] aspect-video flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#261A54]/20 text-[#261A54]/50 cursor-pointer hover:border-[#56C4CF] hover:text-[#56C4CF] transition"
+              className={`rounded-[20px] ${OKVIR_SLICICE} flex flex-col items-center justify-center gap-2 ${OKVIR_DODAVANJA} text-[#261A54]/70 cursor-pointer hover:border-[#56C4CF] hover:text-[#56C4CF] transition`}
               onClick={() => setVideoModalOpen(true)}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
+              <IkonaOtpremanja />
               <span className="text-xs font-medium text-center leading-tight px-2">Dodajte još video snimaka</span>
             </div>
           )}
 
           {videos.length === 0 && !editable && (
-            <div
-              className="rounded-[20px] opacity-60 aspect-video flex items-center justify-center col-span-1"
-              style={{ border: '1px dashed #261A64', minHeight: '120px' }}
-            >
-              <span className="text-xs text-[#261A54]/50">Nema videa</span>
-            </div>
+            <PraznaPlocica tekst="Dodajte video snimke" />
           )}
         </div>
 
-        {videos.length > 0 && (
-          <span className="edit-profile-about flex justify-end mt-2">Vidi više...</span>
-        )}
       </div>
 
       {/* Confirm brisanje modal */}
@@ -276,19 +299,29 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
         <div
           style={{
             position: 'fixed', inset: 0, zIndex: 400,
-            background: 'rgba(38,26,84,0.45)',
+            // Mereno na izvozu dizajna: pozadina se ravnomerno množi sa ~0,69
+            // (bela 245 pada na 168, navy 38 na 27), što je crno na 31% — a ne
+            // plava koprena koja je ovde stajala. Uz to je i zamućena.
+            background: 'rgba(0,0,0,0.31)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '1rem',
           }}
           onClick={() => setDeleteConfirm(null)}
         >
+          {/* Mere sa izvoza: modal je 1440 × 489 na okviru od 1920, dakle iste
+              širine kao kolona sadržaja i kao modal za dodavanje videa.
+              Srazmerno koloni sajta od 1400 to je 1400 × 475. Preliv ide od
+              plavičaste dole levo ka beloj gore desno. */}
           <div
             style={{
-              background: 'linear-gradient(145deg, #deedf7 0%, #f8fcff 40%, #ffffff 60%, #eef5fb 100%)',
-              borderRadius: '28px',
+              background: 'linear-gradient(to top right, #d5e8ed 0%, #e9eef2 38%, #ffffff 72%)',
+              borderRadius: '41px',
               width: '100%',
-              maxWidth: '680px',
-              padding: '64px 48px 56px',
+              maxWidth: '1400px',
+              minHeight: '475px',
+              padding: '162px 48px 183px',
               position: 'relative',
               boxShadow: '0 16px 60px rgba(0,0,0,0.18)',
               textAlign: 'center',
@@ -299,30 +332,33 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
               type="button"
               onClick={() => setDeleteConfirm(null)}
               style={{
-                position: 'absolute', top: '20px', right: '24px',
+                position: 'absolute', top: '47px', right: '49px',
                 background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: '22px', color: '#261A54', opacity: 0.6, lineHeight: 1,
+                color: '#261A54', opacity: 0.75, lineHeight: 0, padding: 0,
               }}
               aria-label="Zatvori"
             >
-              ✕
+              <svg width="41" height="41" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+                <line x1="4" y1="4" x2="20" y2="20" />
+                <line x1="20" y1="4" x2="4" y2="20" />
+              </svg>
             </button>
 
             <p style={{
-              fontSize: '22px', fontWeight: '700', color: '#261A54',
-              marginBottom: '40px', lineHeight: '1.4',
+              fontSize: '31px', fontWeight: '700', color: '#261A54',
+              marginBottom: '39px', lineHeight: '1.2',
             }}>
               Da li želite da obrišete fotografiju/video snimak?
             </p>
 
-            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '39px', justifyContent: 'center' }}>
               <button
                 type="button"
                 onClick={confirmDelete}
                 disabled={!!deletingId}
                 style={{
-                  height: '52px', padding: '0 40px',
-                  borderRadius: '30px', border: 'none',
+                  height: '57px', minWidth: '233px', padding: '0 40px',
+                  borderRadius: '29px', border: 'none',
                   background: '#56C4CF', color: '#ffffff',
                   fontSize: '16px', fontWeight: '600',
                   cursor: deletingId ? 'not-allowed' : 'pointer',
@@ -337,8 +373,8 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
                 onClick={() => setDeleteConfirm(null)}
                 disabled={!!deletingId}
                 style={{
-                  height: '52px', padding: '0 40px',
-                  borderRadius: '30px', border: 'none',
+                  height: '57px', minWidth: '233px', padding: '0 40px',
+                  borderRadius: '29px', border: 'none',
                   background: '#EC4923', color: '#ffffff',
                   fontSize: '16px', fontWeight: '600',
                   cursor: 'pointer',
@@ -360,24 +396,14 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
         onFileUpload={handleImageUpload}
         uploading={uploading}
       />
+      {/* Bez `onFileUpload` — video se dodaje isključivo YouTube linkom.
+          Ranije je ovde stajalo otpremanje fajla preko `uploadImage`, što je
+          slalo snimak na putanju za slike; ona ga odbija, a greška se nigde
+          nije prikazivala. */}
       <MediaUploadModal
         isOpen={videoModalOpen}
         onClose={() => setVideoModalOpen(false)}
         mode="video"
-        onFileUpload={async (file) => {
-          // Video file upload — ako postoji servis za to
-          setUploading(true)
-          try {
-            const res = await galleryService.uploadImage(file) // ili uploadVideo ako postoji
-            const data = await res.json()
-            if (data.success && data.item) {
-              const updated = [...videos, data.item]
-              setVideos(updated)
-              onGalleryChange?.({ images, videos: updated })
-              setVideoModalOpen(false)
-            }
-          } catch { /* silent */ } finally { setUploading(false) }
-        }}
         onVideoUrl={handleAddVideo}
         uploading={uploading}
         addingVideo={addingVideo}

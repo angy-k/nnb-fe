@@ -10,6 +10,7 @@ import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
 import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
 import GalleryWarningModal from '@/components/Modal/GalleryWarningModal'
 import Button from '@/components/Button'
+import { electricityOptionsOf, electricityPriceFor, standAllowsElectricity } from '@/utils/electricity'
 
 const ReservationMapPage = () => {
   const router = useRouter()
@@ -25,15 +26,21 @@ const ReservationMapPage = () => {
 
   const [availability, setAvailability] = useState(null)
 
-  // Map coordinate system: SVG viewBox is 1920×1609
-  const MAP_W = 1920
-  const MAP_H = 1609
-  // Y: hotspot JSON was calibrated ~7.8% compressed vs SVG viewBox height.
-  const Y_SCALE = 1.0779
-  // X: hotspot JSON x-coordinates are offset from the raster's actual stand positions.
-  // Empirical fit across 11 measured stands: actual_svg_x = X_SCALE * hotspot_x - X_OFFSET
-  const X_SCALE = 1.070
-  const X_OFFSET = 173.9
+  /**
+   * Koordinatni prostor mape.
+   *
+   * Ranije je ovde stajalo fiksno 1920 × 1609 uz empirijske ispravke skale i
+   * pomeraja. To je bila zakrpa za jedan konkretan izvoz — čim je stigla šema
+   * sa drugačijim viewBox-om (1379 širine, jer je levi blok odsečen), tačke su
+   * se razišle sa podlogom.
+   *
+   * Sada se prostor čita iz same podloge: `naturalWidth`/`naturalHeight` daju
+   * deklarisanu širinu i visinu SVG-a, odnosno piksele rastera. Hotspot JSON se
+   * piše u tom istom prostoru, pa nikakva ispravka nije potrebna — a nova šema
+   * radi bez diranja koda.
+   */
+  const [mapNatural, setMapNatural] = useState(null)
+  const MAP_W = mapNatural?.w || 1920
 
   const mapContainerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(0)
@@ -54,13 +61,25 @@ const ReservationMapPage = () => {
   const [lockId, setLockId] = useState(null)
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
-  const [confirmCosts, setConfirmCosts] = useState({ cotization: 0, electricity: null, marketing: null })
   const [isSubmittingReservation, setIsSubmittingReservation] = useState(false)
   const [reservationError, setReservationError] = useState(null)
   const [reservationSuccess, setReservationSuccess] = useState(null)
   const [isGalleryWarningOpen, setIsGalleryWarningOpen] = useState(false)
 
   const isPackageUser = !!user?.active_package
+
+  /**
+   * Broj štanda ugovoren paketom.
+   *
+   * Paket korisnik ne bira mesto — organizator mu ga dodeljuje ugovorom, a
+   * backend ga sam upisuje u prijavu. Ovde je potreban da bi predračun mogao da
+   * se traži za pravo mesto: bez njega bi obračun tekao kao da mesto nije
+   * izabrano i prikazao kotizaciju 0, dok bi se naplatila cena njegove zone.
+   */
+  const packageStandNumber = (() => {
+    const raw = Number(user?.active_package?.stand_number)
+    return Number.isFinite(raw) && raw > 0 ? raw : null
+  })()
 
   const [sessionExpired, setSessionExpired] = useState(false)
   const [sessionSecondsLeft, setSessionSecondsLeft] = useState(120)
@@ -116,28 +135,17 @@ const ReservationMapPage = () => {
     return v
   }
 
-  const zoneIsWithElectricity = (zoneType) => {
-    const t = normalizeLabel(zoneType)
-    if (t === 'with electricity') return true
-    if (t.includes('struj') && !t.includes('bez')) return true
-    return false
-  }
-
-  const zoneIsWithoutElectricity = (zoneType) => {
-    const t = normalizeLabel(zoneType)
-    if (t === 'without electricity') return true
-    if (t.includes('bez') && t.includes('struj')) return true
-    return false
-  }
-
   const [eventDetails, setEventDetails] = useState({
     downPayment: null,
-    electricityExtensionCoasts: null,
+    // Varijante strujnog priključka sa događaja; prazan niz = struja se ne nudi
+    electricityOptions: [],
     fbMarketingCoasts: null,
     ingMarketingCoasts: null,
+    fbIngMarketingCoasts: null,
     termsPdfUrl: null,
   })
   const [eventName, setEventName] = useState('')
+  const [eventAddress, setEventAddress] = useState('')
 
   // ── Dani događaja ──────────────────────────────────────────────────────────
   const [eventDays, setEventDays] = useState([])
@@ -183,7 +191,8 @@ const ReservationMapPage = () => {
   const computeConfirmCosts = (electricityOpt, marketingOpt) => {
     // Kotizacija zavisi od zone izabranog štanda i broja izabranih dana.
     // Struja i marketing se naplaćuju jednom po prijavi, bez obzira na broj dana.
-    const standNo = Number(selectedStand)
+    // Paket korisnik ne bira mesto — računa se štand iz njegovog ugovora.
+    const standNo = Number(isPackageUser ? packageStandNumber : selectedStand)
     const daysCount = Math.max(1, selectedDayIds.length)
 
     const cotization = Number.isFinite(standNo) && standNo > 0
@@ -193,17 +202,23 @@ const ReservationMapPage = () => {
     // Zonski dodatak je sada uračunat u kotizaciju
     const zoneCost = null
 
-    const rawElectricity = eventDetails?.electricityExtensionCoasts
-    const electricityCostBase = rawElectricity != null && rawElectricity !== '' ? Number(rawElectricity) : null
-    const electricity = electricityOpt && electricityOpt !== 'none' ? electricityCostBase : null
+    // Cena zavisi od izabrane jačine priključka; „none" znači da struja nije tražena
+    const electricity = electricityPriceFor(eventDetails, electricityOpt)
 
     const rawFb = eventDetails?.fbMarketingCoasts
     const rawIg = eventDetails?.ingMarketingCoasts
     const fb = rawFb != null && rawFb !== '' ? Number(rawFb) : null
     const ig = rawIg != null && rawIg !== '' ? Number(rawIg) : null
-    // Cena paketa za obe mreže je zasebna i niža od zbira pojedinačnih;
-    // sabiranje ostaje samo za događaje kojima ta cena nije uneta.
-    const rawBoth = event?.fbIngMarketingCoasts
+    /*
+     * Cena paketa za obe mreže je zasebna i niža od zbira pojedinačnih;
+     * sabiranje ostaje samo za događaje kojima ta cena nije uneta.
+     *
+     * Ranije je ovde pisalo `event?.fbIngMarketingCoasts`, a na ovoj stranici
+     * promenljiva `event` ne postoji — izraz je hvatao `window.event`, koji je
+     * van rukovaoca događajem uvek `undefined`. Optional chaining je progutao
+     * grešku, pa se paketna cena nikad nije primenila i uvek se sabiralo.
+     */
+    const rawBoth = eventDetails?.fbIngMarketingCoasts
     const both = rawBoth != null && rawBoth !== '' ? Number(rawBoth) : null
 
     let marketing = null
@@ -213,6 +228,82 @@ const ReservationMapPage = () => {
 
     return { cotization, zoneCost, electricity, marketing }
   }
+
+  /**
+   * Troškovi se izvode iz trenutnog stanja pri svakom iscrtavanju.
+   *
+   * Ranije su se računali jednom i pamtili u `useState`, i to na dva mesta koja
+   * su pozivala računicu odmah nakon `setSelectedStand(...)`. Kako React stanje
+   * ažurira asinhrono, funkcija je i dalje videla prethodni štand: pri prvom
+   * izboru nije bilo nijednog, pa je kotizacija ispadala 0, a pri svakom
+   * sledećem se naplaćivala zona prethodno izabranog mesta.
+   *
+   * Izvedena vrednost nema to stanje pa ni tu grešku — a iznos prati i naknadnu
+   * promenu dana ili opcija.
+   */
+  const localCosts = computeConfirmCosts(electricityOption, marketingOption)
+
+  /*
+   * Merodavan obračun dolazi sa servera — `/applications/quote` vraća iste
+   * stavke koje će se i upisati. Domaća računica ostaje samo kao trenutni
+   * prikaz dok odgovor ne stigne, da sažetak ne bi bio prazan.
+   */
+  const [serverCosts, setServerCosts] = useState(null)
+  const [quoteBlockers, setQuoteBlockers] = useState([])
+  const [gratisPokriva, setGratisPokriva] = useState([])
+
+  // Paket korisnik ne bira mesto, pa predračun ide za štand iz njegovog ugovora.
+  const standZaObracun = isPackageUser ? packageStandNumber : selectedStand
+
+  useEffect(() => {
+    if (!eventId || !user || !standZaObracun) {
+      setServerCosts(null)
+      setQuoteBlockers([])
+      setGratisPokriva([])
+      return
+    }
+
+    let otkazano = false
+
+    const ucitajPredracun = async () => {
+      try {
+        const res = await applicationService.quoteApplication({
+          eventId,
+          electricityOption,
+          marketingOption,
+          standNumber: standZaObracun,
+          eventDayIds: selectedDayIds,
+        })
+        const data = await res.json().catch(() => null)
+        if (otkazano || !data?.success) return
+
+        setServerCosts({
+          cotization: data.data.cotization,
+          zoneCost: null,
+          electricity: data.data.electricity || null,
+          marketing: data.data.marketing || null,
+        })
+        setQuoteBlockers(Array.isArray(data.data.blockers) ? data.data.blockers : [])
+
+        /*
+         * Paket pokriva oglašavanje samo ako ga je izlagač i zatražio — inače
+         * bi u sažetku pisalo „Reklamiranje — pokriveno paketom" za uslugu koju
+         * nije ni izabrao.
+         */
+        const pokriva = Array.isArray(data.data.gratis_pokriva) ? data.data.gratis_pokriva : []
+        setGratisPokriva(pokriva.filter((k) =>
+          k !== 'oglasavanje' || (marketingOption && marketingOption !== 'none')
+        ))
+      } catch {
+        // Bez predračuna ostaje domaća procena — potvrda i dalje radi
+      }
+    }
+
+    ucitajPredracun()
+    return () => { otkazano = true }
+  }, [eventId, user, standZaObracun, electricityOption, marketingOption, selectedDayIds])
+
+  const confirmCosts = serverCosts ?? localCosts
 
   useEffect(() => {
     const el = mapContainerRef.current
@@ -306,13 +397,15 @@ const ReservationMapPage = () => {
         const toNum = (v) => (v != null && v !== '') ? Number(v) : null
         setEventDetails({
           downPayment: Number(found?.downPayment) || 0,
-          electricityExtensionCoasts: toNum(found?.electricityExtensionCoasts),
+          electricityOptions: electricityOptionsOf(found),
           fbMarketingCoasts: toNum(found?.fbMarketingCoasts),
           ingMarketingCoasts: toNum(found?.ingMarketingCoasts),
+          fbIngMarketingCoasts: toNum(found?.fbIngMarketingCoasts),
           // Ručno uploadovan dokument ima prednost; inače idu generisani uslovi
           termsPdfUrl: found?.termsPdfUrl || found?.generatedTermsUrl || null,
         })
         setEventName((found?.title || found?.name || '').toString())
+        setEventAddress((found?.eventAddress || '').toString())
 
         const days = Array.isArray(found?.days) ? found.days : []
         setEventDays(days)
@@ -473,7 +566,6 @@ const ReservationMapPage = () => {
       setReservationError(null)
 
       if (!isOptionsOpen) {
-        setConfirmCosts(computeConfirmCosts(electricityOption, marketingOption))
         setIsConfirmModalOpen(true)
       }
 
@@ -501,7 +593,6 @@ const ReservationMapPage = () => {
       }
     }
 
-    setConfirmCosts(computeConfirmCosts(electricityOption, marketingOption))
     setIsOptionsOpen(false)
 
     if (isPackageUser) {
@@ -567,7 +658,10 @@ const ReservationMapPage = () => {
     }
   }
 
-  const readyToConfirm = isPackageUser || (!sessionExpired && !!selectedStand && !!lockId)
+  // Predračun javlja i razloge zbog kojih upis ne bi prošao (mesto van zona,
+  // neodređena cena) — bolje da ih izlagač vidi pre potvrde nego posle slanja.
+  const readyToConfirm = (isPackageUser || (!sessionExpired && !!selectedStand && !!lockId))
+    && quoteBlockers.length === 0
 
   if (loading) {
     return (
@@ -577,7 +671,12 @@ const ReservationMapPage = () => {
     )
   }
 
-  if (error || !mapConfig?.map_url || !Array.isArray(mapConfig?.hotspots)) {
+  /*
+   * Paket korisniku mapa ne treba — mesto mu je dodeljeno ugovorom, pa ni
+   * nedostatak mape nije prepreka za prijavu. Ranije ga je ovaj uslov odbijao
+   * porukom „Mapa nije dostupna" na događajima bez šeme, iako mesto ima.
+   */
+  if (!isPackageUser && (error || !mapConfig?.map_url || !Array.isArray(mapConfig?.hotspots))) {
     return (
       <div className="mt-48 w-full grid place-items-center px-6">
         <div className="max-w-[900px] w-full bg-white rounded-2xl shadow p-8">
@@ -602,15 +701,25 @@ const ReservationMapPage = () => {
     return Number.isFinite(from) && Number.isFinite(to)
   })
 
-  const zonesWithElectricity = zonesWithRanges.filter((z) => zoneIsWithElectricity(z?.zone_type))
-  const zonesWithoutElectricity = zonesWithRanges.filter((z) => zoneIsWithoutElectricity(z?.zone_type))
   const withElectricity = electricityOption && electricityOption !== 'none'
 
-  const candidateZones = zonesWithRanges.length > 0
-    ? (withElectricity
-        ? (zonesWithElectricity.length > 0 ? zonesWithElectricity : zonesWithRanges)
-        : (zonesWithoutElectricity.length > 0 ? zonesWithoutElectricity : zonesWithRanges))
-    : []
+  // Struja se više ne vezuje za tip zone nego za pojedinačnu poziciju: po mapi
+  // organizatora priključak postoji samo na označenim tezgama. Zato izbor zone
+  // ne zavisi od toga da li je struja tražena — sve zone su podjednako u igri,
+  // a dozvoljenost priključka se proverava na izabranom štandu.
+  const candidateZones = zonesWithRanges
+  /**
+   * Dok štand nije izabran, priključak se ne ograničava.
+   *
+   * `standAllowsElectricity` vraća `false` kad broj štanda nije prosleđen — što
+   * je tačno za pitanje „da li na ovom mestu ima struje", ali pogrešno na
+   * početku, jer se modal sa opcijama otvara odmah pri učitavanju mape, pre
+   * nego što je izlagač išta izabrao. Zbog toga su mu se opcije javljale kao
+   * nedostupne iako ih događaj nudi.
+   */
+  const electricityAllowedHere = selectedStand == null
+    ? true
+    : standAllowsElectricity(zonesWithRanges, selectedStand)
 
   const findZonesForStand = (standNo) => {
     const n = Number(standNo)
@@ -624,24 +733,77 @@ const ReservationMapPage = () => {
     })
   }
 
+  /**
+   * Da li zona prima izlagača iz njegove grupe delatnosti.
+   *
+   * Poredi se veza ka grupi — isto pravilo kao na backendu, da korisnik ne bi
+   * video mesto kao slobodno pa dobio odbijenicu tek pri slanju.
+   *
+   * Poređenje po nazivu ostaje samo za zone bez veze (starije, koje migracija
+   * nije prepoznala). Ono ne ume da razlikuje grupe koje dele reč — „Hrana i
+   * piće", „Hrana sa pripremom na bazaru" i „Hrana i rukotvorci bez suhomesnatih
+   * proizvoda" sve sadrže „hrana" — pa je namerno poslednja opcija.
+   */
+  const zoneAllowsUser = (zone) => {
+    const zoneGroupId = zone?.activity_group_id
+    const userGroupId = user?.activity_group?.id
+
+    if (zoneGroupId != null) {
+      return userGroupId != null && Number(zoneGroupId) === Number(userGroupId)
+    }
+
+    // „Ostalo" prolazi svuda samo u ovoj grani — zona sa vezom traži tačno
+    // podudaranje, kako radi i backend.
+    if (userGroupKey === 'ostalo') return true
+
+    const cat = normalizeLabel(zone?.zone_category)
+    if (!cat) return true
+
+    return cat.includes(userGroupKey)
+  }
+
   const standAllowed = (standNo) => {
     if (isPackageUser) return { ok: false, reason: 'Imate aktivan paket. Mesto se dodeljuje automatski.' }
     // Ako nema zona — svako može birati bez obzira na grupu delatnosti
-    if (!userGroupKey && candidateZones.length > 0) return { ok: false, reason: 'Molimo odaberite grupu delatnosti u profilu.' }
-    if (userGroupKey === 'ostalo') return { ok: true, reason: null }
+    const imaGrupu = user?.activity_group?.id != null || !!userGroupKey
+    if (!imaGrupu && candidateZones.length > 0) {
+      return { ok: false, reason: 'Molimo odaberite grupu delatnosti u profilu.' }
+    }
 
     if (candidateZones.length > 0) {
       const z = findZonesForStand(standNo)
-      // Stand bez zone nema ograničenja — dostupan svima
-      if (z.length === 0) return { ok: true, reason: null }
+      /**
+       * Štand koji nijedna zona ne pokriva se ne može izabrati.
+       *
+       * Ranije je takav štand prolazio kao „bez ograničenja", pa je bio
+       * dostupan svakoj delatnosti, dozvoljavao struju bilo gde i naplaćivao
+       * nula dinara kotizacije — jer se cena uzima iz zone. Na ovoj šemi je
+       * takvih 46 kutija, pa je to bila rupa kroz koju se mesto moglo uzeti
+       * besplatno.
+       *
+       * Provera važi samo kad događaj uopšte ima zone sa opsezima; događaji
+       * bez zona i dalje nemaju ograničenja.
+       */
+      if (z.length === 0) {
+        return { ok: false, reason: 'Ovo mesto nije u ponudi za ovaj događaj.' }
+      }
 
-      const allowed = z.some((zone) => {
-        const cat = normalizeLabel(zone?.zone_category)
-        if (!cat) return true
-        return cat.includes(userGroupKey)
-      })
+      const allowed = z.some((zone) => zoneAllowsUser(zone))
 
       if (!allowed) return { ok: false, reason: 'Mesto nije dostupno za vašu delatnost.' }
+    }
+
+    /**
+     * Kad je priključak tražen, mesta bez struje se ne mogu izabrati.
+     *
+     * Ranije se izbor struje uopšte nije uzimao u obzir pri označavanju mapa —
+     * izlagač bi izabrao priključak, pa mesto koje ga nema, i tek bi mu se u
+     * modalu javilo da tu nije moguće. Sada takva mesta odmah stoje kao
+     * nedostupna, pa se vidi šta se uopšte može uzeti.
+     */
+    if (electricityOption && electricityOption !== 'none'
+        && !standAllowsElectricity(zonesWithRanges, standNo)) {
+      return { ok: false, reason: 'Na ovom mestu nema strujnog priključka.' }
     }
 
     return { ok: true, reason: null }
@@ -649,10 +811,43 @@ const ReservationMapPage = () => {
 
   return (
     <div className="mt-72 w-full grid place-items-center bg-[#F0F0F0] pb-32">
-      <div className="w-full max-w-[1440px] px-4 pt-6">
+      {/* `min-w-0` je uslov, ne ukras. Ovo je ćelija mreže, a takve po
+          podrazumevanom `min-width: auto` ne mogu da se skupe ispod širine
+          sadržaja. Mapa štandova unutra ima `min-width: 900px` — namerno, jer
+          se skroluje vodoravno — pa je celu stranicu razvlačila na 932px i
+          gurala „Nazad" i traku sa dugmadima van ekrana. Sa `min-w-0` skrol
+          ostaje na mapi, gde mu je i mesto. */}
+      <div className="w-full min-w-0 max-w-[1440px] px-4 pt-6">
         <div className="flex items-center justify-between mb-6">
           <div className="text-[#261A54] text-2xl font-bold">Izaberite mesto</div>
           <Button type="outlined-dark" name="Nazad" onClick={() => router.back()} />
+        </div>
+
+        {/* Adresa događaja — u dizajnu stoji ispod naslova, uz tirkiznu oznaku
+            mesta. Podatak dolazi sa događaja (`eventAddress`). */}
+        {eventAddress && (
+          <div className="flex items-center mb-6" style={{ gap: '16px' }}>
+            <svg width="27" height="37" viewBox="0 0 24 33" fill="#56C4CF" aria-hidden="true">
+              <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 21 12 21s12-12 12-21c0-6.6-5.4-12-12-12zm0 16.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z" />
+            </svg>
+            <span className="text-[#261A54]" style={{ fontSize: '31px' }}>{eventAddress}</span>
+          </div>
+        )}
+
+        {/* Legenda — mereno na izvozu 243 × 249 na okviru od 1920 */}
+        {/* Boja se zadaje izričito — klasa `bg-white` u ovom projektu nije bela
+            (`tailwind.config.ts` je `white` postavio na #F0F0F0), pa bi kartica
+            bila iste boje kao pozadina strane i ne bi se videla. */}
+        <div className="mb-6" style={{ background: '#ffffff', width: '236px', minHeight: '242px', padding: '55px 40px 0' }}>
+          <div className="text-[#261A54] font-bold" style={{ fontSize: '33px', lineHeight: 1 }}>Legenda</div>
+          <div className="flex items-center" style={{ gap: '17px', marginTop: '48px' }}>
+            <span style={{ width: '45px', height: '23px', background: '#F27D14', flexShrink: 0 }} />
+            <span className="text-[#261A54]" style={{ fontSize: '21px' }}>Rezervisano</span>
+          </div>
+          <div className="flex items-center" style={{ gap: '17px', marginTop: '25px' }}>
+            <span style={{ width: '45px', height: '23px', background: '#ffffff', border: '1px solid #C5C4C2', flexShrink: 0 }} />
+            <span className="text-[#261A54]" style={{ fontSize: '21px' }}>Slobodno</span>
+          </div>
         </div>
 
         {/* Izbor dana — samo za višednevne događaje sa dozvoljenom prijavom po danu */}
@@ -772,11 +967,33 @@ const ReservationMapPage = () => {
         )}
 
         <div className="bg-white rounded-2xl shadow">
+          {/* Paket korisniku se mapa ne prikazuje — ne bira mesto, pa bi gledao
+              šemu na kojoj je sve nedostupno. Umesto nje stoji njegov štand. */}
+          {isPackageUser ? (
+            <div className="p-8 text-center">
+              <div style={{ fontSize: '13px', color: '#56C4CF', fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                Vaše mesto po ugovoru
+              </div>
+              <div style={{ fontSize: '44px', fontWeight: '800', color: '#261A54', lineHeight: 1 }}>
+                {packageStandNumber ?? '—'}
+              </div>
+              <div className="text-[#555] mt-3">
+                {packageStandNumber
+                  ? 'Mesto je dodeljeno paketom, pa ga ne birate na mapi.'
+                  : 'Broj mesta još nije upisan u ugovor. Obratite se organizatoru.'}
+              </div>
+            </div>
+          ) : (
           <div className="w-full overflow-x-auto overflow-y-hidden rounded-t-2xl">
             <div ref={mapContainerRef} className="relative" style={{ minWidth: '900px' }}>
               <img
                 src={mapConfig.map_url}
                 alt="Mapa štandova"
+                onLoad={(e) => {
+                  const w = e.currentTarget.naturalWidth
+                  const h = e.currentTarget.naturalHeight
+                  if (w > 0 && h > 0) setMapNatural({ w, h })
+                }}
                 style={{ display: 'block', width: '100%', height: 'auto' }}
               />
               {mapScale > 0 && mapConfig.hotspots.map((h, idx) => {
@@ -815,10 +1032,10 @@ const ReservationMapPage = () => {
                     title={allowed.ok ? `Mesto ${standNo}` : `Mesto ${standNo} — ${allowed.reason}`}
                     style={{
                       position: 'absolute',
-                      left: `${(Number(r.x) * X_SCALE - X_OFFSET) * mapScale + overlayOffset.x}px`,
-                      top: `${Number(r.y) * Y_SCALE * mapScale + overlayOffset.y}px`,
-                      width: `${Number(r.width) * X_SCALE * mapScale}px`,
-                      height: `${Number(r.height) * Y_SCALE * mapScale}px`,
+                      left: `${Number(r.x) * mapScale + overlayOffset.x}px`,
+                      top: `${Number(r.y) * mapScale + overlayOffset.y}px`,
+                      width: `${Number(r.width) * mapScale}px`,
+                      height: `${Number(r.height) * mapScale}px`,
                     }}
                     className={`border ${bg} ${trueDisabled ? 'cursor-not-allowed' : notAllowed ? 'cursor-not-allowed' : 'hover:bg-blue-500/25'} `}
                   >
@@ -839,12 +1056,15 @@ const ReservationMapPage = () => {
               )}
             </div>
           </div>
+          )}
 
           <div className="p-6 border-t border-gray-200">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="text-sm text-[#261A54]">
                 {isPackageUser ? (
-                  <div>Imate aktivan paket. Mesto se dodeljuje automatski.</div>
+                  <div>
+                    Mesto po paketu: <span className="font-semibold">{packageStandNumber ?? '—'}</span>
+                  </div>
                 ) : (
                   <>
                     <div>
@@ -897,6 +1117,8 @@ const ReservationMapPage = () => {
         isOpen={isOptionsOpen}
         onClose={() => setIsOptionsOpen(false)}
         electricityOption={electricityOption}
+        electricityOptions={eventDetails?.electricityOptions ?? []}
+        electricityAllowed={electricityAllowedHere}
         setElectricityOption={setElectricityOption}
         marketingOption={marketingOption}
         setMarketingOption={setMarketingOption}
@@ -916,20 +1138,35 @@ const ReservationMapPage = () => {
       <BoothReservationConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
-        selectedStand={selectedStand}
-        title={selectedStand ? 'Da li želite da potvrdite rezervaciju?' : 'Da li želite da rezervišete tezgu?'}
+        // Paket korisnik ne bira mesto, ali u potvrdi treba da vidi koje dobija.
+        selectedStand={standZaObracun}
+        // U dizajnu naslov nosi i broj izabrane tezge („Da li želite da
+        // rezervišete tezgu XYZ?"), pa izlagač pred potvrdu vidi šta tačno
+        // uzima. Ranije je pisalo samo „…da potvrdite rezervaciju?".
+        title={standZaObracun ? `Da li želite da rezervišete tezgu ${standZaObracun}?` : 'Da li želite da rezervišete tezgu?'}
         eventName={eventName}
         onConfirm={confirmReservation}
         onCancel={() => setIsConfirmModalOpen(false)}
         isLoading={isSubmittingReservation}
         successMessage={reservationSuccess}
-        errorMessage={reservationError}
+        errorMessage={reservationError || quoteBlockers[0] || null}
         onDismissMessage={() => {
           setReservationError(null)
           setReservationSuccess(null)
         }}
         costs={confirmCosts}
+        coveredByPackage={gratisPokriva}
         timeRemaining={!isPackageUser && !sessionExpired ? sessionSecondsLeft : null}
+        // Potvrda posle uspešnog slanja imenuje baš tezgu za koju je zahtev
+        // poslat. U dizajnu dugme vraća na mapu, ali je dogovoreno da izlagača
+        // odvede na „Moje rezervacije", gde odmah vidi i ovu novu među aktivnim
+        // — pa natpis prati to, da ne obećava povratak na mapu.
+        standSuccessLabel="Pogledajte rezervacije"
+        onStandSuccess={() => {
+          setIsConfirmModalOpen(false)
+          setReservationSuccess(null)
+          router.push('/moje-rezervacije')
+        }}
       />
     </div>
   )

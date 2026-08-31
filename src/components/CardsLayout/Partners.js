@@ -12,6 +12,7 @@ const PartnerCard = ({ partner, onClick }) => (
     tabIndex={0}
     onClick={() => onClick(partner)}
     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(partner) }}
+    className="partner-kartica"
     style={{
       position: 'relative',
       background: '#ffffff',
@@ -21,7 +22,6 @@ const PartnerCard = ({ partner, onClick }) => (
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: '200px',
       boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
       transition: 'box-shadow 0.2s',
     }}
@@ -89,7 +89,9 @@ const PartnerModal = ({ partner, onClose }) => {
           background: 'linear-gradient(to bottom, #ffffff 60%, #dff4f5 100%)',
           borderRadius: '20px',
           padding: '48px 56px 56px',
-          maxWidth: '760px',
+          // U dizajnu je modal 1206 širok na okviru od 1920, dakle 62,8% širine —
+          // 904px na 1440. Ovde je stajalo 760, pa je bio osetno uži.
+          maxWidth: '904px',
           width: '100%',
           maxHeight: '85vh',
           overflowY: 'auto',
@@ -187,15 +189,40 @@ const Partners = ({ partners: propPartners }) => {
     }
   }
 
+  /**
+   * Upotrebljiva adresa sajta partnera, ili `null`.
+   *
+   * Polje se u administraciji unosi kao slobodan tekst, pa ume da sadrži i nešto
+   * što nije adresa — zatečen je unos „sdafdsf". Takav niz bi se otvorio kao
+   * putanja na samom sajtu (`/sdafdsf`) i odveo posetioca na stranicu koje nema.
+   *
+   * Zato se prihvata samo `http://` i `https://`. Adresa upisana bez toga, kao
+   * „novisad.rs", dopunjava se sa `https://` — to je čest način unosa i bilo bi
+   * grubo odbaciti ga. Sve ostalo se odbacuje, pa se partner ponaša kao da nema
+   * adresu i otvara mu se modal.
+   */
+  const upotrebljivaAdresa = (sirovo) => {
+    const tekst = String(sirovo ?? '').trim()
+    if (!tekst) return null
+
+    if (/^https?:\/\//i.test(tekst)) return tekst
+
+    // Bez šeme: mora da liči na ime domena — bar jedna tačka i bez razmaka.
+    if (/^[^\s/]+\.[^\s/]{2,}(\/.*)?$/.test(tekst)) return `https://${tekst}`
+
+    return null
+  }
+
   const handlePartnerClick = (partner) => {
-    const websiteUrl = partner.url || partner.websiteUrl || partner.website_url || partner.website || partner.link
+    const sirovaAdresa = partner.url || partner.websiteUrl || partner.website_url || partner.website || partner.link
+    const websiteUrl = upotrebljivaAdresa(sirovaAdresa)
     const description = partner.aboutPartner || partner.description || partner.content || ''
 
     if (websiteUrl) {
-      // Ima link → otvori u novom tabu
+      // Ima upotrebljivu adresu → otvori u novom tabu
       window.open(websiteUrl, '_blank', 'noopener,noreferrer')
     } else if (description) {
-      // Ima description → prikaži modal
+      // Nema adrese, ili upisano nije adresa → prikaži modal sa opisom
       setSelectedPartner(partner)
     }
   }
@@ -215,7 +242,18 @@ const Partners = ({ partners: propPartners }) => {
           <p className="text-[#261A54] our-team-title">Prijatelji uskoro stižu.</p>
         )}
 
-        <div className="blog-container grid sm:grid-template-1 md:grid-template-2">
+        {/* Mreža prijatelja ima svoju meru, drugačiju od bloga i događaja.
+
+            Mereno sa izvoza Figme: kartice su kvadratne, 467 × 467, u tri kolone
+            na x 240, 726 i 1213 — dakle vodoravni razmak 20px, uspravni 26px.
+            Tri puta 467 plus dva puta 20 daje 1441, taman koliko je i kolona.
+
+            Ranije je ovde stajala klasa `.blog-container`, koja daje kolone od
+            448px sa razmakom 28. Kartica prijatelja je u `CardComponent` zadata
+            kao čvrstih 467 × 467, pa je prelazila preko svoje ćelije. Uz to su
+            stajale i klase `sm:grid-template-1` i `md:grid-template-2`, kojih u
+            Tailwind-u nema, pa od njih ionako nije bilo ništa. */}
+        <div className="partneri-mreza">
           {partners.map((partner, index) => (
             <PartnerCard
               key={`partner-card-${index}`}

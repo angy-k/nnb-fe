@@ -1,8 +1,9 @@
 import { isWithinInterval } from "date-fns";
 import Image from 'next/image';
-import EventDark from '@/icons/event-dark.svg';
-import EventLight from '@/icons/event-light.svg';
-import EventOrange from '@/icons/event-orange.svg';
+// Bedž u ćeliji je sama sova, bez pilule i natpisa „nnb" — kako stoji u dizajnu.
+import OwlNnb from '@/icons/owl-nnb.svg';
+import OwlStartup from '@/icons/owl-startup.svg';
+import OwlDrugoMesto from '@/icons/owl-drugo-mesto.svg';
 
 import { Event } from "../types";
 
@@ -55,11 +56,11 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
   }
 
   return (
-    <ul className="flex flex-col items-start gap-1 overflow-hidden">
+    <ul className="flex flex-col items-end gap-1 overflow-hidden">
       {eventsToDisplay.map((event) => {
         const isStartup = event.variant === 'startup';
         const isAway = event.variant === 'away';
-        const badgeSrc = isStartup ? EventLight : isAway ? EventOrange : EventDark;
+        const badgeSrc = isStartup ? OwlStartup : isAway ? OwlDrugoMesto : OwlNnb;
         const badgeAlt = isStartup ? 'NNB Startup' : isAway ? 'NNB u drugom mestu' : 'NNB';
         return (
           <li className="flex items-center" key={event.id}>
@@ -76,10 +77,10 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
             >
               <Image
                 src={badgeSrc}
-                width={63}
-                height={26}
+                width={73}
+                height={53}
                 alt={badgeAlt}
-                className="w-[63px] h-[26px] sm:w-[40px] sm:h-[17px]"
+                className="w-[73px] h-[53px] sm:w-[48px] sm:h-[35px]"
               />
             </button>
           </li>

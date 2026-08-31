@@ -17,6 +17,11 @@ import ExhibitionTermsContent, { TERMS_EXCERPT } from '@/components/Legal/Exhibi
  *
  * `termsPdfUrl` se prosleđuje iz prijave na događaj: uslovi tog događaja nose
  * konkretne cene i satnicu, pa uz opšti tekst stoji i link na taj dokument.
+ *
+ * `sections` bira koji se dokumenti prikazuju. Kontakt forma traži samo
+ * politiku privatnosti — uslovi izlaganja tu nemaju šta da traže. Kad je
+ * dokument jedini, otvara se odmah raširen: korisnik je kliknuo baš na njega,
+ * pa nema smisla da ga dočeka izvod i još jedan klik.
  */
 const LegalDocsModal = ({
   isOpen,
@@ -25,8 +30,10 @@ const LegalDocsModal = ({
   onAccept = null,
   termsPdfUrl = null,
   acceptLabel = 'Slažem se',
+  sections = ['terms', 'privacy'],
 }) => {
-  const [expanded, setExpanded] = useState({ terms: false, privacy: false })
+  const sam = sections.length === 1
+  const [expanded, setExpanded] = useState({ terms: sam, privacy: sam })
 
   const toggle = (key) => setExpanded((prev) => ({ ...prev, [key]: !prev[key] }))
 
@@ -76,6 +83,8 @@ const LegalDocsModal = ({
               </button>
 
               {/* ── Uslovi korišćenja ─────────────────────────────────────── */}
+              {sections.includes('terms') && (
+                <>
               <h2 className="text-[#1B1B1B] text-3xl sm:text-2xl font-bold mb-5">
                 Uslovi korišćenja
               </h2>
@@ -83,7 +92,7 @@ const LegalDocsModal = ({
               {expanded.terms ? (
                 <div className="mb-2">
                   <ExhibitionTermsContent compact />
-                  <div className="mt-2"><ReadMore section="terms" /></div>
+                  {!sam && <div className="mt-2"><ReadMore section="terms" /></div>}
                 </div>
               ) : (
                 <p className="text-[#1B1B1B] text-base sm:text-sm leading-relaxed mb-2">
@@ -108,8 +117,12 @@ const LegalDocsModal = ({
               )}
 
               {!termsPdfUrl && <div className="mb-8" />}
+                </>
+              )}
 
               {/* ── Politika privatnosti ──────────────────────────────────── */}
+              {sections.includes('privacy') && (
+                <>
               <h2 className="text-[#1B1B1B] text-3xl sm:text-2xl font-bold mb-5">
                 Politika privatnosti
               </h2>
@@ -117,13 +130,15 @@ const LegalDocsModal = ({
               {expanded.privacy ? (
                 <div className="mb-8">
                   <PrivacyPolicyContent />
-                  <div className="mt-2"><ReadMore section="privacy" /></div>
+                  {!sam && <div className="mt-2"><ReadMore section="privacy" /></div>}
                 </div>
               ) : (
                 <p className="text-[#1B1B1B] text-base sm:text-sm leading-relaxed mb-8">
                   {PRIVACY_EXCERPT}{' '}
                   <ReadMore section="privacy" />
                 </p>
+              )}
+                </>
               )}
 
               <button

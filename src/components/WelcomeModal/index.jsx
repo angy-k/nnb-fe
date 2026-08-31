@@ -8,6 +8,7 @@ import OWLsCommunity from '@/icons/owls-community.svg'
 import LeafTopLeft from '@/icons/leaf-top-left.svg'
 import LeafBottomLeft from '@/icons/leaf-bottom-left.svg'
 import LeafBottomRight from '@/icons/leaf-bottom-right.svg'
+import { zapamtiUlogu, POSETILAC, IZLAGAC } from '@/utils/izborUloge'
 
 const COOKIE_NAME = 'nnb_welcome'
 
@@ -34,14 +35,50 @@ const WelcomeModal = () => {
     if (!getCookie(COOKIE_NAME)) setIsOpen(true)
   }, [user, loading])
 
+  /**
+   * Zatvaranje ostavlja trag u istoriji.
+   *
+   * Bez ovoga je izbor posetilac/izlagač bio samo promena stanja u komponenti —
+   * browser o njemu ništa ne zna. Prvi „nazad" je zato vodio na ono što je bilo
+   * pre sajta, obično na Google pretragu. Nova stavka u istoriji čini da „nazad"
+   * vrati na sam izbor.
+   */
   const dismiss = () => {
     setSessionCookie(COOKIE_NAME, '1')
     setIsOpen(false)
+
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ nnbWelcome: 'dismissed' }, '')
+    }
   }
 
-  const handleVisitor = () => dismiss()
+  useEffect(() => {
+    const onPop = (e) => {
+      // Vraćamo prozor samo kad se stiglo na stavku istorije koja je *pre*
+      // zatvaranja. Stavka koju smo sami dodali nosi oznaku, pa se na njoj
+      // ništa ne otvara — inače bi se prozor pojavljivao i pri običnom
+      // kretanju unazad kroz sajt.
+      if (e.state?.nnbWelcome === 'dismissed') return
+      if (user) return
+      if (!getCookie(COOKIE_NAME)) return
+
+      setIsOpen(true)
+    }
+
+    window.addEventListener('popstate', onPop)
+
+    return () => window.removeEventListener('popstate', onPop)
+  }, [user])
+
+  // Izbor se pamti da bi ostatak sajta znao kome se obraća i pre prijave —
+  // videti `utils/izborUloge`.
+  const handleVisitor = () => {
+    zapamtiUlogu(POSETILAC)
+    dismiss()
+  }
 
   const handleExhibitor = () => {
+    zapamtiUlogu(IZLAGAC)
     dismiss()
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('nnb:open-auth-modal', { detail: { tab: 'login' } }))
@@ -70,7 +107,9 @@ const WelcomeModal = () => {
 
         {/* Logo */}
         <div className="wm-logo">
-          <Image src="/logo-light.svg" width={240} height={74} alt="Novosadski noćni bazar" priority />
+          {/* Kartica modala je svetla, pa ide varijanta sa ljubičastim „Novosadski".
+              Sa belom varijantom taj deo loga se ne vidi. */}
+          <Image src="/logo-purple.svg" width={240} height={74} alt="Novosadski noćni bazar" priority />
         </div>
 
         {/* Two choice cards */}

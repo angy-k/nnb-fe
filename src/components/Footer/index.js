@@ -99,14 +99,20 @@ const Footer = () => {
             <Link href="/uslovi-koriscenja">{'Opšti uslovi izlaganja'}</Link>
             <Link href="/politika-privatnosti">{'Politika privatnosti'}</Link>
           </div>
-          <span className="pt-10 sm:text-center">{'© 2022 NOVOSADSKI NOĆNI BAZAR. Sva prava zadržava.'}</span>
+          {/* Godina je zakucana na 2024, kako stoji u dizajnu. */}
+        <span className="footer-copyright pt-10 sm:text-center">{'© 2024 NOVOSADSKI NOĆNI BAZAR. Sva prava zadržana.'}</span>
         </div>
-        <div className="footer-logo grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-1">
+        {/* `sm:grid-cols-2` je delilo blok na dve kolone iako u njemu stoji samo
+            jedno dete — logo i ikonice su zato živeli u levoj polovini ekrana i
+            logo je ispadao preko leve ivice. */}
+        <div className="footer-logo grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
           <FooterLogo />
         </div>
       </div>
       <Divider  className="footer-divider"/>
-      <span className="w-full text-start" style={{maxWidth: '1400px'}}>{`Design and developed: ...`}</span>
+      {/* `sm:px-5` — kontejner futera na mobilnom nema bočni odmak, pa je ovaj
+          red dodirivao ivicu ekrana. */}
+      <span className="w-full text-start sm:px-5" style={{maxWidth: '1400px'}}>{`Design and developed: ...`}</span>
     </div>}
     </>
   )

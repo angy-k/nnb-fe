@@ -17,10 +17,14 @@ import DayEventsModal from '@/components/Modal/DayEventsModal'
 import GalleryWarningModal from '@/components/Modal/GalleryWarningModal'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import EventDark from '@/icons/event-dark.svg'
-import EventLight from '@/icons/event-light.svg'
-import EventOrange from '@/icons/event-orange.svg'
+// Legenda ispod kalendara — iste sove kao bedževi u ćelijama
+import OwlNnb from '@/icons/owl-nnb.svg'
+import OwlStartup from '@/icons/owl-startup.svg'
+import OwlDrugoMesto from '@/icons/owl-drugo-mesto.svg'
 import ExhibitorIcon from '@/icons/exhibitor-icon.svg'
+import { electricityOptionsOf, electricityPriceFor } from '@/utils/electricity'
+import RegistrationInstructionsModal from '@/components/Modal/RegistrationInstructionsModal'
+import { procitajUlogu, IZLAGAC } from '@/utils/izborUloge'
 
 const CalendarPage = () => {
   const router = useRouter()
@@ -34,6 +38,9 @@ const CalendarPage = () => {
   const [selectedDay, setSelectedDay] = useState(null)
 
   const [isReserveModalOpen, setIsReserveModalOpen] = useState(false)
+  // Dani za koje se šalje prijava. Polazi od dana kliknutog u kalendaru, a
+  // izlagač u modalu može da izabere sve dane višednevnog događaja.
+  const [selectedDayIds, setSelectedDayIds] = useState([])
   const [electricityOption, setElectricityOption] = useState('none')
   const [marketingOption, setMarketingOption] = useState('none')
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
@@ -43,6 +50,22 @@ const CalendarPage = () => {
   const [reservationSuccess, setReservationSuccess] = useState(null)
   const [sessionSeconds, setSessionSeconds] = useState(null)
   const [isGalleryWarningOpen, setIsGalleryWarningOpen] = useState(false)
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState(false)
+
+  /**
+   * Izlagačem se smatra i onaj ko je na uvodnom prozoru izabrao „Ja sam
+   * izlagač", a još se nije prijavio. Do sada se granalo samo po `user`, pa je
+   * takav posetilac video sadržaj namenjen posetiocima — instrukcije za
+   * registraciju, sekciju očekivanih događaja i poziv da postane izlagač
+   * (Excel, list KALENDAR, 8.0 i 9.0).
+   *
+   * Čita se posle montiranja, jer kolačić na serveru ne postoji i inače bi se
+   * prvi render razlikovao od onog u pretraživaču.
+   */
+  const [jeIzlagac, setJeIzlagac] = useState(false)
+  useEffect(() => {
+    setJeIzlagac(!!user || procitajUlogu() === IZLAGAC)
+  }, [user])
   const sessionIntervalRef = useRef(null)
   const sessionActiveRef = useRef(false)
 
@@ -143,7 +166,9 @@ const CalendarPage = () => {
   const startSessionTimer = useCallback(() => {
     if (sessionActiveRef.current) return
     sessionActiveRef.current = true
-    setSessionSeconds(60)
+    // 60 sekundi nije bilo dovoljno da se pročitaju opcije i uslovi; usklađeno
+    // sa mapom, gde sesija traje 120.
+    setSessionSeconds(120)
     sessionIntervalRef.current = setInterval(() => {
       setSessionSeconds((s) => {
         if (s === null || s <= 1) {
@@ -178,6 +203,10 @@ const CalendarPage = () => {
   }
 
   const openReserveModal = () => {
+    // Polazni izbor je dan sa kojeg je izlagač došao; ako ga nema, prvi dan.
+    const dani = Array.isArray(selectedEvent?.days) ? selectedEvent.days : []
+    const pocetni = selectedEvent?._day?.id || dani[0]?.id
+    setSelectedDayIds(pocetni ? [pocetni] : [])
     setIsReserveModalOpen(true)
     startSessionTimer()
   }
@@ -206,9 +235,8 @@ const CalendarPage = () => {
   const computeConfirmCosts = (event, electricityOpt, marketingOpt) => {
     const cotization = Number(event?.downPayment) || 0
 
-    const rawElectricity = event?.electricityExtensionCoasts
-    const electricityCostBase = rawElectricity != null && rawElectricity !== '' ? Number(rawElectricity) : null
-    const electricity = electricityOpt && electricityOpt !== 'none' ? electricityCostBase : null
+    // Cena zavisi od izabrane jačine priključka; „none" znači da struja nije tražena
+    const electricity = electricityPriceFor(event, electricityOpt)
 
     const rawFb = event?.fbMarketingCoasts
     const rawIg = event?.ingMarketingCoasts
@@ -273,7 +301,7 @@ const CalendarPage = () => {
         eventId,
         electricityOption,
         marketingOption,
-        eventDayIds: selectedEvent?._day?.id ? [selectedEvent._day.id] : undefined,
+        eventDayIds: selectedDayIds.length ? selectedDayIds : (selectedEvent?._day?.id ? [selectedEvent._day.id] : undefined),
       })
 
       const contentType = res.headers.get('content-type') || ''
@@ -372,33 +400,64 @@ const CalendarPage = () => {
         </div>
       )}
       <div className={`w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-48 bg-[#f0f0f0]${!user ? ' pt-24' : ''}`} style={{ position: 'relative', zIndex: 2 }}>
-        <div className="hidden md:block lg:block" style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
-          <Calendar view={'month'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
-        </div>
-        <div className="block md:hidden lg:hidden" style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
+        {/* Tabelarni prikaz ide ispred kalendara. Prikazuje se samo posetiocu —
+            izlagač ima svoj pregled prijava. */}
+        {!jeIzlagac && <UpcommingEvents />}
+
+        {/* Ranije su stajale dve identične instance kalendara, jedna za desktop
+            a druga za mobilni, sa istim svojstvima — pa je jedna uvek bila
+            sakrivena, a obe su se renderovale i dohvatale podatke. Kalendar je
+            sam po sebi responzivan, pa je dovoljna jedna. */}
+        <div style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
           <Calendar view={'month'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
         </div>
 
-        {/* Legenda — samo za ulogovane korisnike */}
+        {/* Legenda — samo za ulogovane korisnike.
+
+            U dizajnu je bela zaobljena kartica, usredišćena ispod kalendara:
+            mereno 1005 × 98 na okviru od 1920, dakle 977 × 95 ovde, radijus 30.
+            Sovice su 79 × 59 (77 × 57 ovde), a ne 44 × 33 kao dosad — u samim
+            ćelijama kalendara su i do sada bile pune veličine, pa je legenda
+            odudarala od onoga što objašnjava. */}
         {user && (
-          <div className="flex items-center gap-6 mt-6 mb-2 px-4 sm:flex-col sm:items-start sm:gap-3" style={{width: '100%', maxWidth: '1400px'}}>
-            <div className="flex items-center gap-2">
-              <Image src={EventDark} width={100} height={41} alt="Novosadski noćni bazar" />
-              <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Novosadski noćni bazar</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Image src={EventLight} width={100} height={41} alt="Novosadski noćni bazar — startup" />
-              <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Novosadski noćni bazar - startup</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Image src={EventOrange} width={100} height={41} alt="Noćni bazar u drugom mestu" />
-              <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Noćni bazar u drugom mestu</span>
+          <div className="flex justify-center w-full mt-10 mb-2 px-4" style={{ maxWidth: '1400px' }}>
+            <div
+              // Boja se zadaje izričito: klasa `bg-white` u ovom projektu nije
+              // bela — u `tailwind.config.ts` je `white` predefinisana na
+              // #F0F0F0, pa bi kartica bila iste boje kao pozadina i ne bi se
+              // videla.
+              className="flex items-center sm:flex-col sm:items-start sm:gap-4"
+              style={{ background: '#ffffff', minHeight: '95px', borderRadius: '30px', padding: '0 37px', gap: '82px' }}
+            >
+              <div className="flex items-center" style={{ gap: '25px' }}>
+                <Image src={OwlNnb} width={77} height={57} alt="Novosadski noćni bazar" />
+                <span style={{ fontSize: '18px', color: '#1B1B1B', whiteSpace: 'nowrap' }}>Novosadski noćni bazar</span>
+              </div>
+              <div className="flex items-center" style={{ gap: '25px' }}>
+                <Image src={OwlStartup} width={77} height={57} alt="Novosadski noćni bazar — startup" />
+                <span style={{ fontSize: '18px', color: '#1B1B1B', whiteSpace: 'nowrap' }}>Novosadski noćni bazar - startup</span>
+              </div>
+              <div className="flex items-center" style={{ gap: '25px' }}>
+                <Image src={OwlDrugoMesto} width={77} height={57} alt="Noćni bazar u drugom mestu" />
+                <span style={{ fontSize: '18px', color: '#1B1B1B', whiteSpace: 'nowrap' }}>Noćni bazar u drugom mestu</span>
+              </div>
             </div>
           </div>
         )}
-        {!user && (
-          <div className="pt-12 flex flex-row justify-between items-center" style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
-            <span className="text-[darkBlue] underline text-[22px]">{`Pogledajte instrukcije za registraciju`}</span>
+        {!jeIzlagac && (
+          <div className="pt-12 sm:pt-6 nnb-gutter flex flex-row sm:flex-col justify-between items-center sm:items-start gap-4" style={{width: '100%', height: '100%', maxWidth: '1400px'}}>
+            {/* Naglašeno, po zahtevu sa kartice „Kalendar". Ranije je ovo bio
+                  običan `span` koji se nije mogao kliknuti, a boja se nije ni
+                  primenjivala: `text-[darkBlue]` u uglastim zagradama znači
+                  doslovnu CSS vrednost, a `darkBlue` to nije — ispravno je
+                  `text-darkBlue`, jer je definisan u Tailwind konfiguraciji. */}
+            <button
+              type="button"
+              onClick={() => setIsInstructionsOpen(true)}
+              className="text-darkBlue underline underline-offset-4 decoration-2 font-bold text-[22px] hover:opacity-80 transition-opacity text-left"
+            >
+              Pogledajte instrukcije za registraciju
+            </button>
             <Button 
               type={'outlined-orange'}
               name={'Postani izlagač'}
@@ -408,15 +467,32 @@ const CalendarPage = () => {
             />
           </div>
         )}
-        {/* "Očekivani događaji" — samo za goste */}
-        {!user && <UpcommingEvents />}
+        <RegistrationInstructionsModal
+          isOpen={isInstructionsOpen}
+          onOpenChange={setIsInstructionsOpen}
+          onClose={() => setIsInstructionsOpen(false)}
+        />
 
         <EventDetailsModal
           isOpen={isEventModalOpen}
           onClose={closeEventModal}
           event={selectedEvent}
-          showReserveButton={!!user && canApply}
-          reserveLabel="Rezerviši mesto"
+                  // Posetilac takođe vidi dugme, samo sa drugim tekstom — po zahtevu sa
+        // kartice „Događaji". Ranije se dugme uopšte nije prikazivalo dok se
+        // korisnik ne prijavi, pa posetilac nije imao odakle da krene.
+        // Sama radnja je već znala da razlikuje slučajeve: posetiocu otvara
+        // prozor za registraciju, izlagaču vodi na rezervaciju.
+          showReserveButton={!user || canApply}
+          // Tri slučaja, ne dva: prijavljeni izlagač rezerviše odmah; onaj ko
+          // je izabrao „Ja sam izlagač" a nije se prijavio treba da se prijavi,
+          // ne da postaje izlagač; posetiocu ostaje poziv da to postane.
+          reserveLabel={
+            user
+              ? 'Rezerviši mesto'
+              : jeIzlagac
+                ? 'Prijavite se'
+                : 'Postani izlagač i rezerviši mesto'
+          }
           onReserve={() => {
             ;(async () => {
               if (!user) {
@@ -450,6 +526,7 @@ const CalendarPage = () => {
           isOpen={isReserveModalOpen}
           onClose={cancelReserveModal}
           electricityOption={electricityOption}
+          electricityOptions={electricityOptionsOf(selectedEvent)}
           setElectricityOption={setElectricityOption}
           marketingOption={marketingOption}
           setMarketingOption={setMarketingOption}
@@ -459,6 +536,9 @@ const CalendarPage = () => {
           cancelLabel="Otkaži"
           timeRemaining={sessionSeconds}
           termsPdfUrl={selectedEvent?.termsPdfUrl || selectedEvent?.generatedTermsUrl || null}
+          eventDays={Array.isArray(selectedEvent?.days) ? selectedEvent.days : []}
+          selectedDayIds={selectedDayIds}
+          setSelectedDayIds={setSelectedDayIds}
         />
 
         <BoothReservationConfirmModal
