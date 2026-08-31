@@ -362,8 +362,11 @@ const CalendarPage = () => {
   const brandName = user?.name || ''
   const avatarSrc = user?.profile_photo_url || null
 
+  // Odmak samo ulogovanom: njegov hero je obična traka od 200px i nema svoj
+  // prostor za zaglavlje. Hero neulogovanog ga računa sam (`--nnb-zaglavlje`),
+  // pa bi mu `mt-60` isti prostor zauzeo drugi put.
   return (
-    <div className="mt-60 grid place-items-center w-full">
+    <div className={`${user ? 'mt-60 ' : ''}grid place-items-center w-full`}>
       {!user ? (
         <PageHeroSection title={`Kalendar`} />
       ) : (

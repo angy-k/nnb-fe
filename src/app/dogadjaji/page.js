@@ -19,8 +19,10 @@ async function getEvents() {
 
 const EventsPage = async () => {
   const events = await getEvents()
+  // Bez `mt-60`: hero sada sam računa mesto za zaglavlje (vidi
+  // `--nnb-zaglavlje`), pa bi ovaj odmak isti prostor zauzeo drugi put.
   return (
-    <div className="mt-60 grid place-items-center w-full">
+    <div className="grid place-items-center w-full">
       <Events events={events} numberForDisplay={12} pagination={true} />
     </div>
   )

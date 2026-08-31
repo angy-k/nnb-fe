@@ -20,14 +20,6 @@ const PageHiroSection = ({
   // Uvodni tekst ispod naslova (misija i vizija na stranici „O nama").
   // Prazan prop znači da se sekcija ne prikazuje, pa ostale stranice ostaju netaknute.
   introText,
-  /*
-   * Stranica ispod hero-a ima panel koji prelazi preko njegove donje ivice
-   * (Kontakt, panel sa čestim pitanjima). Taj preklop je iz dizajna, ali bez
-   * ovoga panel pojede donjih 190px sove, pa se od nje vidi glava i tek trag
-   * tela. Sa oznakom sova ide više, da i telo ostane iznad panela — kao na
-   * Galeriji, gde panela nema.
-   */
-  panelPrekoHeroa = false,
 }) => {
 
   const formatTitle = (styledWords, classStyle) => {
@@ -77,21 +69,35 @@ const PageHiroSection = ({
   // Content in HeroLeft uses pt-[240px] to start just below the header.
   const visokHero = !!(tall || icons || description)
 
-  const heroHeight = visokHero
-    ? 'md:h-[750px] lg:h-[750px]'
+  /*
+   * Tri visine trake, mereno na pet izvoza dizajna (okvir 1920):
+   *
+   *   572  (29,79vw)  Blog, Kalendar, Događaji, Projekti, Prijatelji
+   *   891  (46,41vw)  Galerija — ima ikonice ispod naslova
+   *   1040 (54,17vw)  Kontakt — ima opis ispod naslova
+   *
+   * Galerija je do sada dobijala Kontaktovu visinu, jer je kod razlikovao samo
+   * „visok" i „nizak".
+   */
+  const heroHeight = icons
+    ? 'page-hero-section--ikonice'
+    : visokHero
+    ? 'page-hero-section--visok'
     : image
-    ? 'md:h-[1374px] lg:h-[1374px]'
-    : 'md:h-[450px] lg:h-[450px]'
+    ? 'page-hero-section--slika'
+    : 'page-hero-section--nizak'
 
   return (
     <div
       className={cn("w-full h-auto bg-[#261A54] page-hero-section relative", heroHeight)}
-      // Sova je viša od hero sekcije i preliva se 306px preko donje ivice. Na
-      // `zIndex: 1` ostaje iza svetle sekcije ispod (koja je na `zIndex: 2`), pa
-      // se vidi samo do granice. Podizanje iznad je probano — tada sova pada
-      // preko tabele i kalendara, što je gore. Pravo rešenje traži odluku o
-      // dizajnu: viši hero da sova stane cela, ili manja sova.
-      style={type !== 'image' ? { overflow: 'visible', zIndex: 1 } : undefined}
+      /* Sova se preliva preko donje ivice trake i svetla sekcija je prekriva —
+         tako i treba, presek je deo dizajna.
+
+         Hero namerno nema svoj `z-index`: time bi napravio zaseban sloj i
+         zatvorio sve unutra, pa vrh kljuna ne bi mogao da izađe iznad svetle
+         sekcije. Bez njega sova i dalje ostaje ispod (sekcija je na `z-1`, sova
+         bez sloja), a kljun sa svojim `z-index: 3` izlazi iznad. */
+      style={type !== 'image' ? { overflow: 'visible' } : undefined}
     >
       {type === 'image' ? (
         <div className="w-full grid place-items-center mx-auto max-w-[1400px]" style={{ marginLeft: 'auto', marginRight: 'auto', overflow: 'hidden' }}>
@@ -109,12 +115,12 @@ const PageHiroSection = ({
             title={title}
             description={description}
             icons={icons}
+            visokHero={visokHero}
           />
           <HeroRight
             illustration={illustration}
             description={description}
             visokHero={visokHero}
-            panelPrekoHeroa={panelPrekoHeroa}
           />
         </div>
       )}
@@ -136,13 +142,23 @@ const PageHiroSection = ({
 
 export default PageHiroSection
 
-const HeroLeft = ({ title, description, icons }) => {
+/**
+ * Naslov stranice, sa opisom ili ikonicama ispod.
+ *
+ * Odmak od vrha trake se razlikuje po vrsti hero-a i zadat je u CSS-u — vidi
+ * `.page-hero-left`. Ranije je bio fiksnih 240px za sve, pa je naslov stajao
+ * 99px previsoko na niskoj traci i 167px na visokoj.
+ */
+const HeroLeft = ({ title, description, icons, visokHero }) => {
   return (
     <div
       // `sm:px-4` — naslov stranice je na mobilnom stajao zalepljen uz levu
       // ivicu ekrana. Važi za sve stranice sa ovim hero-om (Kalendar, Događaji,
       // Blog, Galerija, Projekti, Prijatelji).
-      className="flex-1 w-full pt-[240px] sm:pt-[100px] nnb-gutter"
+      className={cn(
+        'flex-1 w-full sm:pt-[100px] nnb-gutter page-hero-left',
+        visokHero && 'page-hero-left--visok',
+      )}
       style={{alignSelf: 'flex-start'}}
     >
       {title && <div 
@@ -151,24 +167,17 @@ const HeroLeft = ({ title, description, icons }) => {
           {title}
         </div>}
       {(icons || description) && <div>
-        {icons && <div 
-            className="page-hero-section-icons pt-[88px]" 
-            style={{display: 'flex', flexDirection: 'row', gap: '36px'}}
-          >
+        {/* Mere krugova sa ikonicama su u CSS-u, kao udeo okvira od 1920 —
+            vidi `.page-hero-section-icons`. Bile su fiksnih 140/88/36/20px, pa
+            se ceo blok od 270px nije smanjivao sa širinom i ispod ~1440 je
+            izlazio iz tamne trake, koju svetla sekcija onda seče. */}
+        {icons && <div className="page-hero-section-icons">
             <Link
               prefetch={false}
               href={"/galerija/fotografije"}
-              className="items-center"
-              style={{display: 'flex', flexDirection: 'column', gap: '20px', textDecoration: 'none', color: 'inherit'}}
+              className="items-center page-hero-ikona-link"
             >
-              <div style={{
-                width: 140, height: 140,
-                borderRadius: '50%',
-                background: '#56C4CF',
-                padding: 36,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}>
+              <div className="page-hero-ikona-krug" style={{ background: '#56C4CF' }}>
                 <img src={photoGaleryIcon.src} alt="Fotografije" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
               <span>{`Fotografije`}</span>
@@ -176,17 +185,9 @@ const HeroLeft = ({ title, description, icons }) => {
             <Link
               prefetch={false}
               href={"/galerija/video"}
-              className="items-center"
-              style={{display: 'flex', flexDirection: 'column', gap: '20px', textDecoration: 'none', color: 'inherit'}}
+              className="items-center page-hero-ikona-link"
             >
-              <div style={{
-                width: 140, height: 140,
-                borderRadius: '50%',
-                background: '#F18020',
-                padding: 36,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}>
+              <div className="page-hero-ikona-krug" style={{ background: '#F18020' }}>
                 <img src={videoGaleryIcon.src} alt="Video snimci" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
               <span>{`Video snimci`}</span>
@@ -213,18 +214,15 @@ const HeroLeft = ({ title, description, icons }) => {
  * Na niskom hero-u zato ide više, tako da presek padne ispod kljuna — na donjoj
  * ivici tirkizne glave. Visok hero ostaje netaknut; tamo sova staje cela.
  */
-const HeroRight = ({ description, illustration, visokHero, panelPrekoHeroa }) => (
+const HeroRight = ({ description, illustration, visokHero }) => (
   <div
-    className={cn(
-      'flex-1 w-full page-hero-right',
-      !visokHero && 'page-hero-right--nizak',
-      panelPrekoHeroa && 'page-hero-right--pod-panelom',
-    )}
+    className="flex-1 w-full page-hero-right"
     // Okvir sove se preliva preko donje ivice hero sekcije, pa bi hvatao klikove
     // namenjene sadržaju ispod. `pointer-events: none` ih propušta.
-    style={{ alignSelf: 'flex-start', maxWidth: '541px', pointerEvents: 'none' }}
+    // Širina je u CSS-u, kao udeo širine okvira — vidi `.page-hero-right`.
+    style={{ alignSelf: 'flex-start', pointerEvents: 'none' }}
   >
-    {illustration && <HeroOwlWithEyes />}
+    {illustration && <HeroOwlWithEyes kljunPrekoIvice={!visokHero} />}
   </div>
 )
 
@@ -234,7 +232,7 @@ const HeroWithImage = ({ title, formatTitle, image, illustration, introText }) =
     <div
       // Zaglavlje je na mobilnom visoko 84px; sa 88px odmaka naslov mu je bio
       // zalepljen uz donju ivicu.
-      className="w-full items-center pt-80 sm:pt-[116px]"
+      className="w-full items-center pt-80 sm:pt-[116px] about-us-hero-kolona"
       style={{display: 'flex', flexDirection: 'column', gap: '50px'}}
     >
       {/* Uvodni tekst stoji IZNAD naslova.

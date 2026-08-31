@@ -89,7 +89,7 @@ const Projects = ({
       <div className="w-full blogs-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
         {!showHero && (
           <>
-            <Divider className="section-divider w-1440" style={{marginBottom: '35px'}}/>
+            <Divider className="section-divider" style={{marginBottom: '35px'}}/>
             <div className="flex justify-start">
               <span className="blog-title text-start">Pogledaj još projekata</span>
             </div>
@@ -135,7 +135,7 @@ const Projects = ({
           ))}
         </div>
         {/* pagination */}
-        {(pagination && projects.length > 6) && <Divider className="section-divider w-1440" style={{marginTop: '35px'}}/>}
+        {(pagination && projects.length > 6) && <Divider className="section-divider" style={{marginTop: '35px'}}/>}
       </div>
     </>
   )

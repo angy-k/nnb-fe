@@ -404,7 +404,7 @@ const Events = ({
       <div className="w-full blogs-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
         {!showHero && (
           <>
-            <Divider className="section-divider w-1440" style={{marginBottom: '35px'}}/>
+            <Divider className="section-divider" style={{marginBottom: '35px'}}/>
             <div className="flex justify-start">
               <span className="event-title text-start">Pogledaj još događaja</span>
             </div>
@@ -440,7 +440,7 @@ const Events = ({
           </>
         )}
         {/* pagination */}
-        {(pagination && events.length > 12) && <Divider className="section-divider w-1440" style={{marginTop: '35px'}}/>}
+        {(pagination && events.length > 12) && <Divider className="section-divider" style={{marginTop: '35px'}}/>}
         {/* {(pagination || events.length > 12) && <PaginationComponent />} */}
       </div>
 

@@ -35,7 +35,13 @@ const EYES = EYES_SVG.map(({ ecx, ecy, er, pcx, pcy, pr }) => ({
 const MAX_TRAVEL = 16  // max pixels the pupil travels from centre
 
 // ─── Component ─────────────────────────────────────────────────────────────────
-const HeroOwlWithEyes = () => {
+/**
+ * @param kljunPrekoIvice  Na niskom hero-u svetla sekcija seče sovu kroz kljun.
+ *   U dizajnu vrh kljuna viri 18px ispod te ivice, preko svetle podloge. Sam
+ *   crtež to ne može — sekcija ga prekriva — pa se kljun ponavlja kao zaseban
+ *   sloj iznad nje. Isti oblik i ista boja, pa se šav ne vidi.
+ */
+const HeroOwlWithEyes = ({ kljunPrekoIvice = false }) => {
   const wrapperRef = useRef(null)
   const targetRef  = useRef(EYES.map(() => ({ x: 0, y: 0 })))
   const currentRef = useRef(EYES.map(() => ({ x: 0, y: 0 })))
@@ -103,6 +109,25 @@ const HeroOwlWithEyes = () => {
         alt="hero-owl"
         priority
       />
+
+      {/* Vrh kljuna preko svetle sekcije. Mereno u samom crtežu: kljun je
+          47 × 56 na (304, 271) u okviru 661 × 627 — odatle udeli ispod. */}
+      {kljunPrekoIvice && (
+        <img
+          src="/hero-owl-kljun.svg"
+          alt=""
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left: '45.99%',
+            top: '43.22%',
+            width: '7.11%',
+            height: 'auto',
+            zIndex: 3,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
 
       {/* ── Eye overlay ── */}
       <svg

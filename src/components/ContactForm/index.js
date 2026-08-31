@@ -15,6 +15,7 @@ import AuthValidationErrors from "../Auths/AuthValidationErrors";
 import contactService from '@/services/contactService'
 import { useState, useRef } from "react";
 import useUser from '@/data/use-user'
+import ViberCommunity from '@/components/Communities/ViberCommunity'
 
 const getAppEnv = () => process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV
 
@@ -82,11 +83,20 @@ const ContactForm = ({
       {/* `nnb-gutter` — naslov sekcije je dodirivao levu ivicu na svakoj širini
           ispod 1400px, dok polja forme ispod imaju odmak. */}
       {sectionTitle && <span className="contact-section-title block w-full nnb-gutter" style={sectionTitleColor ? { color: sectionTitleColor } : undefined}>{sectionTitle}</span>}
-      {sectionTitle && !hideDivider && <Divider className="section-divider w-1440"/>}
+      {sectionTitle && !hideDivider && <Divider className="section-divider"/>}
+      {/* Uvodna rečenica nosi isti okvir kao bela Viber traka — sove levo,
+          tekst do njih, bela ploča sa zaobljenim uglovima. Ista komponenta, bez
+          Viber ikonice i bez dugmeta, jer ovde nema radnje. */}
       {sectionLead && (
-        <p className="contact-section-lead" style={sectionTitleColor ? { color: sectionTitleColor } : undefined}>
-          {sectionLead}
-        </p>
+        <div className="w-full nnb-gutter grid place-items-center contact-section-lead-wrap">
+          <ViberCommunity
+            type="light"
+            title={sectionLead}
+            showMiddleIcon={false}
+            showCta={false}
+            wrapperClassName="viber-community--poruka"
+          />
+        </div>
       )}
       <div
         className={`flex flex-col-reverse lg:flex-row ${withImage ? '' : 'place-items-center'} justify-center gap-1 ${withImage ? 'sm:gap-24 md:gap-[24px] lg:gap-[24px]' : 'sm:gap-4 md:gap-16 lg:gap-60 sm:py-8 sm:px-4 py-20 px-20 md:px-10 md:py-12'} w-full lg:max-w-[1440px] contact-from bg-[#ffffff] mt-24 sm:mt-6 2xl:max-w-screen-2xl 2xl:mx-auto rounded-3xl overflow-hidden`}

@@ -313,14 +313,21 @@ const HomeCalendarSection = () => {
   return (
     <div className="w-full">
       <div className="w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto">
-        <div className="w-full pt-24 sm:pt-8" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
+        {/* Tabelarni prikaz ide ispred kalendara — najavljeni događaji su ono što
+            posetilac najčešće traži, pa mu ne treba prvo ceo mesec da preskoči.
+            Nosi svoj naslov („Očekivani događaji"), pa sekcija počinje njime. */}
+        <UpcommingEvents />
+
+        {/* Naslov stoji uz kalendar, ne na vrhu sekcije.
+
+            Kad je tabela premeštena ispred kalendara, naslov je ostao gore i
+            više ništa nije naslovljavao — stajao je tik iznad „Očekivanih
+            događaja", koji imaju svoj. Gornji razmak mu ne treba: daje ga
+            `pb-24` tabele iznad. */}
+        <div className="w-full" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
           <span className="our-team-title">Kalendar događaja</span>
           <Divider className="section-divider" />
         </div>
-
-        {/* Tabelarni prikaz ide ispred kalendara — najavljeni događaji su ono što
-            posetilac najčešće traži, pa mu ne treba prvo ceo mesec da preskoči. */}
-        <UpcommingEvents />
 
         {/* Jedna instanca — ranije su stajale dve identične, za desktop i mobilni,
             pa se kalendar renderovao dvaput iako je jedna uvek bila sakrivena. */}

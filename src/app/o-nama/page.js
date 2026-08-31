@@ -43,7 +43,7 @@ const AboutUsPage = async () => {
           introText={s.mission_vision}
         />
         <div className="w-full grid place-items-center mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto z-1 bg-darkBlue">
-          <Divider className="section-divider-light w-full"/>
+          <Divider className="section-divider-light"/>
 
           {/* Dark section — 2-col grid matching Figma */}
           <div className="about-us-container">

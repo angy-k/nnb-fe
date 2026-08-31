@@ -170,7 +170,7 @@ const Blogs = ({
       <div className="w-full blogs-container pt-24 grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
         {!showHero && (
           <>
-            <Divider className="section-divider w-1440" style={{marginBottom: '35px'}}/>
+            <Divider className="section-divider" style={{marginBottom: '35px'}}/>
             <div className="flex justify-start">
               <span className="blog-title text-start">Pročitaj još</span>
             </div>
@@ -212,7 +212,7 @@ const Blogs = ({
         </div>
         {pagination && (
           <>
-            <Divider className="section-divider w-1440" style={{marginTop: '35px'}}/>
+            <Divider className="section-divider" style={{marginTop: '35px'}}/>
             <BlogPagination
               page={page}
               totalPages={totalPages}

@@ -28,9 +28,6 @@ const ContactPage = async () => {
         title={`Kontakt`}
         type="description"
         icons={false}
-        // Panel sa čestim pitanjima prelazi preko donje ivice hero-a; bez ovoga
-        // pojede donji deo sove.
-        panelPrekoHeroa
         description={`Ukoliko imate bilo kakvo pitanje, sugestiju, kritiku, ili samo želite da se dodatno informišete o našim dešavanjima, osećajte se slobodni da nam pišete u svako doba dana, odgovorićemo Vam u najbržem roku.`}
       />
       <div className="w-full grid place-items-center pb-48 z-1 bg-[#F0F0F0]">

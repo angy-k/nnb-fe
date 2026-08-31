@@ -4,11 +4,24 @@ import Image from 'next/image'
 import packageService from '@/services/packageService'
 
 // ─── Color config ─────────────────────────────────────────────────────────────
+// `glow` je boja preliva iza sove — tamniji ton iste porodice, da zatamnjenje
+// ostane u okviru sekcije umesto da uvodi stranu boju.
+//
+// Za tirkiznu je izmerena na dizajnu (#261A54). Ostale su izvedene iz palete
+// projekta: `darkOrange` za narandžastu, narandžasta kao tamniji sused žute.
+// Tamnoplava nema tamniji ton u paleti, pa joj preliv ostaje njena boja —
+// praktično se ne vidi.
 const PALETTE = {
-  teal:   { bg: '#56C4CF', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
-  orange: { bg: '#F18020', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
-  yellow: { bg: '#F4C430', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
-  navy:   { bg: '#261A54', title: '#ffffff', text: '#ffffff', iconBg: '#ffffff', iconColor: '#261A54' },
+  teal:   { bg: '#56C4CF', glow: '#261A54', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
+  orange: { bg: '#F18020', glow: '#EC4923', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
+  yellow: { bg: '#F4C430', glow: '#F18020', title: '#261A54', text: '#1B1B1B', iconBg: '#ffffff', iconColor: '#261A54' },
+  navy:   { bg: '#261A54', glow: '#261A54', title: '#ffffff', text: '#ffffff', iconBg: '#ffffff', iconColor: '#261A54' },
+}
+
+// #RRGGBB → `rgba(r, g, b, a)`, jer preliv mora da se gasi u providno.
+const uzProvidnost = (hex, alfa) => {
+  const n = parseInt(hex.slice(1), 16)
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alfa})`
 }
 const FALLBACK = ['teal', 'orange', 'yellow', 'navy']
 const getColors = (pkg, index) =>
@@ -102,9 +115,59 @@ const PackageSection = ({ pkg, index, hasNext }) => {
       padding: '64px 40px 80px',
       overflow: 'visible',
       position: 'relative',
-      // Sekcija sa sovom treba viši z-index da overflow bude iznad sledeće sekcije
-      zIndex: showOwl ? 2 : 'auto',
+      /* Sekcija sa sovom mora da bude iznad one koja sledi, jer joj nožice vire
+         preko donje ivice.
+
+         Ranije je svaka takva sekcija dobijala isti `z-index: 2`. Kod jednakog
+         sloja pobeđuje ona koja je kasnije u dokumentu, pa je sledeća sekcija
+         prekrivala nožice prethodne — vidljive su bile samo poslednjoj sovi,
+         ispod koje dolazi sekcija bez sloja.
+
+         Zato sloj sada opada sa rednim brojem: svaka sekcija je iznad svih koje
+         za njom slede. */
+      zIndex: showOwl ? 100 - index : 'auto',
     }}>
+      {/* Preliv iza sove.
+
+          Mereno na dizajnu (okvir 1920): krug 2253 × 2253 na (707, 1596), sa
+          radijalnim prelivom #261A54 → #56C4CF. Središte mu, dakle, pada
+          86,5px levo od desne ivice okvira i 72px iznad donje ivice sekcije —
+          tačno iza sove — a poluprečnik je 1126,5.
+
+          Umesto doslovnog para boja ide `glow` sekcije → providno. Spoljna boja
+          u dizajnu je ista kao pozadina tirkizne sekcije, pa se preliv na njoj
+          ponaša identično; ovako svaka sekcija tamni svojim tonom umesto da
+          uvodi stranu boju (vidi `PALETTE`).
+
+          Krug je veći od sekcije, pa mu treba svoj omotač sa `overflow: hidden`
+          — sama sekcija mora da ostane `visible` da bi nožice sove virile preko
+          donje ivice. `z-index: -1` ga drži iznad pozadine, a ispod teksta. */}
+      {showOwl && (
+        <div aria-hidden="true" style={{
+          position: 'absolute',
+          inset: 0,
+          overflow: 'hidden',
+          zIndex: -1,
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            position: 'absolute',
+            width: 'min(117.34vw, 2253px)',
+            height: 'min(117.34vw, 2253px)',
+            /* `closest-side` nije sitnica: podrazumevani `farthest-corner`
+               završava preliv u uglu kvadrata, pa na samoj kružnici ima još
+               oko 29% boje — a `border-radius` je tu odseca i ostaje vidljiv
+               luk preko sekcije. Ovako providnost padne na nulu tačno na
+               ivici kruga, pa prelaza nema. */
+            background: `radial-gradient(circle closest-side, ${uzProvidnost(colors.glow, 1)} 0%, ${uzProvidnost(colors.glow, 0)} 100%)`,
+            bottom: 'max(-54.92vw, -1054px)',
+            ...(owlOnRight
+              ? { right: 'max(-54.17vw, -1040px)' }
+              : { left:  'max(-54.17vw, -1040px)' }),
+          }} />
+        </div>
+      )}
+
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
 
         {/* Package title */}

@@ -113,6 +113,25 @@ body {
    --nnb-modal-w: min(1440px, calc(100vw - 2rem));
    --nnb-modal-h: min(982px, calc(100vh - 8rem));
    --nnb-modal-radius: 50px;
+
+   /* Visina zaglavlja: 116 odmak + 60 red sa logotipom i dugmadima + 60 odmak.
+
+      Zaglavlje se ne skalira sa širinom — logo i dugme „Rezervišite tezgu"
+      imaju svoju najmanju visinu. Sve u hero sekciji jeste srazmerno okviru od
+      1920, pa se na užem ekranu zaglavlje spuštalo u traku: na 1440 se
+      završavalo na 236, a sova počinjala na 198, i sekla joj je glavu.
+
+      Zato se sve mere u traci računaju kao „zaglavlje + ostatak", gde se
+      srazmerno skalira samo ostatak. Vrednosti u `min(Xvw, Ypx)` su razlika te
+      mere i zaglavlja iz dizajna, izražene i kao udeo od 1920 i kao piksel. */
+   --nnb-zaglavlje: 236px;
+ }
+
+ @media screen and (max-width: 599px) {
+   :root {
+     /* Na telefonu su odmaci zaglavlja 12px umesto 116/60. */
+     --nnb-zaglavlje: 84px;
+   }
  }
 
  .nnb-modal-wrapper {
@@ -158,6 +177,34 @@ body {
    background: #ffffff !important;
    border-radius: var(--nnb-modal-radius) !important;
    overflow: hidden !important;
+ }
+
+ /* Klizač za tekst unutar modala.
+    Podrazumevani je na macOS-u nevidljiv dok se ne krene, pa se ne vidi da
+    tekst ima nastavak; ovaj stoji stalno, u boji iz palete.
+
+    Namerno bez `scrollbar-width` i `scrollbar-color` u istom pravilu: kad su
+    zadati, Chrome zanemari `::-webkit-scrollbar` i vrati se na sistemski
+    klizač, koji na macOS-u nestaje kad se ne pomera. Zato su ta dva svojstva
+    ostavljena samo pregledačima koji `::-webkit-scrollbar` ne poznaju. */
+ @supports not selector(::-webkit-scrollbar) {
+   .nnb-tekst-scroll {
+     scrollbar-width: thin;
+     scrollbar-color: #56c4cf transparent;
+   }
+ }
+
+ .nnb-tekst-scroll::-webkit-scrollbar {
+   width: 6px;
+ }
+
+ .nnb-tekst-scroll::-webkit-scrollbar-track {
+   background: transparent;
+ }
+
+ .nnb-tekst-scroll::-webkit-scrollbar-thumb {
+   background-color: #56c4cf;
+   border-radius: 3px;
  }
 
  .auth-modal input,
@@ -610,11 +657,31 @@ h6 {
   text-align: left;
   color: #261A54;
 }
-.section-divider {
-  border: 1px solid #1B1B1B;
-  &-light {
-    border: 1px solid #ffffff;
-  }
+/* Linija koja razdvaja sekcije.
+
+   Dve stvari nisu bile po dizajnu. Debljina: `border: 1px` na `<hr>` daje
+   ivicu i gore i dole, pa je linija bila 2px umesto 1px. Sada je to visina
+   elementa, ne ivica.
+
+   Sirina: linija je isla od ivice do ivice ekrana, a kolona sadrzaja je 1400.
+   Sada deli istu meru sa sadrzajem, pa pocinje i zavrsava se tacno gde i
+   fotografije, mreza i kartice iznad i ispod nje. */
+.section-divider,
+.section-divider-light {
+  width: 100%;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  height: 1px;
+  border: none;
+  background-color: #1B1B1B;
+}
+
+/* Svetla varijanta je zaseban selektor, ne ugnežden `&-light`: ugnežden bi
+   nasledio samo boju, a širinu i debljinu ne — pa je linija na „O nama" ostajala
+   preko cele širine i bez visine. */
+.section-divider-light {
+  background-color: #ffffff;
 }
 .footer-container {
   display: flex;
@@ -1133,12 +1200,6 @@ h6 {
   line-height: 87.04px;
   text-align: left;
   color: #261A54;
-}
-.section-divider {
-  border: 1px solid #1B1B1B;
-  &-light {
-    border: 1px solid #ffffff;
-  }
 }
 .footer-container {
   display: flex;
@@ -1896,29 +1957,93 @@ a.office-contact-section-content:focus-visible {
  * telefonu i na svakom užem laptopu. Iznad 1400px prostora sa strane ima samo
  * od sebe, pa odmak tu nestaje da poravnanje ostane kakvo je u dizajnu.
  */
-/* Uvodna rečenica iznad kontakt forme.
+/* „Prilepiti kontakt formi": blok sa formom nosi `mt-24` (96px), pa je rečenica
+   visila daleko iznad nje. Susedni selektor je specifičniji od Tailwind klase,
+   pa nadjačava bez `!important` — i to samo tamo gde rečenica zaista stoji. */
+.contact-section-lead-wrap + div {
+  margin-top: 32px;
+}
 
-   Nije imala nijedno pravilo, pa se prostirala celom širinom prozora i nije se
-   poklapala sa marginama forme ispod nje. Sada deli istu kolonu i isti bočni
-   odmak kao forma, pa se ivice slažu, a manji donji razmak je „lepi" za formu.
+/* Uvodna rečenica u okviru bele Viber trake.
 
-   Ograničena širina je i razlog što staje u dva reda umesto u tri. */
-.contact-section-lead {
-  width: 100%;
+   Traka je pravljena za kratak natpis u jednom redu, sa fiksnih 150px visine i
+   dugmetom na desnom kraju. Ovde nema dugmeta a rečenica ide u dva reda, pa
+   visina prati sadržaj i tekst uzima svu širinu koja ostane od sova. */
+.viber-community--poruka {
+  height: auto;
+  max-height: none;
+  min-height: 150px;
+  border-radius: 30px;
   max-width: 1400px;
-  margin: 0 auto;
-  padding-left: 16px;
-  padding-right: 16px;
-  text-align: center;
+  padding: 0 0 0 50px;
+  margin-top: 0;
+}
+
+/* Sove idu desno, tekst levo — obrnuto od Viber trake, gde sove stoje uz
+   ilustrovanu levu ivicu. Samo redosled u redu; na telefonu se svejedno slažu
+   jedno ispod drugog, pa okretanje važi tek od 600px naviše. */
+@media screen and (min-width: 600px) {
+  .viber-community--poruka .viber-community-content {
+    flex-direction: row-reverse;
+  }
+}
+
+/* Sove naležu na donju ivicu trake, kao na uzoru — tamo je slika viša od trake
+   pa je `overflow: hidden` seče. Ovde je traka viša od slike, pa bi je sredina
+   ostavila da lebdi. Zato odmak gore-dole nosi tekst, a ne cela traka. */
+.viber-community--poruka .viber-community-owls {
+  align-self: flex-end;
+  /* Cela ilustracija, bez sečenja. Na Viber traci je kutija 500 × 160, a crtež
+     597 × 157 — `object-fit: cover` mu tamo namerno odseca po 54px sa svake
+     strane, da natpisu ostane širine. Ovde sove stoje uz desnu ivicu ploče, pa
+     bi taj rez izgledao kao da ih ivica seče; visina zato određuje širinu i
+     odnos ostaje crtežov. */
+  height: 160px;
+  width: auto;
+  flex-shrink: 0;
+  /* Crtež je i sam odsečen sa desne strane — pravljen je da stoji uz levu ivicu,
+     pa mu rez gleda ka natpisu. Kad sove pređu desno, taj rez bi gledao ka ivici
+     ploče i izgledao kao da ih ona seče. Ogledanjem rez ponovo gleda ka tekstu,
+     a mesec ide na spoljnu stranu. */
+  transform: scaleX(-1);
+}
+
+@media screen and (max-width: 1299px) {
+  .viber-community--poruka .viber-community-owls {
+    height: 120px;
+  }
+}
+
+@media screen and (max-width: 899px) {
+  .viber-community--poruka .viber-community-owls {
+    height: 90px;
+  }
+}
+
+.viber-community--poruka .viber-community-middle {
+  flex: 1;
+  padding: 24px 24px 24px 0;
+}
+
+.viber-community--poruka .viber-community-text {
   font-size: 18px;
   line-height: 1.6;
 }
 
-/* „Prilepiti kontakt formi": blok sa formom nosi `mt-24` (96px), pa je rečenica
-   visila daleko iznad nje. Susedni selektor je specifičniji od Tailwind klase,
-   pa nadjačava bez `!important` — i to samo tamo gde rečenica zaista stoji. */
-.contact-section-lead + div {
-  margin-top: 32px;
+@media screen and (max-width: 599px) {
+  .viber-community--poruka {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  .viber-community--poruka .viber-community-middle {
+    padding-left: 0;
+  }
+
+  .viber-community--poruka .viber-community-text {
+    font-size: 16px;
+    text-align: center;
+  }
 }
 
 .nnb-gutter {
@@ -2163,32 +2288,103 @@ a.office-contact-section-content:focus-visible {
     }
   }
 }
+/* Visok hero (Kontakt). U dizajnu se tamna traka završava na y=1040 od okvira
+   od 1920. Ispod zaglavlja ostaje 1040 − 236 = 804, i taj deo se skalira.
+   Donja granica 514 (ukupno 750) da se na užim ekranima ne stešnjava naslov sa
+   opisom. Ispod 600px visina ostaje slobodna. */
+@media screen and (min-width: 600px) {
+  .page-hero-section--visok {
+    height: calc(var(--nnb-zaglavlje) + max(514px, min(41.875vw, 804px)));
+  }
+
+  /* Nizak hero — samo naslov: Blog, Događaji, Projekti, Prijatelji, Kalendar.
+     Traka se u dizajnu završava na 572, dakle 336 ispod zaglavlja. */
+  .page-hero-section--nizak {
+    height: calc(var(--nnb-zaglavlje) + max(144px, min(17.5vw, 336px)));
+  }
+
+  /* Galerija — ikonice ispod naslova. U dizajnu 891 od 1920, dakle 46,41%.
+     Do sada je dobijala Kontaktovu visinu, jer je kod znao samo za dve.
+
+     Donja granica 620px: naslov počinje 240 od vrha, ispod njega ide razmak 88
+     pa krug od 140 sa natpisom — ispod toga ikonice počnu da izlaze iz trake. */
+  .page-hero-section--ikonice {
+    height: calc(var(--nnb-zaglavlje) + max(384px, min(34.114vw, 655px)));
+  }
+
+  /* „O nama" — hero sa fotografijom.
+
+     Ranije fiksnih 1374px. Ta mera odgovara dizajnu, ali dizajn iznad naslova
+     nema ništa: sadržaj je tačno 1268 visok, pa je ispod njega ostajalo 106px
+     razmaka do svetle linije.
+
+     Misija i vizija su dodate posle dizajna i stoje iznad naslova, pa taj
+     razmak trošе — sa jednim redom ostane 27px, a sa nekoliko sadržaj izađe iz
+     trake, gde ga `overflow: hidden` odseca umesto da pomeri sekcije ispod.
+
+     Zato je 1374 sada najmanja visina, a razmak ispod sadržaja zadat posebno:
+     ostaje 106px koliko god uvodni tekst bio dug, a traka i sve ispod nje se
+     pomeraju za onoliko koliko taj tekst zauzme. */
+  .page-hero-section--slika {
+    min-height: 1374px;
+  }
+
+  .page-hero-section--slika .about-us-hero-kolona {
+    padding-bottom: 106px;
+  }
+}
+
+/* Krugovi sa ikonicama u hero sekciji Galerije.
+
+   U dizajnu su 140px na okviru od 1920, sa 88px odmaka odozgo, 36 između njih i
+   20 do natpisa. Bile su fiksne mere, pa se ceo blok od 270px nije smanjivao sa
+   širinom: ispod ~1440 je izlazio iz tamne trake i svetla sekcija bi ga presekla
+   kroz natpise „Fotografije" i „Video snimci". Sada prate okvir kao i sve ostalo
+   u hero sekciji. */
+.page-hero-section-icons {
+  display: flex;
+  flex-direction: row;
+  padding-top: min(4.583vw, 88px);
+  gap: min(1.875vw, 36px);
+}
+
+.page-hero-ikona-link {
+  display: flex;
+  flex-direction: column;
+  gap: min(1.042vw, 20px);
+  text-decoration: none;
+  color: inherit;
+}
+
+.page-hero-ikona-krug {
+  width: min(7.292vw, 140px);
+  height: min(7.292vw, 140px);
+  padding: min(1.875vw, 36px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Sova uz naslov stranice — jedno pravilo za sve stranice.
+
+   Kljun je u crtežu širok 47px, a na izvozu dizajna takođe 47 — razmera je
+   1:1. Sova je, dakle, svuda neskalirana: 661 × 627 sa vrhom na y=264. Ono što
+   se razlikuje je samo visina tamne trake, pa presek pada različito:
+
+     traka  572  →  vidljivo 308 od 627   (Blog, Kalendar, Događaji, …)
+     traka  891  →  vidljivo 627, cela    (Galerija — traka se završava tačno
+                                           na dnu sove: 264 + 627 = 891)
+     traka 1040  →  cela, pa je panel seče (Kontakt)
+
+   Ranije sam ovde imao dve širine, 546 i 660, jer sam merio samo *vidljivi*
+   deo sove — a ona je oval, najšira ispod preseka. Sada je jedna mera.
+
+   Zadato kao udeo širine okvira, kao i sve ostalo u hero sekciji. */
 .page-hero-right {
-  padding-top: 237px;
-}
-
-/* Nizak hero (450px) — samo naslov, bez opisa i ikonica: Blog, Događaji,
-   Projekti, Prijatelji.
-
-   Sova je 513px visoka i sa odmakom od 237 ostajalo je vidljivo 213px, što u
-   koordinatama crteža pada na y=260 — kroz same oči, uz vrh kljuna koji je
-   virio kao usamljen narandžast trougao.
-
-   Sa 177 vidljivo je 273px, odnosno y=333 — donja ivica tirkizne glave, taman
-   ispod kljuna. Visok hero (750px) zadržava 237, tamo sova ionako staje cela. */
-.page-hero-right--nizak {
-  padding-top: 177px;
-}
-
-/* Kontakt — panel sa čestim pitanjima prelazi 190px preko donje ivice hero-a.
-   Taj preklop je iz dizajna, ali sa odmakom od 237 sova je ispod panela imala
-   samo 323px, pa se od nje videla glava i jedva 60px tela.
-
-   Sa 180 ostaje 380px, odnosno y=464 u koordinatama crteža — glava i dobar deo
-   tela, kao na Galeriji gde panela nema. Niže se ne ide: sa manjim odmakom
-   uši ulaze pod traku sa menijem, koja se završava oko 175. */
-.page-hero-right--pod-panelom {
-  padding-top: 180px;
+  max-width: min(34.43vw, 661px);
+  padding-top: calc(var(--nnb-zaglavlje) + min(1.4583vw, 28px));
 }
 
 @media screen and (max-width: 599px) {
@@ -3817,5 +4013,30 @@ a.office-contact-section-content:focus-visible {
     position: static !important;
     width: 100% !important;
     padding: 40px 24px !important;
+  }
+}
+
+/* ─── Naslov u hero sekciji ─────────────────────────────────────────────────
+   Mereno na pet izvoza dizajna (okvir 1920), po vrhu mastila slova:
+
+     Blog 333 · Kalendar 331 · Događaji 337   →  niska traka
+     Kontakt 402 · Galerija 407               →  visoka traka
+
+   Razlike unutar grupe su oblik slova, ne raspored — „Događaji" ima visoko D
+   sa potezom, „Kalendar" nisko K.
+
+   CSS pomera okvir reda, ne mastilo, pa je razlika između to dvoje izmerena na
+   živoj stranici: −2px na „Događaji", −5px na „Kontakt". Otuda 339 i 407 kao
+   vrednosti okvira, da mastilo padne na 337 odnosno 402.
+
+   Ranije je stajalo fiksnih 240px za sve — naslov je bio 99px previsoko na
+   niskoj traci i 167px na visokoj. */
+@media screen and (min-width: 600px) {
+  .page-hero-left {
+    padding-top: calc(var(--nnb-zaglavlje) + min(5.3646vw, 103px));
+  }
+
+  .page-hero-left--visok {
+    padding-top: calc(var(--nnb-zaglavlje) + min(8.9063vw, 171px));
   }
 }

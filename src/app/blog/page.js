@@ -19,8 +19,10 @@ async function getBlogs() {
 
 const BlogPage = async () => {
   const blogs = await getBlogs()
+  // Bez `mt-60`: hero sada sam računa mesto za zaglavlje (vidi
+  // `--nnb-zaglavlje`), pa bi ovaj odmak isti prostor zauzeo drugi put.
   return (
-    <div className="mt-60 grid place-items-center w-full">
+    <div className="grid place-items-center w-full">
       <Blogs blogs={blogs} pagination={true} />
     </div>
   )
