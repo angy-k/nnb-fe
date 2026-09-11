@@ -192,6 +192,43 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
   const [legalDocsType, setLegalDocsType] = useState('terms')
 
   const [tab, setTab] = useState(initialTab || DEFAULT_TAB)
+
+  /**
+   * Saglasnost, prepisana iz Formik forme na nivo modala.
+   *
+   * Kvačica živi unutar forme i Yup je proverava pri slanju, ali dugme
+   * „Prijavite se sa Google nalogom" stoji iznad forme i ide pravo na
+   * `/auth/social/google` — do provere nikad ne dođe. Zato se njeno stanje
+   * ogleda i ovde, pa dugme može da ga vidi.
+   *
+   * Resetuje se pri promeni jezička: prijava i registracija su odvojene forme.
+   */
+  const [saglasanZaGoogle, setSaglasanZaGoogle] = useState(false)
+
+  /**
+   * Podaci preuzeti sa Google naloga za registraciju.
+   *
+   * Odlaže ih `/oauth/callback` kad se korisnik vrati sa jezička „Napravite
+   * profil". Nalog tada još ne postoji — Google je poslužio samo kao izvor
+   * imena, prezimena i mejla, a `gtoken` je overa da mejl zaista pripada tom
+   * nalogu. Server veruje isključivo tokenu.
+   */
+  const [googlePodaci, setGooglePodaci] = useState(null)
+  useEffect(() => {
+    try {
+      const sirovo = sessionStorage.getItem('nnb:google-registracija')
+      if (!sirovo) return
+      sessionStorage.removeItem('nnb:google-registracija')
+      const p = JSON.parse(sirovo)
+      if (p?.gtoken) {
+        setGooglePodaci(p)
+        setSaglasanZaGoogle(false)
+      }
+    } catch {
+      // Nema skladišta — forma ostaje prazna, korisnik unosi sve sam.
+    }
+  }, [])
+  useEffect(() => { setSaglasanZaGoogle(false) }, [tab])
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
 
@@ -319,6 +356,12 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
       payload.append('is_agricultural', values.is_agricultural ? '1' : '0')
       payload.append('terms_accepted', values.terms_accepted ? '1' : '0')
 
+      // Overa Google naloga: bez nje server ne bi smeo da poveže nalog sa tim
+      // mejlom i `google_id`-em. Mejl u zahtevu mora da se poklopi sa tokenom.
+      if (googlePodaci?.gtoken) {
+        payload.append('social_token', googlePodaci.gtoken)
+      }
+
       if (values.is_legal_entity) {
         payload.append('company_name', values.company_name || '')
         payload.append('company_address', values.company_address || '')
@@ -379,9 +422,16 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
     }
   }
 
-  const handleGoogleLogin = () => {
+  /**
+   * `mode=register` sa jezička „Napravite profil": tamo Google nije prečica do
+   * naloga nego izvor osnovnih podataka — server ne pravi nalog, nego vraća
+   * ime, prezime i mejl da se njima popuni forma. Sa prijave ide bez režima,
+   * dakle po starom.
+   */
+  const handleGoogleLogin = (mode = '') => {
     const redirectUrl = encodeURIComponent('/')
-    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/social/google?redirect_url=${redirectUrl}`
+    const modeParam = mode === 'register' ? '&mode=register' : ''
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/social/google?redirect_url=${redirectUrl}${modeParam}`
   }
 
   return (
@@ -404,15 +454,25 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
             <h2 className="text-[#261A54] font-bold mb-1" style={{ fontSize: '32px', lineHeight: 1.2 }}>Prijavite se</h2>
             <p className="text-sm mb-6" style={{ color: '#4B5563' }}>Prijavite se na vaš nalog</p>
 
+            {/* Zaključano dok saglasnost nije data — inače bi Google put
+                zaobišao kvačicu koju forma ispod zahteva. */}
             <button
               type="button"
-              disabled={isLoading}
-              className="w-full px-4 py-3 rounded-full border border-gray-200 text-[#261A54] flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors mb-5"
-              onClick={handleGoogleLogin}
+              disabled={isLoading || !saglasanZaGoogle}
+              title={!saglasanZaGoogle ? 'Prvo prihvatite uslove ispod' : undefined}
+              className="w-full px-4 py-3 rounded-full border border-gray-200 text-[#261A54] flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors mb-2 disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              onClick={() => handleGoogleLogin()}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
               Prijavite se sa Google nalogom
             </button>
+
+            {!saglasanZaGoogle && (
+              <p className="text-xs mb-4" style={{ color: '#4B5563' }}>
+                Da biste nastavili preko Google naloga, prvo prihvatite uslove niže na formi.
+              </p>
+            )}
+            {saglasanZaGoogle && <div className="mb-3" />}
 
             <div className="flex items-center gap-3 text-sm mb-5"><span className="flex-1 h-px bg-gray-300"/><span className="whitespace-nowrap" style={{ color: '#4B5563' }}>Ulogujte se putem mejla</span><span className="flex-1 h-px bg-gray-300"/></div>
 
@@ -456,7 +516,10 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                         name="terms_accepted"
                         className="auth-legal-entity-checkbox mt-0.5 flex-shrink-0"
                         checked={!!values.terms_accepted}
-                        onChange={e => setFieldValue('terms_accepted', e.target.checked)}
+                        onChange={e => {
+                          setFieldValue('terms_accepted', e.target.checked)
+                          setSaglasanZaGoogle(e.target.checked)
+                        }}
                       />
                       <span className="leading-snug">
                         {CONSENT_PARTICIPATION.before}
@@ -530,11 +593,13 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
 
       {tab === 'register' && (
         <Formik
+          enableReinitialize
           initialValues={{
             brand_name: '',
-            first_name: '',
-            last_name: '',
-            email: '',
+            // Popunjeno sa Google naloga kad se registracija pokrene odatle.
+            first_name: googlePodaci?.first_name || '',
+            last_name: googlePodaci?.last_name || '',
+            email: googlePodaci?.email || '',
             password: '',
             birth_date: '',
             is_legal_entity: false,
@@ -560,7 +625,11 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
             activity_group_id: '',
             activity_name: '',
           }}
-          validationSchema={registerSchema}
+          /* Uz proveren Google nalog lozinka se ne traži — nalog je sam po
+             sebi način prijave, pa je i polje sakriveno niže. */
+          validationSchema={googlePodaci
+            ? registerSchema.shape({ password: Yup.string().notRequired() })
+            : registerSchema}
           validateOnChange={false}
           validateOnBlur={true}
           onSubmit={handleRegister}
@@ -578,15 +647,26 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                       <h2 className="text-[#261A54] font-bold mb-1" style={{ fontSize: '32px', lineHeight: 1.2 }}>Napravite profil</h2>
                       <p className="text-sm mb-5" style={{ color: '#4B5563' }}>Registrujte se kao izlagač</p>
 
+                      {/* Isto pravilo kao na prijavi: bez saglasnosti nema
+                          Google puta. Kvačica je na dnu forme, pa napomena
+                          ispod dugmeta objašnjava zašto je neaktivno. */}
                       <button
                         type="button"
-                        disabled={isLoading}
-                        className="w-full px-4 py-3 rounded-full border border-gray-200 text-[#261A54] flex items-center justify-center gap-2 hover:bg-white/60 transition-colors mb-4"
-                        onClick={handleGoogleLogin}
+                        disabled={isLoading || !saglasanZaGoogle}
+                        title={!saglasanZaGoogle ? 'Prvo prihvatite uslove na dnu forme' : undefined}
+                        className="w-full px-4 py-3 rounded-full border border-gray-200 text-[#261A54] flex items-center justify-center gap-2 hover:bg-white/60 transition-colors mb-2 disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        onClick={() => handleGoogleLogin('register')}
                       >
                         <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                         Prijavite se sa Google nalogom
                       </button>
+
+                      {!saglasanZaGoogle && (
+                        <p className="text-xs mb-3" style={{ color: '#4B5563' }}>
+                          Da biste nastavili preko Google naloga, prvo prihvatite uslove na dnu forme.
+                        </p>
+                      )}
+                      {saglasanZaGoogle && <div className="mb-2" />}
 
                       <div className="flex items-center gap-3 text-sm mb-4"><span className="flex-1 h-px bg-gray-300"/><span className="whitespace-nowrap" style={{ color: '#4B5563' }}>Registrujte se putem mejla</span><span className="flex-1 h-px bg-gray-300"/></div>
 
@@ -631,19 +711,29 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                           setErrors={setErrors}
                           placeholder="E-mail"
                           className="line-flex w-full"
+                          /* Mejl mora ostati onaj sa Google naloga: server pri
+                             upisu poredi mejl iz zahteva sa mejlom u tokenu. */
+                          readOnly={!!googlePodaci}
                         />
+                        {googlePodaci && (
+                          <p className="text-xs mt-1" style={{ color: '#4B5563' }}>
+                            Preuzeto sa Google naloga.
+                          </p>
+                        )}
                       </div>
 
-                      <div className="mb-3">
-                        <MainTextInput
-                          name="password"
-                          type="password"
-                          error={errors.password}
-                          setErrors={setErrors}
-                          placeholder="Lozinka"
-                          className="line-flex w-full"
-                        />
-                      </div>
+                      {!googlePodaci && (
+                        <div className="mb-3">
+                          <MainTextInput
+                            name="password"
+                            type="password"
+                            error={errors.password}
+                            setErrors={setErrors}
+                            placeholder="Lozinka"
+                            className="line-flex w-full"
+                          />
+                        </div>
+                      )}
 
                       <div className="mb-3">
                         <MainTextInput
@@ -982,7 +1072,10 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
                             name="terms_accepted"
                             className="auth-legal-entity-checkbox mt-0.5 flex-shrink-0"
                             checked={!!values.terms_accepted}
-                            onChange={e => setFieldValue('terms_accepted', e.target.checked)}
+                            onChange={e => {
+                              setFieldValue('terms_accepted', e.target.checked)
+                              setSaglasanZaGoogle(e.target.checked)
+                            }}
                           />
                           <span className="leading-snug">
                             {CONSENT_PARTICIPATION.before}

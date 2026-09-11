@@ -15,6 +15,8 @@ const ProjectDetailPage = () => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Prethodni i sledeći projekat po redosledu sa spiska — za strelice na dnu.
+  const [susedi, setSusedi] = useState({ prethodni: null, sledeci: null });
 
   useEffect(() => {
     fetchProjectData();
@@ -44,6 +46,16 @@ const ProjectDetailPage = () => {
 
       if (!matched?.id) throw new Error('Project not found');
 
+      // Spisak je već ovde jer se preko njega traži projekat — susedi se
+      // uzimaju odatle, bez dodatnog poziva.
+      const redosled = listJson.data;
+      const gde = redosled.findIndex((p) => p?.id === matched.id);
+      const naslovU = (p) => formatTitleForUri((p?.title ?? '').toString());
+      setSusedi({
+        prethodni: gde > 0 ? naslovU(redosled[gde - 1]) : null,
+        sledeci: gde >= 0 && gde < redosled.length - 1 ? naslovU(redosled[gde + 1]) : null,
+      });
+
       const response = await projectService.getProject(matched.id);
       if (!response.ok) throw new Error('Failed to fetch project');
 
@@ -59,6 +71,24 @@ const ProjectDetailPage = () => {
     }
   };
 
+  /**
+   * Dva izgleda stranice projekta.
+   *
+   * Nov dizajn (bedž, logotipi, slike u paru, galerija) stoji sam za sebe i
+   * nema mrvice — naslov u tamnom zaglavlju već kaže gde si. Projekat koji ima
+   * samo naslovnu sliku, naslov i tekst zadržava stari izgled, sličan objavi na
+   * blogu, gde su mrvice korisne.
+   */
+  const bogataStranica = !!(
+    project?.gallery?.length ||
+    project?.introImages?.length ||
+    project?.partnerLogos?.length ||
+    project?.featureImage ||
+    project?.funderBadge ||
+    project?.subtitle
+  );
+
+
   const heroTitle = loading
     ? 'Projekat'
     : project
@@ -67,114 +97,152 @@ const ProjectDetailPage = () => {
 
   return (
     <>
-      {/* Full-width hero — no owl, project title */}
-      {/* Zaglavlje je providno i visoko 237px, a hero je imao najmanju visinu od
-          372px sa sadržajem prislonjenim uz dno — pa je naslov počinjao na 169px
-          i gornjih 68 piksela mu je ostajalo pod zaglavljem.
-
-          U dizajnu je razmak od dna navigacije do vrha naslova 187px na okviru
-          od 1920, dakle 140px na 1440. Otuda odmak odozgo od 352px: 237 za
-          zaglavlje, 140 razmaka, minus 25 koje naslov već ima. */}
-      <div
-        className="w-full bg-[#261A54] page-hero-section"
-        style={{ minHeight: '580px', display: 'flex' }}
-      >
+      {/* ── Tamni deo: bedž, naslov, podnaslov, logotipi, slike, uvodni tekst ── */}
+      <div className="w-full bg-[#261A54] page-hero-section" style={{ display: 'flex' }}>
         <div
-          className="2xl:max-w-screen-2xl 2xl:mx-auto mx-auto w-full pt-[352px] sm:pt-[120px]"
-          style={{ maxWidth: '1440px', paddingLeft: '60px', paddingRight: '60px', paddingBottom: '60px' }}
+          className="mx-auto w-full pt-[352px] sm:pt-[120px]"
+          style={{ maxWidth: '1400px', paddingLeft: '60px', paddingRight: '60px', paddingBottom: '80px' }}
         >
+          {project?.funderBadge && (
+            <img
+              src={project.funderBadge}
+              alt="Program koji finansira projekat"
+              style={{ height: '64px', width: 'auto', marginBottom: '32px' }}
+            />
+          )}
+
           <div className="page-hero-section-title" style={{ paddingTop: '25px' }}>
             {heroTitle}
           </div>
+
+          {project?.subtitle && (
+            <p className="text-white" style={{ fontSize: '28px', marginTop: '16px' }}>
+              {project.subtitle}
+            </p>
+          )}
+
+          {project?.partnerLogos?.length > 0 && (
+            <div className="flex flex-wrap items-center" style={{ gap: '24px', marginTop: '40px' }}>
+              {project.partnerLogos.map((src, i) => (
+                <img key={i} src={src} alt="Logotip partnera" style={{ height: '40px', width: 'auto' }} />
+              ))}
+            </div>
+          )}
+
+          {/* Na dizajnu su dve slike spojene u jednu ploču — bez razmaka među
+              njima, a zaobljene su samo spoljne ivice. */}
+          {project?.introImages?.length > 0 && (
+            <div
+              className="projekat-uvodne-slike"
+              style={{ marginTop: '48px', '--broj-slika': Math.min(project.introImages.length, 2) }}
+            >
+              {project.introImages.map((src, i) => (
+                <img key={i} src={src} alt="" />
+              ))}
+            </div>
+          )}
+
+          {/* I uvodni tekst dolazi iz uređivača, pa se ispisuje kao HTML. */}
+          {project?.introText && (
+            <div
+              className="projekat-tekst projekat-tekst--tamna"
+              style={{ marginTop: '48px' }}
+              dangerouslySetInnerHTML={{ __html: project.introText }}
+            />
+          )}
+
+          {project?.featureImage && (
+            <img
+              src={project.featureImage}
+              alt=""
+              style={{ width: '100%', height: 'auto', borderRadius: '30px', marginTop: '48px' }}
+            />
+          )}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="w-full pt-24 grid place-items-center pb-48 bg-[#F0F0F0]">
-        {loading && (
-          <div className="text-center text-[#261A54]">Učitavanje projekta...</div>
-        )}
-        {error && (
-          <div className="text-[#EC4923] text-center mb-4">
-            Greška: {error}
-          </div>
-        )}
+      {/* ── Svetli deo: glavni tekst, događaji, rezultati ── */}
+      <div className="w-full pt-24 pb-24 grid place-items-center bg-[#F0F0F0]">
+        {loading && <div className="text-center text-[#261A54]">Učitavanje projekta...</div>}
+        {error && <div className="text-[#EC4923] text-center mb-4">Greška: {error}</div>}
+
         {project && (
-          <div className="max-w-7xl mx-auto px-6 w-full">
-            <div className="bg-white rounded-lg mb-6">
+          <div className="w-full" style={{ maxWidth: '1400px', paddingLeft: '60px', paddingRight: '60px' }}>
+            {/* Mrvice samo na starijem, blogovskom izgledu — vidi `bogataStranica`. */}
+            {!bogataStranica && (
+            <nav className="text-sm text-[#1B1B1B] flex flex-wrap items-center mb-10">
+              <button onClick={() => router.push('/')} className="hover:opacity-70 cursor-pointer">
+                <Image src={HomeIcon} alt="Početna" width={16} height={16} />
+              </button>
+              <span className="mx-2">/</span>
+              <button onClick={() => router.push('/projekti')} className="hover:opacity-70 cursor-pointer">
+                svi projekti
+              </button>
+              <span className="mx-2">/</span>
+              <span>{project.title}</span>
+            </nav>
+            )}
 
-              {/* Breadcrumb + date */}
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center items-start gap-4 mb-8 p-8 pb-0">
-                <div className="text-sm text-[#1B1B1B]">
-                  {project.creationDate && `Objavljeno: ${project.creationDate}`}
-                </div>
-                <nav className="text-sm text-[#1B1B1B] flex flex-wrap items-center">
-                  <button
-                    onClick={() => router.push('/')}
-                    className="hover:opacity-70 cursor-pointer"
-                  >
-                    <Image src={HomeIcon} alt="Home" width={16} height={16} />
-                  </button>
-                  <span className="mx-2">/</span>
-                  <button
-                    onClick={() => router.push('/projekti')}
-                    className="hover:opacity-70 cursor-pointer"
-                  >
-                    svi projekti
-                  </button>
-                  <span className="mx-2">/</span>
-                  <span className="text-[#1B1B1B]">
-                    {project.title.length > 30
-                      ? project.title.substring(0, 30) + '...'
-                      : project.title}
-                  </span>
-                </nav>
-              </div>
+            {/* Tekst dolazi iz uređivača u administraciji, dakle kao HTML.
+                Sadržaj upisuje organizator kroz admin panel, isto kao i ranije
+                `about_project` koji se ovako prikazivao. */}
+            <div
+              className="projekat-tekst"
+              dangerouslySetInnerHTML={{ __html: project.bodyHtml || '' }}
+            />
 
-              {/* Title + author */}
-              <div className="flex flex-col md:flex-row md:justify-between md:items-end items-start mb-8 px-8 gap-4 md:gap-18">
-                <h1
-                  className="single-blog-title flex-1 min-w-0"
-                  style={{ wordWrap: 'break-word', whiteSpace: 'normal' }}
-                >
-                  {project.title}
-                </h1>
-                {project.author && (
-                  <div className="text-sm text-[#1B1B1B] whitespace-normal md:whitespace-nowrap break-words max-w-full self-start md:self-end">
-                    Autor: {project.author}
-                  </div>
-                )}
-              </div>
-
-              <div className="px-8 pb-10">
-                {/* Cover image */}
-                {(project.coverImage || project.heroImage) && (
-                  <img
-                    src={project.coverImage || project.heroImage}
-                    alt={project.title}
-                    className="w-full h-80 object-cover rounded-lg mb-8"
-                  />
-                )}
-
-                {/* HTML content */}
-                <div className="prose prose-lg max-w-none">
-                  <div
-                    className="text-gray-700 leading-relaxed text-lg single-blog-content"
-                    dangerouslySetInnerHTML={{ __html: project.content || '' }}
-                  />
+            {/* Galerija je mreža od četiri u redu, koja se prelama u nov red —
+                četiri tačno popune kolonu sadržaja, pa se desna ivica poklapa
+                sa desnom strelicom ispod nje. */}
+            {project.gallery?.length > 0 && (
+              <div style={{ marginTop: '56px' }}>
+                <div className="projekat-galerija">
+                  {project.gallery.map((src, i) => (
+                    <img key={i} src={src} alt="" />
+                  ))}
                 </div>
 
-                {/* Back link */}
-                <div className="mt-10">
-                  <button
-                    onClick={() => router.push('/projekti')}
-                    className="text-[#261A54] hover:opacity-70 cursor-pointer font-medium"
-                  >
-                    ← Nazad na projekte
-                  </button>
-                </div>
               </div>
+            )}
 
+            {/* Strelice vode na prethodni i sledeći projekat, ne listaju slike:
+                stoje na krajevima, na dnu stranice, i uvek imaju šta da urade.
+                Stoje van galerije, jer ih inače projekat bez nje ne bi imao. */}
+            {bogataStranica && (
+                <div className="flex items-center justify-between" style={{ marginTop: '28px' }}>
+                  <button
+                    type="button"
+                    onClick={() => susedi.prethodni && router.push(`/projekti/${susedi.prethodni}`)}
+                    disabled={!susedi.prethodni}
+                    className="projekat-strelica"
+                    aria-label="Prethodni projekat"
+                  >
+                    <svg width="26" height="14" viewBox="0 0 26 14" fill="none" aria-hidden="true">
+                      <path d="M25 7H1M1 7l6-6M1 7l6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => susedi.sledeci && router.push(`/projekti/${susedi.sledeci}`)}
+                    disabled={!susedi.sledeci}
+                    className="projekat-strelica"
+                    aria-label="Sledeći projekat"
+                  >
+                    <svg width="26" height="14" viewBox="0 0 26 14" fill="none" aria-hidden="true">
+                      <path d="M1 7h24M25 7l-6-6M25 7l-6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+              </div>
+            )}
+
+            <div style={{ marginTop: '48px' }}>
+              <button
+                onClick={() => router.push('/projekti')}
+                className="text-[#261A54] hover:opacity-70 cursor-pointer font-medium"
+              >
+                ← Nazad na projekte
+              </button>
             </div>
           </div>
         )}

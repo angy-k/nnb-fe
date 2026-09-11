@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Avatar } from '@nextui-org/avatar'
 import ProfileGallery from './gallery'
 import useUser from '@/data/use-user'
+import { checkProfileReady } from '@/utils/profileValidation'
 import profileService from '@/services/profileService'
 import activityGroupService from '@/services/activityGroupService'
 
@@ -668,10 +669,20 @@ const ProfileEdit = () => {
             !address.trim() && 'adresu',
           ].filter(Boolean)
 
+          /*
+           * Drugi baner nabraja ono što nedostaje za prijavu na događaj, a ne
+           * za rolu — spisak dolazi iz iste provere koju rezervacija i koristi
+           * (`checkProfileReady`), da izlagač ne sazna za nedostatak tek pred
+           * potvrdu rezervacije. Facebook i Instagram se traže samo uz
+           * oglašavanje, pa se ovde dodaju kao preporuka.
+           *
+           * Ono što već stoji u gornjem baneru se ne ponavlja.
+           */
+          const zaPrijavu = checkProfileReady(user).missing
+            .filter(s => !requiredMissing.some(r => r.startsWith(s.split(' ')[0])))
+
           const recommendedMissing = [
-            !fullName.trim() && 'ime i prezime',
-            !address.trim() && 'adresa',
-            !dateOfBirth.trim() && 'datum rođenja',
+            ...zaPrijavu,
             !facebook.trim() && 'Facebook link',
             !instagram.trim() && 'Instagram link',
           ].filter(Boolean)
@@ -704,7 +715,7 @@ const ProfileEdit = () => {
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                   </svg>
                   <div>
-                    <p className="font-semibold text-sm" style={{ color: '#261A54' }}>Preporučeno za potpun profil</p>
+                    <p className="font-semibold text-sm" style={{ color: '#261A54' }}>Potrebno za prijavu na događaj</p>
                     <p className="text-sm mt-0.5" style={{ color: '#555' }}>Dopunite i: {joinFields(recommendedMissing)}.</p>
                   </div>
                 </div>

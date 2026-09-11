@@ -3,6 +3,7 @@
 import { Modal, ModalContent, ModalBody } from '@nextui-org/modal'
 import OKVIR from './shellStyle'
 import Link from 'next/link'
+import SaglasnostIzlaganja from '@/components/Reservations/SaglasnostIzlaganja'
 
 const formatTime = (seconds) => {
   if (seconds === null || seconds === undefined) return null
@@ -98,6 +99,11 @@ const BoothReservationConfirmModal = ({
   // potvrđuje baš tezgu za koju je zahtev poslat, umesto opšte poruke.
   onStandSuccess = null,
   standSuccessLabel = 'Vratite se na mapu',
+  // Saglasnost drži stranica; ista kvačica stoji i u modalu sa opcijama, pa ko
+  // je tamo čekirao ovde je zatiče čekiranu. Bez nje se prijava ne šalje.
+  termsPdfUrl = null,
+  termsAccepted = false,
+  setTermsAccepted = null,
 }) => {
   const isSuccess = !!successMessage
   const jeUspehTezge = isSuccess && !!onStandSuccess && !!selectedStand
@@ -236,18 +242,26 @@ const BoothReservationConfirmModal = ({
 
                   <CostSummary costs={costs} covered={coveredByPackage} />
 
+                  <div className="w-full max-w-[500px]">
+                    <SaglasnostIzlaganja
+                      prihvaceno={termsAccepted}
+                      naPromenu={setTermsAccepted}
+                      termsPdfUrl={termsPdfUrl}
+                    />
+                  </div>
+
                   <div className="flex items-center gap-4 sm:flex-col sm:w-full">
                     <button
                       type="button"
-                      disabled={isLoading}
+                      disabled={isLoading || !termsAccepted}
                       onClick={() => onConfirm?.()}
                       className="sm:w-full"
                       style={{
                         background: '#56C4CF', color: '#ffffff',
                         borderRadius: '29px', minWidth: '235px', height: '57px', padding: '0 32px',
                         fontWeight: '600', fontSize: '18px', border: 'none',
-                        cursor: isLoading ? 'not-allowed' : 'pointer',
-                        opacity: isLoading ? 0.6 : 1,
+                        cursor: (isLoading || !termsAccepted) ? 'not-allowed' : 'pointer',
+                        opacity: (isLoading || !termsAccepted) ? 0.45 : 1,
                       }}
                     >
                       {isLoading ? 'Slanje...' : confirmLabel}

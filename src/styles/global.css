@@ -855,6 +855,93 @@ h6 {
    height: auto;
  }
 
+/* Sadržaj objave dolazi iz uređivača u administraciji, pa može da sadrži
+   pasuse, naslove, spiskove, linkove i citate. Pravila prate stil teksta
+   projekta (`.projekat-tekst`), da objava i projekat ne izgledaju kao dva
+   sajta. Do sada je ovde bila samo veličina slova, pa su naslovi i spiskovi
+   izlazili neoblikovani — bez tačaka, bez razmaka među pasusima. */
+.single-blog-content p {
+  margin: 0 0 16px;
+}
+
+.single-blog-content p:last-child {
+  margin-bottom: 0;
+}
+
+.single-blog-content strong,
+.single-blog-content b {
+  font-weight: 700;
+}
+
+.single-blog-content em,
+.single-blog-content i {
+  font-style: italic;
+}
+
+.single-blog-content a {
+  color: #56C4CF;
+  text-decoration: underline;
+}
+
+.single-blog-content h2,
+.single-blog-content h3,
+.single-blog-content h4 {
+  color: #261A54;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 32px 0 12px;
+}
+
+.single-blog-content h2 { font-size: 26px; }
+.single-blog-content h3 { font-size: 21px; }
+.single-blog-content h4 { font-size: 18px; }
+
+/* Prvi naslov u objavi ne gura tekst nadole — iznad njega je naslovna slika. */
+.single-blog-content > :first-child {
+  margin-top: 0;
+}
+
+.single-blog-content ul,
+.single-blog-content ol {
+  margin: 0 0 16px;
+  padding-left: 22px;
+}
+
+.single-blog-content ul { list-style: disc; }
+.single-blog-content ol { list-style: decimal; }
+.single-blog-content li { margin-bottom: 8px; }
+
+.single-blog-content blockquote {
+  margin: 24px 0;
+  padding: 4px 0 4px 20px;
+  border-left: 3px solid #56C4CF;
+  color: #261A54;
+  font-style: italic;
+}
+
+.single-blog-content img {
+  border-radius: 30px;
+  margin: 24px 0;
+}
+
+.single-blog-content hr {
+  border: none;
+  border-top: 1px solid #C5C4C2;
+  margin: 32px 0;
+}
+
+.single-blog-content table {
+  border-collapse: collapse;
+  margin: 24px 0;
+}
+
+.single-blog-content th,
+.single-blog-content td {
+  border: 1px solid #C5C4C2;
+  padding: 8px 12px;
+  text-align: left;
+}
+
 @media screen and (max-width: 599px) {
   /* Kolona je na telefonu široka oko 278px. Sa 40px naslov je duži naziv lomio
      u šest redova visokih 240px, pa je zauzimao pola ekrana pre same objave.
@@ -937,7 +1024,7 @@ h6 {
   border-radius: 20px;
   overflow: hidden;
   width: 100%;
-  max-width: 1440px;
+  max-width: 1400px;
   max-height: 157px;
   margin-top: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -1738,16 +1825,30 @@ h6 {
     }
     .header-items-list {
       display: flex;
-      gap: 50px;
+      /* U dizajnu je razmak 50px, ali tada osam stavki plus logo plus desna
+         grupa ulogovanog korisnika premaše kolonu od 1400 — i to na svakoj
+         širini, jer je kolona fiksna. Ranije se to samo nije videlo: flex je
+         stiskao „O nama" u dva reda umesto da red izađe iz okvira. Sa 40px
+         sve staje, uz rezervu za duže ime naloga. */
+      gap: 40px;
       text-align: left;
       justify-items: space-between;
       justify-content: center;
       align-items: center;
       flex-wrap: nowrap;
+      /* Svaka stavka je zaseban `ul`, dakle flex stavka koja sme da se skuplja.
+         Kad je red pretesan, flex je stiskao onu koja ima gde da se prelomi —
+         a to je jedina sa razmakom, „O nama" — pa je padala u dva reda dok su
+         jednorečne ostajale cele. `nowrap` joj daje najmanju širinu jednaku
+         celom natpisu, pa se stiskanje raspoređuje na razmake između stavki. */
+      > ul {
+        flex-shrink: 0;
+      }
       .header-item {
         cursor: pointer;
         text-decoration: none;
         color: #ffffff;
+        white-space: nowrap;
       }
       .header-item:hover {
         color: #ffffff;
@@ -1960,8 +2061,206 @@ a.office-contact-section-content:focus-visible {
 /* „Prilepiti kontakt formi": blok sa formom nosi `mt-24` (96px), pa je rečenica
    visila daleko iznad nje. Susedni selektor je specifičniji od Tailwind klase,
    pa nadjačava bez `!important` — i to samo tamo gde rečenica zaista stoji. */
+/* Tekst projekta iz uređivača u administraciji.
+
+   Sadržaj je HTML, pa mu stilove daje ova klasa — bez nje bi naslovi, spiskovi
+   i linkovi izgubili razmake i veličine, jer se osnovni stilovi na sajtu gase. */
+.projekat-tekst {
+  color: #1B1B1B;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.projekat-tekst p {
+  margin: 0 0 16px;
+}
+
+.projekat-tekst strong { font-weight: 700; }
+.projekat-tekst em { font-style: italic; }
+
+.projekat-tekst a {
+  color: #56C4CF;
+  text-decoration: underline;
+}
+
+.projekat-tekst h2,
+.projekat-tekst h3 {
+  color: #261A54;
+  font-weight: 700;
+  margin: 32px 0 12px;
+}
+
+.projekat-tekst h2 { font-size: 24px; }
+.projekat-tekst h3 { font-size: 19px; }
+
+.projekat-tekst ul,
+.projekat-tekst ol {
+  margin: 0 0 16px;
+  padding-left: 22px;
+}
+
+.projekat-tekst ul { list-style: disc; }
+.projekat-tekst ol { list-style: decimal; }
+.projekat-tekst li { margin-bottom: 8px; }
+
+.projekat-tekst img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+/* Uvodni tekst stoji na tamnoj podlozi, pa mu boje moraju biti obrnute —
+   inače bi tamno slovo na tamnoj podlozi nestalo. Slova su i krupnija, jer je
+   ta sekcija uvod, a ne glavni tekst. */
+.projekat-tekst--tamna,
+.projekat-tekst--tamna h2,
+.projekat-tekst--tamna h3 {
+  color: #ffffff;
+}
+
+.projekat-tekst--tamna {
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.projekat-tekst--tamna p {
+  margin-bottom: 24px;
+}
+
+.projekat-tekst--tamna a {
+  color: #56C4CF;
+}
+
+/* Traka fotografija na dnu stranice projekta.
+
+   Broj fotografija nije unapred poznat, pa se traka pomera umesto da se prelama
+   u mrežu — kao na dizajnu. `scroll-snap` zaustavlja pomeranje na fotografiji,
+   a ne na pola nje. Traka za pomeranje je sakrivena, jer se kreće strelicama. */
+/* Dve uvodne slike na tamnoj podlozi — spojene u jednu ploču.
+
+   Na dizajnu među njima nema razmaka, a zaobljene su samo spoljne ivice: leva
+   slika levo, desna desno. Zato `gap: 0` i zaobljenje po prvom i poslednjem
+   detetu, a ne na svakoj slici. Kad je slika samo jedna, zaobljena je sa svih
+   strana. */
+/* Uvodne slike su jedna ploča.
+ *
+ * Zaobljenje nosi isključivo okvir koji ih drži — sve četiri ivice — i on
+ * odseca ono što viri (`overflow: hidden`). Same slike nemaju zaobljenje ni na
+ * jednoj svojoj ivici, stoje jedna uz drugu bez razmaka, pa spoj ostaje prav.
+ * Isto važi i kad se na telefonu slože jedna ispod druge: okvir i dalje
+ * zaobljava samo svoja četiri ugla. */
+.projekat-uvodne-slike {
+  display: grid;
+  grid-template-columns: repeat(var(--broj-slika, 2), minmax(0, 1fr));
+  gap: 0;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.projekat-uvodne-slike img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 0;
+}
+
+@media screen and (max-width: 599px) {
+  .projekat-uvodne-slike {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Galerija na dnu stranice projekta: četiri u redu, prelama se u nov red.
+
+   Ranije je bila traka koja se pomera, pa je procenat u `flex-basis` bio
+   razrešavan prema širini sadržaja umesto prema koloni i slika je ispadala
+   348px umesto 308. Mreža računa kolone prema kontejneru, pa četiri tačno
+   popune kolonu i desna ivica se poklapa sa desnom strelicom. */
+.projekat-galerija {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.projekat-galerija img {
+  width: 100%;
+  aspect-ratio: 308 / 180;
+  object-fit: cover;
+  border-radius: 30px;
+}
+
+@media screen and (max-width: 899px) {
+  .projekat-galerija {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 599px) {
+  .projekat-galerija {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Obe strelice izgledaju isto dok se ne pritisnu; narandžasta je stanje klika,
+   ne početno stanje. */
+.projekat-strelica {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 40px;
+  border-radius: 20px;
+  border: 1.5px solid #261A54;
+  color: #261A54;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.projekat-strelica:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+/* Na prvom odnosno poslednjem projektu nema kuda dalje. */
+.projekat-strelica:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.projekat-strelica:active {
+  background: #EC4923;
+  border-color: #EC4923;
+  color: #ffffff;
+  opacity: 1;
+}
+
+/* Uspravna crta između strelica za prethodni i sledeći mesec. */
+.calendar-nav-razdelnik {
+  width: 1px;
+  align-self: stretch;
+  background: #C5C4C2;
+  flex-shrink: 0;
+}
+
 .contact-section-lead-wrap + div {
   margin-top: 32px;
+}
+
+/* Naslov kontakt sekcije („Želite da sarađujete sa nama?") deli okvir sa formom
+   ispod sebe.
+
+   Bio je samo `w-full`, bez ograničenja širine, dok je forma centrirana na
+   1440. Na širem ekranu su se razilazili: na 2560 naslov je kretao od leve
+   ivice prozora, a forma tek 560px kasnije. Sada dele istu kolonu, pa stoje
+   jedno ispod drugog. */
+.contact-section-title {
+  display: block;
+  width: 100%;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Uvodna rečenica u okviru bele Viber trake.
@@ -2334,6 +2633,63 @@ a.office-contact-section-content:focus-visible {
   }
 }
 
+/* Modal sa opcijama rezervacije — struja, reklama, dani, saglasnost.
+
+   Mere su iz dizajna (okvir 1920, modal 1036 x 897) i ranije su stajale kao
+   inline stil, uz `sm:` klase koje je trebalo da ih smanje na telefonu. Te
+   klase nisu radile ništa: **inline stil uvek pobeđuje klasu**, pa je na
+   telefonu ostajalo 185px bočnog odmaka i naslov od 33px — sadržaju je na
+   ekranu od 375px preostajalo par piksela, pa je tekst izlazio iz modala.
+
+   Sada su mere promenljive, pa ih medijski upit može zameniti. */
+.opcije-modal {
+  --om-vrh: 115px;
+  --om-bok: 185px;
+  --om-dno: 105px;
+  --om-pitanje: 33px;
+  --om-opcija: 22px;
+  --om-krug: 29px;
+  --om-tacka: 15px;
+  --om-krug-tekst: 19px;
+  --om-razmak-opcija: 18px;      /* korak 47 minus krug 29 */
+  --om-pitanje-opcije: 27px;
+  --om-opcije-pitanje: 44px;
+  --om-opcije-dugme: 34px;
+  --om-dugme-s: 202px;
+  --om-dugme-v: 57px;
+}
+
+@media screen and (max-width: 899px) {
+  .opcije-modal {
+    --om-vrh: 64px;
+    --om-bok: 40px;
+    --om-dno: 40px;
+    --om-pitanje: 24px;
+    --om-opcija: 18px;
+  }
+}
+
+@media screen and (max-width: 599px) {
+  .opcije-modal {
+    --om-vrh: 56px;
+    --om-bok: 20px;
+    --om-dno: 28px;
+    /* Na telefonu je naslov 18px: na 375px ekrana duže pitanje na 20px
+       prelamalo se u tri reda i guralo opcije nadole. */
+    --om-pitanje: 18px;
+    --om-opcija: 16px;
+    --om-krug: 22px;
+    --om-tacka: 11px;
+    --om-krug-tekst: 12px;
+    --om-razmak-opcija: 14px;
+    --om-pitanje-opcije: 16px;
+    --om-opcije-pitanje: 28px;
+    --om-opcije-dugme: 24px;
+    --om-dugme-s: 100%;
+    --om-dugme-v: 50px;
+  }
+}
+
 /* Krugovi sa ikonicama u hero sekciji Galerije.
 
    U dizajnu su 140px na okviru od 1920, sa 88px odmaka odozgo, 36 između njih i
@@ -2597,23 +2953,43 @@ a.office-contact-section-content:focus-visible {
   }
 }
 
+/* Hero na početnoj: tekst u koloni sadržaja, sove uz desnu ivicu ekrana.
+
+   Ranije je ceo red bio ograničen na 1440 i centriran, pa su sove na širem
+   ekranu lebdele — na 1920 su se završavale 320px pre ivice. Sada red ide
+   celom širinom, a levo uvlačenje samo dovodi tekst tamo gde bi počinjala
+   kolona od 1440; desnog uvlačenja nema, pa sove naležu na ivicu.
+
+   Uvlačenje je računato preko `100%` (širina omotača), ne preko `100vw` —
+   `vw` uključuje i traku za pomeranje, pa bi sove virile za njenu širinu i
+   napravile vodoravno pomeranje. */
 .home-hero-container {
+  --hero-bok: 80px;
+
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: 1440px;
   margin: 0 auto;
-  padding: 40px 80px 40px 80px;
+  padding: 40px var(--hero-bok) 40px var(--hero-bok);
   gap: 40px;
 
+  @media screen and (min-width: 600px) {
+    max-width: none;
+    padding-left: calc(max(0px, (100% - 1400px) / 2) + var(--hero-bok));
+    padding-right: 0;
+  }
+
   @media screen and (max-width: 1299px) {
-    padding: 32px 40px 40px 40px;
+    --hero-bok: 40px;
+    padding-top: 32px;
+    padding-bottom: 40px;
     gap: 24px;
   }
   @media screen and (max-width: 599px) {
     /* naslov → sova → rest (ne reverse) */
+    max-width: 1400px;
     flex-direction: column;
     padding: 8px 24px 32px 24px;
   }
@@ -2783,7 +3159,7 @@ a.office-contact-section-content:focus-visible {
 }
 
 .home-hero-bar-inner {
-  max-width: 1440px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 16px 80px;
   display: flex;
@@ -2857,6 +3233,29 @@ a.office-contact-section-content:focus-visible {
     justify-content: center !important;
     max-width: 300px;
     margin: 0 auto;
+  }
+}
+
+/* Stranica greške: tekst u koloni sadržaja, sove uz desnu ivicu ekrana.
+
+   Red je ranije bio ograničen na 1400 i centriran, uz `margin-right: -20px` kao
+   zakrpu, pa su sove na 1920 lebdele 240px pre ivice. Sada red ide celom
+   širinom, a levo uvlačenje dovodi tekst tamo gde počinje kolona — u dizajnu
+   238 od ivice okvira od 1920, dakle kolona od 1440.
+
+   Uvlačenje ide preko `100%` (širina roditelja), ne `100vw`, da traka za
+   pomeranje ne gurne sove preko ivice. */
+.error-page-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 0;
+}
+
+@media screen and (min-width: 600px) {
+  .error-page-content {
+    max-width: none;
+    margin: 0;
+    padding: 40px 0 40px calc(max(0px, (100% - 1400px) / 2));
   }
 }
 

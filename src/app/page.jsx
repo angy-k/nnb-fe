@@ -120,7 +120,7 @@ export default async function Home() {
       {/* FAQ - dark navy section */}
       <section style={{ background: '#261A54' }}>
         <div className="grid place-items-center w-full pb-24 pt-24">
-          <div className="w-full" style={{ maxWidth: '1440px', padding: '0 24px' }}>
+          <div className="w-full" style={{ maxWidth: '1400px', padding: '0 24px' }}>
             <span className="contact-section-title" style={{ color: '#ffffff' }}>Najčešće postavljana pitanja</span>
           </div>
           <Faq isHome={true} />

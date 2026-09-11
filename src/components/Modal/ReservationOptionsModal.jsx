@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { Modal, ModalContent, ModalBody } from '@nextui-org/modal'
-import LegalDocsModal from '@/components/Modal/LegalDocsModal'
-import { CONSENT_PARTICIPATION } from '@/utils/consentTexts'
+import SaglasnostIzlaganja from '@/components/Reservations/SaglasnostIzlaganja'
 
 /**
  * Mere sa izvoza dizajna (`Opcije-rezervacije.png`, okvir 1920; modal 1066 × 923
@@ -32,18 +31,18 @@ const M = {
 // sredini. Ranije je bilo obrnuto — obrisna kružica koja se pri izboru cela
 // oboji tirkizno, sa belom tačkom.
 const RadioOption = ({ name, value, checked, onChange, label }) => (
-  <label className="flex items-center cursor-pointer" style={{ gap: `${M.krugDoTeksta}px` }} onClick={() => onChange(value)}>
+  <label className="flex items-center cursor-pointer" style={{ gap: 'var(--om-krug-tekst)' }} onClick={() => onChange(value)}>
     <div
       className="rounded-full flex items-center justify-center flex-shrink-0"
-      style={{ width: `${M.krug}px`, height: `${M.krug}px`, background: '#D9D9D9' }}
+      style={{ width: 'var(--om-krug)', height: 'var(--om-krug)', background: '#D9D9D9' }}
     >
       {checked && (
-        <div className="rounded-full" style={{ width: `${M.tacka}px`, height: `${M.tacka}px`, background: '#56C4CF' }} />
+        <div className="rounded-full" style={{ width: 'var(--om-tacka)', height: 'var(--om-tacka)', background: '#56C4CF' }} />
       )}
     </div>
     {/* Zbijen red: podrazumevani je viši od kružice, pa bi korak između opcija
         ispao 51 umesto izmerenih 47. */}
-    <span className="text-[#261A54]" style={{ fontSize: `${M.opcija}px`, lineHeight: 1 }}>{label}</span>
+    <span className="text-[#261A54]" style={{ fontSize: 'var(--om-opcija)', lineHeight: 1.25 }}>{label}</span>
   </label>
 )
 
@@ -97,6 +96,11 @@ const ReservationOptionsModal = ({
   cancelLabel = 'Otkaži',
   timeRemaining = null,
   termsPdfUrl = null,
+  // Saglasnost može da drži stranica, kad ista kvačica stoji i u modalu
+  // potvrde (mapa tezgi). Tokovi sa kalendara i sa kartice događaja šalju
+  // prijavu odavde, nemaju drugi korak, pa im modal drži svoje stanje.
+  termsAccepted = false,
+  setTermsAccepted = null,
   // Dani događaja i izbor za koje se izlagač prijavljuje. Na mapi ovaj izbor
   // već postoji; u toku sa kalendara ga nije bilo, pa se prijava mogla poslati
   // samo za jedan dan — onaj koji je kliknut u kalendaru.
@@ -107,8 +111,10 @@ const ReservationOptionsModal = ({
   const jeViseDnevni = Array.isArray(eventDays) && eventDays.length > 1
   const sviDani = eventDays.map((d) => d.id)
   const izabraniSvi = jeViseDnevni && sviDani.length > 0 && sviDani.every((id) => selectedDayIds.includes(id))
-  const [termsAccepted, setTermsAccepted] = useState(false)
-  const [isLegalOpen, setIsLegalOpen] = useState(false)
+
+  const [sopstvenaSaglasnost, setSopstvenaSaglasnost] = useState(false)
+  const saglasan = setTermsAccepted ? termsAccepted : sopstvenaSaglasnost
+  const promeniSaglasnost = setTermsAccepted || setSopstvenaSaglasnost
 
   return (
     <Modal
@@ -129,7 +135,7 @@ const ReservationOptionsModal = ({
         {(modalOnClose) => (
           <ModalBody className="p-0">
             <div
-              className="relative flex flex-col"
+              className="relative flex flex-col opcije-modal"
               // Preliv izveden iz piksela na izvozu: plavičasto dole levo (#D1EAEE),
               // ka skoro beloj desno (#F5F6F8).
               style={{ background: 'linear-gradient(to top right, #d1eaee 0%, #e4ebf0 35%, #f5f6f8 75%)' }}
@@ -149,8 +155,8 @@ const ReservationOptionsModal = ({
                   reklama i saglasnost — pa je modal na računaru izlazio van
                   ekrana i donje opcije se nisu mogle videti ni dohvatiti. */}
               <div
-                className="sm:p-6 sm:pt-16 sm:pb-8"
-                style={{ padding: `${M.vrh}px ${M.bok}px ${M.dno}px`, maxHeight: '85dvh', overflowY: 'auto' }}
+                className=""
+                style={{ padding: 'var(--om-vrh) var(--om-bok) var(--om-dno)', maxHeight: '85dvh', overflowY: 'auto' }}
               >
                 <TimerChip timeRemaining={timeRemaining} />
 
@@ -159,10 +165,10 @@ const ReservationOptionsModal = ({
                     morao da ponavlja postupak za svaki dan posebno. */}
                 {jeViseDnevni && setSelectedDayIds && (
                   <>
-                    <h2 className="text-[#261A54] font-bold sm:text-lg" style={{ fontSize: `${M.pitanje}px`, lineHeight: M.redPitanja, marginBottom: `${M.pitanjeDoOpcija}px` }}>
+                    <h2 className="text-[#261A54] font-bold" style={{ fontSize: 'var(--om-pitanje)', lineHeight: M.redPitanja, marginBottom: 'var(--om-pitanje-opcije)' }}>
                       Za koliko dana se prijavljujete?
                     </h2>
-                    <div className="flex flex-col sm:mb-6" style={{ gap: `${M.korakOpcija - M.krug}px`, marginBottom: `${M.opcijeDoPitanja}px` }}>
+                    <div className="flex flex-col" style={{ gap: 'var(--om-razmak-opcija)', marginBottom: 'var(--om-opcije-pitanje)' }}>
                       <RadioOption
                         name="dani"
                         value="jedan"
@@ -181,12 +187,12 @@ const ReservationOptionsModal = ({
                   </>
                 )}
 
-                <h2 className="text-[#261A54] font-bold sm:mb-5 sm:text-lg" style={{ fontSize: `${M.pitanje}px`, lineHeight: M.redPitanja, marginBottom: `${M.pitanjeDoOpcija}px` }}>
+                <h2 className="text-[#261A54] font-bold" style={{ fontSize: 'var(--om-pitanje)', lineHeight: M.redPitanja, marginBottom: 'var(--om-pitanje-opcije)' }}>
                   Da li Vam je osim osvetljenja potreban strujni priključak za
                   određeni uređaj neophodan za izlaganje?
                 </h2>
 
-                <div className="flex flex-col sm:mb-6" style={{ gap: `${M.korakOpcija - M.krug}px`, marginBottom: `${M.opcijeDoPitanja}px` }}>
+                <div className="flex flex-col" style={{ gap: 'var(--om-razmak-opcija)', marginBottom: 'var(--om-opcije-pitanje)' }}>
                   {!electricityAllowed || electricityOptions.length === 0 ? (
                     <p className="text-[#555] text-sm">
                       {electricityOptions.length === 0
@@ -215,11 +221,11 @@ const ReservationOptionsModal = ({
                   />
                 </div>
 
-                <h3 className="text-[#261A54] font-bold sm:text-lg" style={{ fontSize: `${M.pitanje}px`, lineHeight: M.redPitanja, marginBottom: `${M.pitanjeDoOpcija}px` }}>
+                <h3 className="text-[#261A54] font-bold" style={{ fontSize: 'var(--om-pitanje)', lineHeight: M.redPitanja, marginBottom: 'var(--om-pitanje-opcije)' }}>
                   Da li vam je potrebna reklama?
                 </h3>
 
-                <div className="flex flex-col sm:mb-6" style={{ gap: `${M.korakOpcija - M.krug}px`, marginBottom: `${M.opcijeDoDugmeta}px` }}>
+                <div className="flex flex-col" style={{ gap: 'var(--om-razmak-opcija)', marginBottom: 'var(--om-opcije-dugme)' }}>
                   <RadioOption
                     name="marketing"
                     value="instagram"
@@ -250,75 +256,22 @@ const ReservationOptionsModal = ({
                   />
                 </div>
 
-                {/* T&C checkbox */}
-                <label
-                  className="flex items-start gap-3 cursor-pointer mb-6"
-                  onClick={() => setTermsAccepted(v => !v)}
-                >
-                  <div
-                    className="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors"
-                    style={{
-                      borderColor: termsAccepted ? '#56C4CF' : '#d1d5db',
-                      backgroundColor: termsAccepted ? '#56C4CF' : 'transparent',
-                    }}
-                  >
-                    {termsAccepted && (
-                      <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
-                        <path d="M1 4L4 7L10 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
-                  </div>
-                  <span className="text-sm text-[#261A54] leading-snug select-none">
-                    Prihvatam{' '}
-                    {termsPdfUrl ? (
-                      <a
-                        href={termsPdfUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline text-[#56C4CF]"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        opšte uslove izlaganja
-                      </a>
-                    ) : (
-                      <span>opšte uslove izlaganja</span>
-                    )}
-                    {'. '}
-                    {/* Propisana saglasnost za obradu podataka o ličnosti */}
-                    {CONSENT_PARTICIPATION.before}
-                    <button
-                      type="button"
-                      className="underline text-[#56C4CF]"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        e.preventDefault()
-                        setIsLegalOpen(true)
-                      }}
-                    >
-                      {CONSENT_PARTICIPATION.linkLabel}
-                    </button>
-                    {CONSENT_PARTICIPATION.after}
-                  </span>
-                </label>
-
-                {/* Uz opšta pravila ide i dokument sa cenama i satnicom ovog događaja */}
-                <LegalDocsModal
-                  isOpen={isLegalOpen}
-                  onOpenChange={setIsLegalOpen}
+                <SaglasnostIzlaganja
+                  prihvaceno={saglasan}
+                  naPromenu={promeniSaglasnost}
                   termsPdfUrl={termsPdfUrl}
-                  acceptLabel="Prihvatam"
-                  onAccept={() => setTermsAccepted(true)}
+                  className="mb-6"
                 />
 
                 <div className="flex items-center gap-4 sm:flex-col sm:w-full">
                   <button
                     onClick={() => onSubmit?.()}
-                    disabled={!termsAccepted}
+                    disabled={!saglasan}
                     className="bg-[#56C4CF] hover:opacity-90 text-white rounded-full font-semibold transition sm:w-full"
                     style={{
-                      width: `${M.dugmeSirina}px`, height: `${M.dugmeVisina}px`, fontSize: '18px',
-                      opacity: termsAccepted ? 1 : 0.45,
-                      cursor: termsAccepted ? 'pointer' : 'not-allowed',
+                      width: 'var(--om-dugme-s)', height: 'var(--om-dugme-v)', fontSize: '18px',
+                      opacity: saglasan ? 1 : 0.45,
+                      cursor: saglasan ? 'pointer' : 'not-allowed',
                     }}
                     type="button"
                   >

@@ -147,6 +147,22 @@ const ReservationMapPage = () => {
   const [eventName, setEventName] = useState('')
   const [eventAddress, setEventAddress] = useState('')
 
+  /**
+   * Da li događaj uopšte postoji.
+   *
+   * Ranije se ovo nije razlikovalo od nedostupne mape: za nepostojeći ID svi
+   * pozivi su vraćali 404, stranica je javljala „Mapa nije dostupna", a tajmer
+   * sesije i osvežavanje zauzetosti su nastavljali da rade u prazno — pa je
+   * delovalo kao da se zaglavila.
+   *
+   *   'ucitava' — još se traži
+   *   'postoji' — nađen na spisku događaja
+   *   'nema'    — spisak je stigao, ovog ID-a nema
+   *   'greska'  — spisak nije stigao, pa se ne zna
+   */
+  const [eventStatus, setEventStatus] = useState('ucitava')
+  const eventReady = eventStatus === 'postoji' || eventStatus === 'greska'
+
   // ── Dani događaja ──────────────────────────────────────────────────────────
   const [eventDays, setEventDays] = useState([])
   const [allowPerDay, setAllowPerDay] = useState(false)
@@ -248,6 +264,11 @@ const ReservationMapPage = () => {
    * stavke koje će se i upisati. Domaća računica ostaje samo kao trenutni
    * prikaz dok odgovor ne stigne, da sažetak ne bi bio prazan.
    */
+  // Saglasnost sa opštim uslovima. Stoji ovde, a ne u modalu, jer je ista
+  // kvačica na dva mesta u toku — u opcijama i u potvrdi — i jer bez nje
+  // prijava ne sme da ode. Dok je držao modal opcija, ko ga zatvori (ili ga ne
+  // otvori) stizao je do slanja bez ijedne kvačice.
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [serverCosts, setServerCosts] = useState(null)
   const [quoteBlockers, setQuoteBlockers] = useState([])
   const [gratisPokriva, setGratisPokriva] = useState([])
@@ -319,6 +340,7 @@ const ReservationMapPage = () => {
 
   const refreshAvailability = async () => {
     if (!eventId || !user) return
+    if (!eventReady) return
     if (sessionExpired || isPackageUser) return
     // Zauzetost se traži za izabrane dane — štand zauzet drugog dana
     // ne sme da blokira prijavu za prvi.
@@ -377,13 +399,22 @@ const ReservationMapPage = () => {
 
   useEffect(() => {
     const fetchEventDetails = async () => {
-      if (!eventId) return
+      if (!eventId) {
+        setEventStatus('nema')
+        return
+      }
       try {
         const res = await eventService.getEvents()
-        if (!res.ok) return
+        if (!res.ok) {
+          setEventStatus('greska')
+          return
+        }
 
         const data = await res.json()
-        if (!data?.success) return
+        if (!data?.success) {
+          setEventStatus('greska')
+          return
+        }
 
         const items = Array.isArray(data.data)
           ? data.data
@@ -392,7 +423,12 @@ const ReservationMapPage = () => {
             : []
 
         const found = items.find((e) => String(e?.id) === String(eventId))
-        if (!found) return
+        if (!found) {
+          setEventStatus('nema')
+          return
+        }
+
+        setEventStatus('postoji')
 
         const toNum = (v) => (v != null && v !== '') ? Number(v) : null
         setEventDetails({
@@ -422,7 +458,7 @@ const ReservationMapPage = () => {
           setSelectedDayIds(allIds.slice(0, 1))
         }
       } catch {
-        return
+        setEventStatus('greska')
       }
     }
 
@@ -448,8 +484,9 @@ const ReservationMapPage = () => {
   // Pri svakom loadu/refreshu: oslobodi stari lock da štand ne ostane blokiran
   useEffect(() => {
     if (!user || !eventId || isPackageUser) return
+    if (!eventReady) return
     eventService.unlockStand({ eventId }).catch(() => null)
-  }, [user?.id, eventId])
+  }, [user?.id, eventId, eventReady])
 
   useEffect(() => {
     if (!user || !eventId) return
@@ -484,7 +521,9 @@ const ReservationMapPage = () => {
   }, [sessionSecondsLeft])
 
   useEffect(() => {
-    // Tajmer kreće odmah od munta/refresh-a, ne čeka user load
+    // Tajmer kreće odmah od munta/refresh-a, ne čeka user load.
+    // Za nepostojeći događaj ne kreće uopšte — nema šta da istekne.
+    if (!eventReady) return
     if (isPackageUser || sessionExpired) return
 
     const id = setInterval(() => {
@@ -492,7 +531,7 @@ const ReservationMapPage = () => {
     }, 1000)
 
     return () => clearInterval(id)
-  }, [isPackageUser, sessionExpired])
+  }, [isPackageUser, sessionExpired, eventReady])
 
   useEffect(() => {
     if (!user || !eventId) return
@@ -607,6 +646,14 @@ const ReservationMapPage = () => {
 
   const confirmReservation = async () => {
     if (!user || !eventId) return
+
+    // Dugme je već zaključano bez kvačice; ovo je druga brava, da prijava ne
+    // ode ni ako se do slanja dođe nekim putem koji dugme zaobilazi.
+    if (!termsAccepted) {
+      setReservationError('Morate prihvatiti opšte uslove izlaganja pre slanja prijave.')
+      return
+    }
+
     if (!isPackageUser && sessionExpired) {
       setReservationError('Sesija za izbor mesta je istekla. Osvežite stranicu i pokušajte ponovo.')
       return
@@ -663,11 +710,48 @@ const ReservationMapPage = () => {
   const readyToConfirm = (isPackageUser || (!sessionExpired && !!selectedStand && !!lockId))
     && quoteBlockers.length === 0
 
-  if (loading) {
+  // Zajednička kartica za sva stanja u kojima se rezervacija ne može otvoriti.
+  const porukaStranice = (naslov, tekst, dugme) => (
+    /* Odmak ide od visine zaglavlja, ne od nagađanih 192px: zaglavlje je
+       fiksnih 236, pa je kartica ulazila pod njega i naslov je bio odsečen. */
+    <div
+      className="w-full grid place-items-center px-6"
+      style={{ paddingTop: 'calc(var(--nnb-zaglavlje) + 48px)', paddingBottom: '96px' }}
+    >
+      <div className="max-w-[900px] w-full rounded-2xl shadow p-8" style={{ background: '#ffffff' }}>
+        <div className="text-[#261A54] text-xl font-bold mb-4">{naslov}</div>
+        <div className="text-[#1B1B1B] mb-6">{tekst}</div>
+        <div className="flex items-center gap-3">{dugme}</div>
+      </div>
+    </div>
+  )
+
+  if (loading || eventStatus === 'ucitava') {
     return (
-      <div className="mt-48 w-full grid place-items-center">
+      <div
+        className="w-full grid place-items-center"
+        style={{ paddingTop: 'calc(var(--nnb-zaglavlje) + 48px)', paddingBottom: '96px' }}
+      >
         <div className="text-[#261A54]">Učitavanje mape...</div>
       </div>
+    )
+  }
+
+  /*
+   * Nepostojeći događaj je svoja priča, ne „mapa nije dostupna".
+   *
+   * Do ovoga se najlakše dođe preko broja koji se vidi na sajtu — taj broj je
+   * redni prikaz, ne ID iz baze — pa je poruka jasna i vodi na spisak događaja
+   * umesto da nudi povratak u prazno.
+   */
+  if (eventStatus === 'nema') {
+    return porukaStranice(
+      'Događaj ne postoji',
+      'Ne postoji događaj sa ovom adresom. Moguće je da je uklonjen ili da je adresa pogrešna.',
+      <>
+        <Button type="outlined-orange" name="Svi događaji" onClick={() => router.push('/dogadjaji')} />
+        <Button type="outlined-dark" name="Nazad" onClick={() => router.back()} />
+      </>
     )
   }
 
@@ -677,14 +761,17 @@ const ReservationMapPage = () => {
    * porukom „Mapa nije dostupna" na događajima bez šeme, iako mesto ima.
    */
   if (!isPackageUser && (error || !mapConfig?.map_url || !Array.isArray(mapConfig?.hotspots))) {
-    return (
-      <div className="mt-48 w-full grid place-items-center px-6">
-        <div className="max-w-[900px] w-full bg-white rounded-2xl shadow p-8">
-          <div className="text-[#261A54] text-xl font-bold mb-4">Mapa nije dostupna</div>
-          <div className="text-[#1B1B1B] mb-6">{error || 'Događaj nema mapu za izbor mesta.'}</div>
-          <Button type="outlined-orange" name="Nazad" onClick={() => router.back()} />
-        </div>
-      </div>
+    // Ovde se već zna da događaj postoji (ili da spisak nije stigao), pa poruka
+    // govori o mapi — ne o događaju.
+    return porukaStranice(
+      'Mapa nije dostupna',
+      eventStatus === 'greska'
+        ? 'Podaci o događaju trenutno nisu dostupni. Pokušajte ponovo za koji trenutak.'
+        : (error || 'Ovaj događaj nema mapu za izbor mesta.'),
+      <>
+        <Button type="outlined-orange" name="Nazad" onClick={() => router.back()} />
+        <Button type="outlined-dark" name="Svi događaji" onClick={() => router.push('/dogadjaji')} />
+      </>
     )
   }
 
@@ -817,7 +904,7 @@ const ReservationMapPage = () => {
           se skroluje vodoravno — pa je celu stranicu razvlačila na 932px i
           gurala „Nazad" i traku sa dugmadima van ekrana. Sa `min-w-0` skrol
           ostaje na mapi, gde mu je i mesto. */}
-      <div className="w-full min-w-0 max-w-[1440px] px-4 pt-6">
+      <div className="w-full min-w-0 max-w-[1400px] px-4 pt-6">
         <div className="flex items-center justify-between mb-6">
           <div className="text-[#261A54] text-2xl font-bold">Izaberite mesto</div>
           <Button type="outlined-dark" name="Nazad" onClick={() => router.back()} />
@@ -841,7 +928,9 @@ const ReservationMapPage = () => {
         <div className="mb-6" style={{ background: '#ffffff', width: '236px', minHeight: '242px', padding: '55px 40px 0' }}>
           <div className="text-[#261A54] font-bold" style={{ fontSize: '33px', lineHeight: 1 }}>Legenda</div>
           <div className="flex items-center" style={{ gap: '17px', marginTop: '48px' }}>
-            <span style={{ width: '45px', height: '23px', background: '#F27D14', flexShrink: 0 }} />
+            {/* Ista crvena kojom mapa crta zauzete štandove (Tailwind red-600).
+                Ranije je ovde stajala narandžasta, pa legenda nije odgovarala mapi. */}
+            <span style={{ width: '45px', height: '23px', background: '#DC2626', flexShrink: 0 }} />
             <span className="text-[#261A54]" style={{ fontSize: '21px' }}>Rezervisano</span>
           </div>
           <div className="flex items-center" style={{ gap: '17px', marginTop: '25px' }}>
@@ -852,7 +941,11 @@ const ReservationMapPage = () => {
 
         {/* Izbor dana — samo za višednevne događaje sa dozvoljenom prijavom po danu */}
         {isMultiDayEvent && allowPerDay && !isPackageUser && (
-          <div className="mb-6 bg-white rounded-2xl shadow p-5">
+          /* Kartica je istaknuta jer je izbor dana kod višednevnog događaja
+             odluka koja menja i cenu i zauzetost — ranije je stajala sitno,
+             kao usputna napomena. Mere prate legendu levo: naslov krupan,
+             stavke 21px. */
+          <div className="mb-6 rounded-2xl p-5" style={{ background: '#ffffff', border: '2px solid #EC4923' }}>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -870,12 +963,14 @@ const ReservationMapPage = () => {
                   setSelectedStand(null)
                   setLockId(null)
                 }}
-                className="w-5 h-5 accent-[#56C4CF] cursor-pointer"
+                className="w-6 h-6 accent-[#EC4923] cursor-pointer flex-shrink-0"
               />
-              <span className="text-[#261A54] font-semibold">Prijavljujem se za više dana</span>
+              <span className="text-[#261A54] font-bold" style={{ fontSize: '26px', lineHeight: 1.15 }}>
+                Prijavljujem se za više dana
+              </span>
             </label>
 
-            <p className="text-sm text-[#666] mt-2">
+            <p className="text-[#555] mt-3" style={{ fontSize: '17px' }}>
               {multiDayChecked
                 ? 'Izaberite dane. Isti štand se rezerviše za sve izabrane dane.'
                 : 'Događaj traje više dana. Prijava za više dana je povoljnija od zbira pojedinačnih.'}
@@ -912,17 +1007,21 @@ const ReservationMapPage = () => {
                       cursor: isOnly && multiDayChecked ? 'default' : 'pointer',
                     }}
                   >
-                    <div className="text-[#261A54] font-semibold text-sm">
+                    <div className="text-[#261A54] font-bold" style={{ fontSize: '21px', lineHeight: 1.2 }}>
                       {day.dayNumber}. dan
                     </div>
-                    <div className="text-[#555] text-sm">{day.date}</div>
+                    <div className="text-[#555]" style={{ fontSize: '17px' }}>{day.date}</div>
                     {day.timeRange && (
-                      <div className="text-[#888] text-xs mt-0.5">{day.timeRange}</div>
+                      <div className="text-[#888] text-sm mt-0.5">{day.timeRange}</div>
                     )}
                   </button>
                 )
               })}
             </div>
+
+            <p className="text-[#555] mt-3" style={{ fontSize: '15px' }}>
+              Klikom na dan birate rezervaciju za izabrani dan.
+            </p>
 
             {selectedStand && (
               <div className="mt-4 pt-4 border-t border-[#eee] text-[#261A54]">
@@ -1128,6 +1227,8 @@ const ReservationMapPage = () => {
         cancelLabel="Otkaži"
         timeRemaining={!isPackageUser && !sessionExpired ? sessionSecondsLeft : null}
         termsPdfUrl={eventDetails.termsPdfUrl}
+        termsAccepted={termsAccepted}
+        setTermsAccepted={setTermsAccepted}
       />
 
       <GalleryWarningModal
@@ -1156,6 +1257,9 @@ const ReservationMapPage = () => {
         }}
         costs={confirmCosts}
         coveredByPackage={gratisPokriva}
+        termsPdfUrl={eventDetails.termsPdfUrl}
+        termsAccepted={termsAccepted}
+        setTermsAccepted={setTermsAccepted}
         timeRemaining={!isPackageUser && !sessionExpired ? sessionSecondsLeft : null}
         // Potvrda posle uspešnog slanja imenuje baš tezgu za koju je zahtev
         // poslat. U dizajnu dugme vraća na mapu, ali je dogovoreno da izlagača

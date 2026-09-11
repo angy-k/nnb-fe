@@ -41,10 +41,8 @@ const NotFoundPage = () => {
           justifyContent: 'space-between',
           flex: 1,
           width: '100%',
-          maxWidth: '1400px',
-          // Bez bočnog razmaka: u dizajnu tekst kreće tačno od leve ivice
-          // kolone sadržaja (238 na okviru od 1920), a ne 80px unutar nje.
-          padding: '40px 0',
+          // Širina i uvlačenje su u CSS-u (`.error-page-content`): tekst kreće
+          // od leve ivice kolone sadržaja, a sove naležu na desnu ivicu ekrana.
           gap: '40px',
         }}
       >
@@ -101,7 +99,7 @@ const NotFoundPage = () => {
         {/* Right — owls illustration */}
         {/* Sove se u dizajnu prelivaju preko desne ivice kolone, sve do ivice
             ekrana. `overflow: visible` na roditelju to dozvoljava. */}
-        <div className="error-page-owls" style={{ flex: '1 1 auto', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginRight: '-20px' }}>
+        <div className="error-page-owls" style={{ flex: '1 1 auto', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
           <Image
             src="/owls.svg"
             alt="Sove noćnog bazara"

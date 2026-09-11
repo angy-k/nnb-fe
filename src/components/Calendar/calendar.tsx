@@ -124,7 +124,11 @@ return (
                         alt={'Calendar arrow left icon.'}
                     />
                 </button>
-                <Divider orientation="vertical" className="section-divider" />
+                {/* Razdelnik između strelica je uspravan, pa ne sme da nosi
+                    `section-divider` — ta klasa je vodoravna linija sekcije,
+                    široka do 1400px. Ovde je davala vodoravnu crtu preko celog
+                    zaglavlja i gurala strelicu „napred" iz vidnog polja. */}
+                <span aria-hidden="true" className="calendar-nav-razdelnik" />
                 <button onClick={onNext} aria-label={`next ${curView}`} className="w-[42px] aspect-square border-none button-two font-semibold flex justify-center items-center hover:bg-[lightBlue] hover:opacity-75 transition-colors duration-300">
                     <Image
                         src={ArrowRight}

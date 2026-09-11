@@ -14,6 +14,34 @@ function OAuthCallbackInner() {
     const redirect = searchParams.get('redirect') || ''
     const setup = searchParams.get('setup') === '1'
 
+    /*
+     * Povratak sa jezička „Napravite profil": naloga još nema.
+     *
+     * Server vraća osnovne podatke i `gtoken` — overen paket kojim se dokazuje
+     * da mejl zaista pripada tom Google nalogu. Ovde se samo odlažu u
+     * `sessionStorage` i otvara registraciona forma; nalog nastaje tek kad je
+     * forma cela ispravna. Adresa se odmah čisti da token ne ostane u istoriji.
+     */
+    const zaRegistraciju = searchParams.get('register') === '1'
+    if (zaRegistraciju) {
+      try {
+        sessionStorage.setItem('nnb:google-registracija', JSON.stringify({
+          gtoken: searchParams.get('gtoken') || '',
+          email: searchParams.get('email') || '',
+          first_name: searchParams.get('first_name') || '',
+          last_name: searchParams.get('last_name') || '',
+        }))
+      } catch {
+        // Privatni režim bez skladišta — forma se otvara prazna.
+      }
+
+      router.replace('/')
+      window.setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('nnb:open-auth-modal', { detail: { tab: 'register' } }))
+      }, 50)
+      return
+    }
+
     const handleCallback = async () => {
       if (token) {
         authService.storeToken(token)

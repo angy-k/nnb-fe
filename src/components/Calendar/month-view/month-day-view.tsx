@@ -7,8 +7,14 @@ import OwlDrugoMesto from '@/icons/owl-drugo-mesto.svg';
 
 import { Event } from "../types";
 
-// Bedževi se slažu vertikalno pored datuma — manji limit nego kod horizontalnog reda
-const MAX_EVENTS_TO_DISPLAY = 3;
+/**
+ * Koliko sova staje u ćeliju dana.
+ *
+ * Bedževi se slažu vertikalno u donjem desnom uglu, a ćelija je niska — tri
+ * su je prepunjavala. Ostatak preuzima pilula „+N", koja otvara prikaz dana sa
+ * svim događajima, pa se ništa ne gubi.
+ */
+const MAX_EVENTS_TO_DISPLAY = 2;
 
 type MonthDayViewProps = {
   day?: Date;
@@ -34,29 +40,28 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
     })
   );
 
-  const canDisplayEvents = MAX_EVENTS_TO_DISPLAY - weekEventsShown;
+  /*
+   * `weekEventsShown` i `restEvents` su ostaci iz osnovne komponente kalendara:
+   * ništa ih ne prosleđuje, pa su uvek 0 i prazan niz. Grane koje su na njima
+   * počivale nikad se nisu izvršavale, a računicu su činile nejasnom.
+   *
+   * Pravilo je jednostavno: prikaži najviše `MAX_EVENTS_TO_DISPLAY`, ostatak u
+   * pilulu „+N".
+   */
   const allEvents = [...events, ...filteredRestEvents];
-  const allEventsNumber = allEvents.length;
+  const eventsToDisplay = allEvents.slice(0, MAX_EVENTS_TO_DISPLAY);
+  const moreEventsNumber = allEvents.length - eventsToDisplay.length;
 
-  let eventsToDisplay: Event[] = [];
-  let moreEventsNumber = 0;
-
-  if (canDisplayEvents > 1) {
-    eventsToDisplay = allEvents.slice(0, canDisplayEvents);
-    moreEventsNumber = allEventsNumber - eventsToDisplay.length;
-  }
-
-  if (canDisplayEvents === 1 && allEventsNumber === 1) {
-    eventsToDisplay = allEvents.slice(0, 1);
-    moreEventsNumber = 0;
-  }
-
-  if (canDisplayEvents === 1 && allEventsNumber > 1) {
-    moreEventsNumber = allEventsNumber;
-  }
-
+  /*
+   * Pilula stoji **pored** sova, ne ispod njih.
+   *
+   * Sa dve sove (53px svaka) i pilulom u istoj koloni ispadalo je 138px, a
+   * ćeliji ostaje oko 139 kad se oduzmu odmaci i broj dana — dakle bez ijednog
+   * piksela rezerve. Ovako je kolona 110px, a pilula ne troši visinu.
+   */
   return (
-    <ul className="flex flex-col items-end gap-1 overflow-hidden">
+    <div className="flex items-end justify-end gap-1.5 overflow-hidden">
+    <ul className="flex flex-col items-end gap-1">
       {eventsToDisplay.map((event) => {
         const isStartup = event.variant === 'startup';
         const isAway = event.variant === 'away';
@@ -86,20 +91,21 @@ export const MonthDayView: React.FC<MonthDayViewProps> = ({
           </li>
         );
       })}
-      {moreEventsNumber > 0 && (
-        <li className="flex items-center">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDayClick?.(day);
-            }}
-            className="inline-flex items-center justify-center px-2 h-6 rounded-full bg-[#1B1B1B] text-white text-[11px] font-semibold sm:px-1.5 sm:h-[17px] sm:text-[10px]"
-          >
-            +{moreEventsNumber}
-          </button>
-        </li>
-      )}
     </ul>
+
+      {moreEventsNumber > 0 && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDayClick?.(day);
+          }}
+          className="inline-flex items-center justify-center px-2 h-6 rounded-full bg-[#1B1B1B] text-white text-[11px] font-semibold shrink-0 sm:px-1.5 sm:h-[17px] sm:text-[10px]"
+          aria-label={`Prikaži sve događaje (${moreEventsNumber} više)`}
+        >
+          +{moreEventsNumber}
+        </button>
+      )}
+    </div>
   );
 };

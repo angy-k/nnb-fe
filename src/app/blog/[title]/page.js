@@ -203,7 +203,11 @@ const BlogDetailPage = () => {
                   <div className="flex flex-row sm:flex-col gap-8">
                     {/* Blog Content */}
                     <div className="flex-1">
-                      <div className="prose prose-lg max-w-none pb-8">
+                      {/* Klase `prose`/`prose-lg` su ovde bile bez dejstva —
+                          @tailwindcss/typography nije instaliran, pa su samo
+                          ostavljale utisak da je oblikovanje teksta rešeno.
+                          Stil nosi `.single-blog-content` u global.css. */}
+                      <div className="pb-8">
                         <div
                           className="text-gray-700 leading-relaxed text-lg single-blog-content"
                           dangerouslySetInnerHTML={{ __html: blog.content || '' }}
