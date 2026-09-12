@@ -2737,14 +2737,51 @@ a.office-contact-section-content:focus-visible {
   text-align: center;
 }
 
+/* ── Instagram sekcija na Početnoj ────────────────────────────────────────────
+ *
+ * Mereno sa izvoza (okvir 1920): mreža `Group 24` je 1023 × 1024 na (448, 5539)
+ * — dakle usredišćena i **uža od kolone sadržaja**, jedina takva na Početnoj.
+ * To je namerno: devet kvadrata preko celih 1440 bilo bi preveliko. Pločica je
+ * 320 × 320 sa zaobljenjem 30, razmak među njima 32.
+ *
+ * Sekcija ujedno crta vrh tamne zone: `Ellipse 6` je u izvozu 2294 × 613, ista
+ * mera kao `Ellipse 4` koja crta vrh svetle zone — otud isti uspon luka od 135,
+ * a ne 70 koliko je ovde stajalo. Od vrha luka do prve pločice je 256, a od
+ * poslednje do sekcije sa utiscima 233.
+ *
+ * `.pocetna-tamni-deo` počinje unutar ove sekcije i iste je boje, pa se njegov
+ * luk ne vidi — vidljiv je samo ovaj. */
+.pocetna-instagram {
+  width: 100%;
+  background: #261A54;
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: 50% 50% 0 0 / min(7.03vw, 135px) min(7.03vw, 135px) 0 0;
+  margin-top: max(-7.03vw, -135px);
+  padding-top: min(13.3333vw, 256px);
+  padding-bottom: min(12.1354vw, 233px);
+}
+
 .instagram-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  /* `minmax(0, 1fr)`, ne `1fr` — vidi mrežu tima na „O nama": `1fr` ima
+     podrazumevani najmanji iznos `auto`, pa staza ne sme da bude uža od
+     sadržaja. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: min(1.6667vw, 32px);
   width: 100%;
-  max-width: var(--nnb-kolona);
+  max-width: min(53.2813vw, 1023px);
   margin: 0 auto;
-  padding: 0 16px;
+}
+
+/* Ispod 600px udeo iz dizajna daje pločice od 60px — mreža zato prelazi na punu
+   širinu, umanjenu za zajednički odmak. Na samom pragu razlike nema: na 600
+   pločica je 100, na 375 je 105. */
+@media screen and (max-width: 599px) {
+  .instagram-grid {
+    max-width: calc(100% - 2 * var(--nnb-odmak));
+  }
 }
 
 .instagram-post {
@@ -2756,7 +2793,10 @@ a.office-contact-section-content:focus-visible {
   width: 100%;
   aspect-ratio: 1 / 1;
   overflow: hidden;
-  border-radius: 16px;
+  /* 30px na pločici od 320 je 9,375% njene stranice. Kao udeo, zaobljenje
+     ostaje isto i kad se pločica smanji — sa čvrstih 30px bi na telefonu
+     kvadrat od 105px izgledao skoro kao krug. */
+  border-radius: 9.375%;
 }
 
 .not-found-section {
