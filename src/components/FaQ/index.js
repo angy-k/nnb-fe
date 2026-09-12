@@ -72,8 +72,12 @@ const Faq = ({
           Na Kontaktu panel još i prelazi preko donjeg dela hero sekcije, za
           254px na okviru od 1920. Na Početnoj toga nema, pa se preklop dodaje
           samo kad `isHome` nije postavljen. */}
+      {/* `nnb-gutter` na omotaču: ploča sa pitanjima je do sada bila jedina
+          sekcija bez odmaka od ivice, pa je ispod 1440 dodirivala obe strane
+          ekrana dok sve ostalo na stranici ima razmak. */}
+      <div className="w-full nnb-gutter grid place-items-center">
       <div className={
-        'faq-container place-items-center p-5 w-full mx-auto max-w-[1400px]'
+        'faq-container place-items-center w-full mx-auto max-w-[var(--nnb-kolona)]'
         + (isHome ? '' : ' faq-container--preko-heroa')
       }>
         {loading && <div className="w-full grid place-items-center py-12">Učitavanje...</div>}
@@ -107,6 +111,7 @@ const Faq = ({
               </AccordionItem>
             ))}
         </Accordion>}
+      </div>
       </div>
     </div>
   );

@@ -85,12 +85,13 @@ const DayEventsModal = ({
       classNames={{
         backdrop: 'nnb-modal-backdrop',
         wrapper: 'nnb-modal-wrapper items-center justify-center',
-        base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[1400px]',
+        base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[var(--nnb-kolona)]',
         body: 'p-0',
       }}
     >
       <ModalContent
-        className="rounded-2xl overflow-hidden"
+        /* Po dizajnu je zaobljenje modala 30px, kao i kod ostalih. Ranije 16. */
+        className="rounded-[30px] overflow-hidden"
         style={{ background: '#ffffff' }}
       >
         {(modalOnClose) => (
@@ -113,7 +114,8 @@ const DayEventsModal = ({
               </button>
 
               {/* Date header */}
-              <h2 className="text-[#1B1B1B] text-[33px] sm:text-[20px] font-bold capitalize mb-8 sm:mb-5 pr-10">
+              {/* Naslov dana je u dizajnu Open Sans 36/700 sa redom od 49. Ranije 33. */}
+              <h2 className="text-[#1B1B1B] text-[36px] leading-[49px] sm:text-[20px] font-bold capitalize mb-8 sm:mb-5 pr-10">
                 {formattedDate}
               </h2>
 

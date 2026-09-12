@@ -32,8 +32,9 @@ const TimerChip = ({ timeRemaining }) => {
 
 // ── Teal checkmark SVG ───────────────────────────────────────────────────────
 const CheckmarkIcon = () => (
-  // Mereno na izvozu: 92 na okviru od 1920, dakle 89 ovde. Bilo je 72.
-  <svg width="89" height="89" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  // Izvoz `Prijava-poslata`: 105 × 105. Bilo je 72, pa 89 (mera umanjena
+  // činiocem 0,972 zbog uže kolone) — sada doslovno iz dizajna.
+  <svg width="105" height="105" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="36" cy="36" r="36" fill="#56C4CF" />
     <path d="M20 37L30 48L52 26" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
@@ -119,11 +120,15 @@ const BoothReservationConfirmModal = ({
       classNames={{
         backdrop: 'nnb-modal-backdrop',
         wrapper: 'nnb-modal-wrapper items-center justify-center',
-        base: `shadow-2xl w-[calc(100vw-2rem)] max-w-[${OKVIR.sirina}px]`,
+              /* `max-w-[${OKVIR.sirina}px]` ovde ne radi: Tailwind pregleda izvorni kod
+         statički i ne vidi klasu koja se sastavlja tek pri izvršavanju, pa je
+         nikad i ne napravi. Modal je zbog toga bio širok koliko i prozor manje
+         2rem — 1888 na ekranu od 1920, umesto 1440. Mera zato ide kao stil. */
+        base: 'shadow-2xl w-[calc(100vw-2rem)]',
         body: 'p-0',
       }}
     >
-      <ModalContent className="overflow-hidden" style={{ borderRadius: `${OKVIR.radijus}px` }}>
+      <ModalContent className="overflow-hidden" style={{ borderRadius: `${OKVIR.radijus}px`, maxWidth: `${OKVIR.sirina}px`, width: '100%' }}>
         {(modalOnClose) => (
           <ModalBody className="p-0">
             <div
@@ -148,9 +153,10 @@ const BoothReservationConfirmModal = ({
 
               {jeUspehTezge ? (
                 /* ── Tezga je rezervisana ─────────────────────────────────────
-                   Mere sa izvoza `Tezga-rezervisana`: modal 1440 × 489, naslov
-                   na 181 od vrha, dugme 277 × 59 na 257, ispod njega 173. */
-                <div className="flex flex-col items-center text-center sm:px-6 sm:py-10" style={{ padding: `${177}px ${119}px ${169}px` }}>
+                   Izvoz `Tezga-rezervisana`: modal 1440 × 489, sadržaj 521 × 142
+                   po sredini — naslov 174–217, razmak 40, dugme 277 × 59 na
+                   257–316, ispod njega 173. */
+                <div className="flex flex-col items-center text-center sm:px-6 sm:py-10" style={{ padding: `${174}px ${119}px ${173}px` }}>
                   <h2 style={{ fontSize: `${OKVIR.naslov}px`, fontWeight: '700', color: '#261A54', margin: 0, lineHeight: 1.2 }}>
                     {`Tezga broj ${selectedStand} je rezervisana`}
                   </h2>
@@ -159,9 +165,9 @@ const BoothReservationConfirmModal = ({
                     onClick={() => onStandSuccess()}
                     style={{
                       background: '#56C4CF', color: '#ffffff', border: 'none',
-                      borderRadius: '29px', width: '269px', height: '57px',
+                      borderRadius: '30.5px', width: '277px', height: '59px',
                       fontWeight: '600', fontSize: '18px', cursor: 'pointer',
-                      marginTop: '32px',
+                      marginTop: '40px',
                     }}
                   >
                     {standSuccessLabel}
@@ -169,26 +175,28 @@ const BoothReservationConfirmModal = ({
                 </div>
               ) : isSuccess ? (
                 /* ── Success screen ───────────────────────────────────────────
-                   Mere sa izvoza `Prijava-poslata`: ikona 92 na 147 od vrha,
-                   naslov 33px sa korakom reda 43, pasusi 21px, ispod 141. */
-                <div className="flex flex-col items-center text-center sm:px-6 sm:py-10" style={{ padding: `${143}px ${119}px ${138}px`, gap: 0 }}>
+                   Izvoz `Prijava-poslata`: modal 1440 × 654, sadržaj 686 × 372
+                   po sredini (141 od vrha i od dna) — ikona 105, razmak 40,
+                   naslov 36/43 širine 601, razmak 18, pasusi 22/30 sa 20 među
+                   sobom. */
+                <div className="flex flex-col items-center text-center sm:px-6 sm:py-10" style={{ padding: `${141}px ${119}px ${141}px`, gap: 0 }}>
                   <CheckmarkIcon />
 
-                  <h2 style={{ fontSize: `${OKVIR.naslov}px`, fontWeight: '700', color: '#261A54', lineHeight: 1.27, margin: '46px 0 0' }}>
+                  <h2 style={{ fontSize: `${OKVIR.naslov}px`, fontWeight: '700', color: '#261A54', lineHeight: 1.2, margin: '40px 0 0', maxWidth: '601px' }}>
                     {eventName
                       ? `Vaša rezervacija na ${eventName} je uspešno poslata!`
                       : 'Vaša rezervacija je uspešno poslata!'}
                   </h2>
 
-                  <p style={{ fontSize: '21px', color: '#261A54', margin: '39px 0 0', maxWidth: '760px' }}>
+                  <p style={{ fontSize: '22px', lineHeight: '30px', color: '#261A54', margin: '18px 0 0', maxWidth: '760px' }}>
                     Sve neophodne instrukcije za plaćanje će Vam stići putem emaila.
                   </p>
 
-                  <p style={{ fontSize: '21px', color: '#261A54', margin: '27px 0 0', maxWidth: '760px' }}>
+                  <p style={{ fontSize: '22px', lineHeight: '30px', color: '#261A54', margin: '20px 0 0', maxWidth: '760px' }}>
                     Status Vaše rezervacije možete pratiti na stranici{' '}
                     <Link
                       href="/moje-rezervacije"
-                      style={{ color: '#56C4CF', fontWeight: '600', textDecoration: 'underline' }}
+                      style={{ color: '#56C4CF', fontWeight: '700', textDecoration: 'underline' }}
                     >
                       Moje rezervacije
                     </Link>
@@ -250,7 +258,11 @@ const BoothReservationConfirmModal = ({
                     />
                   </div>
 
-                  <div className="flex items-center gap-4 sm:flex-col sm:w-full">
+                  {/* Po dizajnu: tirkizno dugme 242 × 59, naranđasto 272 × 59,
+                      oba sa zaobljenjem 30,5 i natpisom 18/600. Razmak među
+                      njima je 40px (para 554 široka, 242 + 40 + 272). Ranije su
+                      oba bila 235 × 57 sa zaobljenjem 29 i razmakom 16. */}
+                  <div className="flex items-center gap-10 sm:gap-4 sm:flex-col sm:w-full">
                     <button
                       type="button"
                       disabled={isLoading || !termsAccepted}
@@ -258,7 +270,7 @@ const BoothReservationConfirmModal = ({
                       className="sm:w-full"
                       style={{
                         background: '#56C4CF', color: '#ffffff',
-                        borderRadius: '29px', minWidth: '235px', height: '57px', padding: '0 32px',
+                        borderRadius: '30.5px', width: '242px', height: '59px', padding: '0 24px',
                         fontWeight: '600', fontSize: '18px', border: 'none',
                         cursor: (isLoading || !termsAccepted) ? 'not-allowed' : 'pointer',
                         opacity: (isLoading || !termsAccepted) ? 0.45 : 1,
@@ -277,7 +289,7 @@ const BoothReservationConfirmModal = ({
                       className="sm:w-full"
                       style={{
                         background: '#EC4923', color: '#ffffff',
-                        borderRadius: '29px', minWidth: '235px', height: '57px', padding: '0 32px',
+                        borderRadius: '30.5px', width: '272px', height: '59px', padding: '0 24px',
                         fontWeight: '600', fontSize: '18px', border: 'none',
                         cursor: isLoading ? 'not-allowed' : 'pointer',
                         opacity: isLoading ? 0.6 : 1,

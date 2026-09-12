@@ -34,7 +34,7 @@ const EventsSlider = ({ events = [] }) => {
     >
       <div
         className="w-full"
-        style={{ maxWidth: '1400px', margin: '0 auto', padding: '64px 30px' }}
+        style={{ maxWidth: 'var(--nnb-kolona)', margin: '0 auto', padding: '64px 30px' }}
       >
         {/* Title + Divider — isti pattern kao Blog/Kalendar/Partneri */}
         <span className="our-team-title">Predstojeći događaji</span>

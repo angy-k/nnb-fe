@@ -30,7 +30,10 @@ const ContactPage = async () => {
         icons={false}
         description={`Ukoliko imate bilo kakvo pitanje, sugestiju, kritiku, ili samo želite da se dodatno informišete o našim dešavanjima, osećajte se slobodni da nam pišete u svako doba dana, odgovorićemo Vam u najbržem roku.`}
       />
-      <div className="w-full grid place-items-center pb-48 z-1 bg-[#F0F0F0]">
+      {/* Razmaci među sekcijama su na ovoj stranici po izvozu `kontakt`:
+          pitanja se završavaju na 1403, kartica počinje na 1493, završava na
+          2068, Viber traka počinje na 2158 — dakle 90 i 90. */}
+      <div className="w-full grid place-items-center pb-48 z-1 bg-[#F0F0F0] kontakt-stranica">
         <Faq faq={faqs} />
         <ContactForm
           withImage={false}

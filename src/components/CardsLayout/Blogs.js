@@ -39,7 +39,7 @@ const BlogPagination = ({ page, totalPages, onPageChange }) => {
     // U dizajnu paginacija stoji uz desnu ivicu kolone sadržaja: crta iznad nje
     // ide od 239 do 1680, a brojevi od 1331 do 1680 — dakle poravnati desno, ne
     // po sredini kako je ovde stajalo.
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', paddingTop: '48px', width: '100%', maxWidth: '1400px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', paddingTop: '48px', width: '100%', maxWidth: 'var(--nnb-kolona)' }}>
       <button
         type="button"
         onClick={() => onPageChange(page - 1)}
@@ -206,6 +206,7 @@ const Blogs = ({
                 creationDate={blog.creationDate}
                 buttonAction={() => goToSingleBlog(blog)}
                 buttonText="Pročitaj više"
+                buttonSmallText
               />
             </div>
           ))}

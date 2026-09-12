@@ -8,9 +8,10 @@ import { teamMemberName } from '@/utils/team'
 /**
  * Ceo opis člana tima — isti okvir kao modal događaja.
  *
- * Mere su preuzete odatle i namerno se ne razlikuju: modal je 955 širok, leva
- * kolona 61% sa kvadratnim vizualom uvučenim 4,8% odnosno 5,3%, desna 39% sa
- * odmakom 6,1%. Visinu ne zadajemo — određuje je kvadrat sa leve strane, pa je
+ * Mere su preuzete odatle i namerno se ne razlikuju: modal je širok koliko i
+ * kolona sadržaja (1440), leva
+ * kolona 54% sa kvadratnim vizualom uvučenim 4,24% odnosno 4,72%, desna 46% sa
+ * odmakom 5,28%. Visinu ne zadajemo — određuje je kvadrat sa leve strane, pa je
  * ista bez obzira na dužinu teksta.
  *
  * Zato opis mora da se pomera po vertikali: on je jedini deo koji ume da bude
@@ -36,28 +37,28 @@ const TeamMemberModal = ({ member, isOpen, onOpenChange, onClose }) => (
       wrapper: 'nnb-modal-wrapper items-center justify-center',
       // `bg-white` bez uzvičnika ne prolazi — NextUI svojoj `bg-content1`
       // postavlja #F0F0F0, a leva strana je u dizajnu čisto bela.
-      base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[955px] !bg-white',
+      base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[var(--nnb-kolona)] !bg-white',
       body: 'p-0',
     }}
   >
-    <ModalContent className="rounded-2xl overflow-hidden">
+    <ModalContent className="rounded-[30px] overflow-hidden">
       <ModalBody className="p-0">
         {/* Odnos stranica drži visinu modala.
             Na modalu događaja visinu je davao kvadrat sa leve strane, ali on
             određuje samo najmanju visinu reda — duži tekst sa desne strane
             svejedno razvlači ceo modal (mereno: 2894px umesto 638). Zato je
-            odnos ovde zapisan: 955 × 638 je tačno ono što kvadrat i njegova
+            odnos ovde zapisan: 1440 × 853 je tačno ono što kvadrat i njegova
             uvlačenja daju (0,61 − 0,048 + 2 × 0,053 od širine), pa se ništa ne
             pomera, a desna kolona dobija gornju među unutar koje može da klizi.
             `min-h-0` mora uz to — bez njega se flex stavka ne skuplja ispod
             visine sadržaja i odnos tiho ostaje bez dejstva. */}
-        <div className="flex flex-row sm:flex-col aspect-[955/638] sm:aspect-auto min-h-0">
+        <div className="flex flex-row sm:flex-col aspect-[1440/853] sm:aspect-auto min-h-0">
 
           {/* Leva strana — fotografija u kvadratu na beloj podlozi.
               `object-top` jer su fotografije portretne: kvadrat ih seče odozdo,
               a ne kroz lice. */}
           <div
-            className="w-[61%] sm:w-full flex-shrink-0 flex items-center justify-center pl-[4.8%] pt-[5.3%] pb-[5.3%] pr-0 sm:p-5"
+            className="w-[54%] sm:w-full flex-shrink-0 flex items-center justify-center pl-[4.24%] pt-[4.72%] pb-[4.72%] pr-0 sm:p-5"
             style={{ backgroundColor: '#ffffff' }}
           >
             {/* Na telefonu se kolone slažu jedna ispod druge, pa kvadrat pune
@@ -85,8 +86,8 @@ const TeamMemberModal = ({ member, isOpen, onOpenChange, onClose }) => (
 
           {/* Desna strana — ime, uloga i opis */}
           <div
-            className="w-[39%] sm:w-full relative flex flex-col justify-center min-h-0 overflow-hidden px-[6.1%] py-8 sm:p-5"
-            style={{ background: 'linear-gradient(to bottom, #ffffff 40%, #dbf2f5 100%)' }}
+            className="w-[46%] sm:w-full relative flex flex-col justify-center min-h-0 overflow-hidden px-[5.28%] py-8 sm:p-5"
+            style={{ backgroundColor: '#ffffff', backgroundImage: 'radial-gradient(circle at 100% 100%, rgba(86, 196, 207, 0.3) 0%, rgba(86, 196, 207, 0) 70%)' }}
           >
             <button
               type="button"

@@ -3,7 +3,8 @@
 import { useRef, useState } from 'react'
 
 const UploadIcon = () => (
-  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  // Izvoz: 52 × 52
+  <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
     <polyline points="17 8 12 3 7 8"/>
     <line x1="12" y1="3" x2="12" y2="15"/>
@@ -11,21 +12,23 @@ const UploadIcon = () => (
 )
 
 // Mere sa izvoza dizajna (modal je izvezen ceo, sa zaobljenim uglovima, na
-// 2880 × 1520 — dakle 1440 × 760 na okviru od 1920). Sve je ovde srazmerno
-// umanjeno na kolonu sajta od 1400, činilac 0,972.
+// 2880 × 1520 — dakle 1440 × 760 na okviru od 1920). Kolona sajta je sada 1440,
+// pa se sve prepisuje doslovno; ranije je bilo umanjeno činiocem 0,972.
 const MERE = {
-  sirinaModala: 1400,      // 1440
-  visinaModala: 739,       // 760
-  radijusModala: 24,       // 25
-  kolona: 683,             // 703 — usredišćena, sa dosta praznine sa strane
-  visinaZone: 302,         // 311
-  radijusZone: 22,         // 23
-  visinaPolja: 70,         // 72
-  uvlakaPolja: 48,         // 49
-  zonaDoLabele: 56,        // 57,5
-  labelaDoPolja: 30,       // 30,5
-  prevuciteOdDna: 36,      // 37
-  vrhZone: 132,            // 136
+  sirinaModala: 1440,
+  visinaModala: 760,
+  radijusModala: 30,   // Rectangle 54: 1440 × 760, zaobljenje 30
+  kolona: 703,             // usredišćena, sa dosta praznine sa strane
+  visinaZone: 312,
+  radijusZone: 30,   // Rectangle 98/100: 703 × 312, zaobljenje 30
+  visinaPolja: 72,
+  uvlakaPolja: 47,
+  zonaDoLabele: 50,
+  labelaDoPolja: 25,
+  // Natpis „Prevucite ovde" je u izvozu na 255 od vrha zone (Frame 22 na
+  // 104,43 + 92 + razmak 59), visok 25 — dakle 31 od dna.
+  prevuciteOdDna: 31,
+  vrhZone: 136,
 }
 
 /**
@@ -130,8 +133,8 @@ const MediaUploadModal = ({
           onClick={onClose}
           style={{
             position: 'absolute',
-            top: '44px',
-            right: '50px',
+            top: '46px',
+            right: '52px',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
@@ -178,8 +181,10 @@ const MediaUploadModal = ({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
+            // U izvozu ikona i natpis nisu po sredini zone nego na 104 od vrha
+            justifyContent: 'flex-start',
+            paddingTop: uploading ? '0' : '104px',
+            gap: '15px',
             height: `${MERE.visinaZone}px`,
             position: 'relative',
             cursor: uploading ? 'default' : 'pointer',
@@ -194,9 +199,9 @@ const MediaUploadModal = ({
           ) : (
             <>
               <UploadIcon />
-              <span style={{ fontSize: '16px', fontWeight: '500', color: '#261A54' }}>{dropLabel}</span>
+              <span style={{ fontSize: '18px', lineHeight: '25px', fontWeight: '400', color: '#261A54' }}>{dropLabel}</span>
               <span style={{
-                fontSize: '14px', color: '#aaa',
+                fontSize: '18px', lineHeight: '25px', color: 'rgba(96, 96, 96, 0.5)',
                 position: 'absolute', bottom: `${MERE.prevuciteOdDna}px`,
               }}>
                 {jeVideo ? 'Nalepite YouTube link ispod' : 'Prevucite ovde'}
@@ -217,7 +222,7 @@ const MediaUploadModal = ({
         {/* YouTube section – only for video mode */}
         {jeVideo && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: `${MERE.labelaDoPolja}px` }}>
-            <span style={{ fontSize: '16px', fontWeight: '400', color: '#606060' }}>Linkovi sa Youtube</span>
+            <span style={{ fontSize: '22px', lineHeight: '30px', fontWeight: '400', color: '#606060' }}>Linkovi sa Youtube</span>
             {/* U dizajnu pored polja nema dugmeta — link se potvrđuje sa Enter.
                 Zato polje mora samo da kaže šta se dešava: dok se dodaje piše
                 „Dodavanje...", a greška stoji odmah ispod. */}
@@ -237,7 +242,8 @@ const MediaUploadModal = ({
                 border: 'none',
                 borderRadius: `${MERE.visinaPolja / 2}px`,
                 padding: `0 ${MERE.uvlakaPolja}px`,
-                fontSize: '16px',
+                fontSize: '22px',
+                lineHeight: '30px',
                 color: '#261A54',
                 outline: 'none',
               }}

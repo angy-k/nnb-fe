@@ -106,7 +106,7 @@ const UpcommingEvents = ({
   return (
     <div
       className="w-full blogs-container pt-24 sm:pt-8 grid place-items-start mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-24 sm:pb-16"
-      style={{ justifySelf: 'center', maxWidth: '1400px' }}
+      style={{ justifySelf: 'center', maxWidth: 'var(--nnb-kolona)' }}
     >
       <span className="our-team-title">{title}</span>
       <Divider className="section-divider" />
@@ -119,11 +119,21 @@ const UpcommingEvents = ({
         <>
           {/* Desktop tabela */}
           <div className="hidden md:block lg:block w-full">
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 10px' }}>
+            {/* Kolone su u izvozu na x 310 / 865 / 1203 / 1436 unutar kolone od
+                1440 koja kreće na 240 — dakle 70 uvučeno od ivice pilule, pa
+                redom 605 / 338 / 233 / 264 široko. Bez zadatih širina su se
+                širile po sadržaju i padale na 240 / 758 / 1099 / 1352. */}
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 10px', tableLayout: 'fixed' }}>
+              <colgroup>
+                <col style={{ width: '42.01%' }} />
+                <col style={{ width: '23.47%' }} />
+                <col style={{ width: '16.18%' }} />
+                <col style={{ width: '18.33%' }} />
+              </colgroup>
               <thead>
                 <tr>
-                  {['Manifestacija', 'Mesto', 'Datum', 'Početak prijava'].map((col) => (
-                    <th key={col} style={{ textAlign: 'left', padding: '4px 16px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', fontWeight: 700, color: '#1B1B1B' }}>
+                  {['Manifestacija', 'Mesto', 'Datum', 'Početak prijava'].map((col, i) => (
+                    <th key={col} style={{ textAlign: 'left', padding: i === 0 ? '4px 20px 4px 70px' : '4px 20px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', fontWeight: 700, color: '#1B1B1B' }}>
                       {col}
                     </th>
                   ))}
@@ -132,16 +142,16 @@ const UpcommingEvents = ({
               <tbody>
                 {events.map((event, index) => (
                   <tr key={event.id || index}>
-                    <td style={{ background: '#56C4CF', padding: '16px 20px', borderRadius: '102px 0 0 102px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
+                    <td style={{ background: '#56C4CF', padding: '21px 20px 21px 70px', borderRadius: '102px 0 0 102px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
                       {event.name}
                     </td>
-                    <td style={{ background: '#56C4CF', padding: '16px 20px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
+                    <td style={{ background: '#56C4CF', padding: '21px 20px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
                       {event.location}
                     </td>
-                    <td style={{ background: '#56C4CF', padding: '16px 20px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
+                    <td style={{ background: '#56C4CF', padding: '21px 20px', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
                       {event.date}
                     </td>
-                    <td style={{ background: '#56C4CF', padding: '16px 20px', borderRadius: '0 102px 102px 0', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
+                    <td style={{ background: '#56C4CF', padding: '21px 20px', borderRadius: '0 102px 102px 0', fontFamily: 'Open Sans, sans-serif', fontSize: '18px', color: '#1B1B1B' }}>
                       {event.applicationStart}
                     </td>
                   </tr>
@@ -156,7 +166,7 @@ const UpcommingEvents = ({
               <div
                 key={event.id || index}
                 className="w-full text-[#1B1B1B]"
-                style={{ backgroundColor: '#56C4CF', borderRadius: '24px', padding: '16px 20px' }}
+                style={{ backgroundColor: '#56C4CF', borderRadius: '24px', padding: '21px 20px' }}
               >
                 <p className="font-bold text-[16px] capitalize mb-2">{event.name}</p>
                 <div className="flex flex-col gap-1">

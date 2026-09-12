@@ -7,6 +7,7 @@ import applicationService from '@/services/applicationService'
 import useUser from '@/data/use-user'
 import { formatDate } from '@/utils/dateHelpers'
 import MERE_DUGMETA from '@/components/Reservations/headerActionStyle'
+import ZaglavljeIzlagaca from '@/components/Profile/ZaglavljeIzlagaca'
 
 const MyPreviousReservationsComponent = () => {
 
@@ -112,43 +113,26 @@ const MyPreviousReservationsComponent = () => {
   return (
     <>
       {/* Dark header */}
-      <div className="w-full bg-[#261A54] profile-page-header" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
-        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6 profile-page-header-inner">
-          <div className="flex items-end gap-6 profile-page-header-left">
-            <div className="relative z-10 flex-shrink-0 profile-page-avatar-wrapper" style={{ marginBottom: '-56px' }}>
-              <Avatar
-                isBordered
-                src={avatarSrc || undefined}
-                name={!avatarSrc ? (user?.name || 'U') : undefined}
-                radius="full"
-                className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
-              />
-            </div>
-            <div className="flex flex-col gap-1 pb-2 profile-page-header-name">
-              <span className="text-[39px] font-bold leading-tight" style={{ color: '#ffffff' }}>Prethodne rezervacije</span>
-            </div>
-          </div>
-          {/* Mere su iste kao na „Mojim rezervacijama", odakle je ovo zaglavlje
-              i prepisano: naslov 39, dugmad jednake širine 272 × 57, razmak 20.
-              Ovde su bile zaostale stare vrednosti. */}
-          <div className="flex items-end gap-5 pb-2 profile-page-header-actions">
-            <Link href="/profil">
-              <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', ...MERE_DUGMETA }}>
-                Vrati se na profil
-              </span>
-            </Link>
-            <Link href="/moje-rezervacije">
-              <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', ...MERE_DUGMETA }}>
-                Aktuelne rezervacije
-              </span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      <ZaglavljeIzlagaca
+        avatarSrc={avatarSrc}
+        avatarIme={user?.name || 'U'}
+        naslov="Prethodne rezervacije"
+      >
+        <Link href="/profil">
+          <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', ...MERE_DUGMETA }}>
+            Vrati se na profil
+          </span>
+        </Link>
+        <Link href="/moje-rezervacije">
+          <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', ...MERE_DUGMETA }}>
+            Aktuelne rezervacije
+          </span>
+        </Link>
+      </ZaglavljeIzlagaca>
 
       {/* Sivi sadržaj */}
       <div className="w-full bg-[#f5f5f5] profile-page-content" style={{ paddingTop: '70px', paddingBottom: '96px' }}>
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-[var(--nnb-kolona)] mx-auto px-6">
           {loading && (
             <div className="pt-6 text-[#261A54]">Učitavanje...</div>
           )}

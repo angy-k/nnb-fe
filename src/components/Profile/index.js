@@ -6,6 +6,7 @@ import AccountData from './accountData';
 import ProfileGallery from './gallery';
 import useUser from '@/data/use-user'
 import { formatBirthDate } from '@/utils/dateHelpers'
+import ZaglavljeIzlagaca from '@/components/Profile/ZaglavljeIzlagaca'
 
 const ProfileComponent = ({
   account,
@@ -90,39 +91,26 @@ const ProfileComponent = ({
   return (
     <>
       {/* Profile header — paddingTop gura sadržaj ispod fixed nava */}
-      <div className="w-full bg-[#261A54] profile-page-header" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
-        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6 profile-page-header-inner">
-          <div className="flex items-end gap-6 profile-page-header-left">
-            {/* Avatar — z-10 da bude iznad gray sekcije, marginBottom negativan za prelaz */}
-            <div className="relative z-10 flex-shrink-0 profile-page-avatar-wrapper" style={{ marginBottom: '-56px' }}>
-              <Avatar
-                isBordered
-                showFallback
-                src={avatarSrc || undefined}
-                name={mappedAccount.brandName || 'U'}
-                radius="full"
-                className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
-              />
-            </div>
-            <div className="flex flex-col gap-1 pb-2 profile-page-header-name">
-              <span className="text-3xl font-bold leading-tight" style={{ color: '#ffffff' }}>{mappedAccount.brandName}</span>
-              <span className="text-base" style={{ color: 'rgba(255,255,255,0.6)' }}>{mappedAccount.type}</span>
-            </div>
-          </div>
-          <button
-            onClick={() => router.push('/profil/izmeni')}
-            className="px-6 py-2.5 rounded-full text-sm font-semibold flex-shrink-0 hover:opacity-90 transition mb-2"
-            style={{ color: '#ffffff', backgroundColor: '#56C4CF' }}
-          >
-            Izmenite profil
-          </button>
-        </div>
-      </div>
+      <ZaglavljeIzlagaca
+        avatarSrc={avatarSrc}
+        avatarIme={mappedAccount.brandName || 'U'}
+        naslov={mappedAccount.brandName}
+        podnaslov={mappedAccount.type}
+      >
+        <button
+          onClick={() => router.push('/profil/izmeni')}
+          /* Po dizajnu: 250 × 60, zaobljenje 30.5, natpis 18/600. */
+          className="font-semibold flex-shrink-0 hover:opacity-90 transition"
+          style={{ color: '#ffffff', backgroundColor: '#56C4CF', width: '250px', height: '60px', borderRadius: '30.5px', fontSize: '18px', lineHeight: '25px' }}
+        >
+          Izmenite profil
+        </button>
+      </ZaglavljeIzlagaca>
 
       {/* Content area — paddingTop za prostor avatara koji visi */}
       <div className="w-full bg-[#f5f5f5] pb-24 overflow-hidden profile-page-content" style={{ paddingTop: '56px' }}>
         <Reservations />
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-[var(--nnb-kolona)] mx-auto px-6">
           <AccountData account={mappedAccount} />
           <div id="profil-galerija">
             {/* Ovo je stranica za pregled profila; izmena živi na

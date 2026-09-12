@@ -9,7 +9,7 @@ const Logo = ({
   logoAlt = 'Header logo.'
 }) => {
   return(
-    <div className="relative xs:w-full">
+    <div className="relative xs:w-full nnb-logo">
       <Link
         href={'/'}
         key={`logo-home-navigation`}

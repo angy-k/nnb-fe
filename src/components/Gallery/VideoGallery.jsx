@@ -2,8 +2,11 @@
 import { useState } from 'react'
 import { Divider } from '@nextui-org/divider'
 
+/* Koprena preko snimka je u izvozu tamnoplava na 70% (`Rectangle 101` u
+   „galerija-video", isto i na neaktivnim fotografijama u traci), a ne crna na
+   35% kako je ovde stajalo. */
 const PlayOverlay = ({ size = 56 }) => (
-  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.35)' }}>
+  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(38, 26, 84, 0.7)' }}>
     <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(255,255,255,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <svg width={size * 0.4} height={size * 0.4} viewBox="0 0 24 24" fill="#261A54">
         <path d="M8 5v14l11-7z" />
@@ -23,7 +26,9 @@ const PlayOverlay = ({ size = 56 }) => (
  */
 const FeaturedVideo = ({ video }) => (
   <div style={{ width: '100%' }}>
-    <div style={{ borderRadius: '20px', overflow: 'hidden', aspectRatio: '16/9', background: '#000' }}>
+    {/* Glavni video: po dizajnu 1436 × 688 preko kolone, zaobljenje 30px kao i
+        ostale fotografije na sajtu. */}
+    <div style={{ borderRadius: '30px', overflow: 'hidden', aspectRatio: '1436 / 688', background: '#000' }}>
       <iframe
         src={video.embed_url}
         title={video.title}
@@ -43,7 +48,9 @@ const VideoCard = ({ video, onClick }) => (
     onClick={() => onClick(video)}
     style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '12px' }}
   >
-    <div style={{ borderRadius: '16px', overflow: 'hidden', aspectRatio: '16/9', position: 'relative', background: '#ccc', width: '100%' }}>
+    {/* Kartica snimka: po dizajnu 467 × 312, zaobljenje 30px. Ranije 16px i
+          odnos 16/9, pa je kartica bila niža (262) nego u dizajnu. */}
+    <div style={{ borderRadius: '30px', overflow: 'hidden', aspectRatio: '467 / 312', position: 'relative', background: '#ccc', width: '100%' }}>
       <img
         src={video.thumbnail_url}
         alt={video.title}
@@ -77,16 +84,16 @@ const VideoGallery = ({ videos = [] }) => {
   const rest = videos.filter(v => v.id !== featured?.id)
 
   return (
-    <div style={{ width: '100%', maxWidth: '1400px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
+    <div style={{ width: '100%', maxWidth: 'var(--nnb-kolona)', display: 'flex', flexDirection: 'column', gap: '40px' }}>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <FeaturedVideo video={featured} />
       </div>
       {rest.length > 0 && <Divider className="section-divider" />}
-      {/* Tri kolone, kartica 467 široka sa razmakom od 20px — mereno sa izvoza
+      {/* Tri kolone, kartica 467 široka sa razmakom od 19px — mereno sa izvoza
           Figme: kartice stoje na x 241, 727 i 1213, svaka 467, unutar kolone od
-          1440. Vodoravni razmak je ovde bio 32px. */}
+          1440. Vodoravni razmak je ovde bio 20px. */}
       {rest.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px 20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', columnGap: '19px', rowGap: '40px' }}>
           {rest.map(video => (
             <VideoCard key={video.id} video={video} onClick={setFeatured} />
           ))}

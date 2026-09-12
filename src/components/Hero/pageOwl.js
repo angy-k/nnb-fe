@@ -100,7 +100,7 @@ const PageHiroSection = ({
       style={type !== 'image' ? { overflow: 'visible' } : undefined}
     >
       {type === 'image' ? (
-        <div className="w-full grid place-items-center mx-auto max-w-[1400px]" style={{ marginLeft: 'auto', marginRight: 'auto', overflow: 'hidden' }}>
+        <div className="w-full grid place-items-center mx-auto max-w-[var(--nnb-kolona)]" style={{ marginLeft: 'auto', marginRight: 'auto', overflow: 'hidden' }}>
           <HeroWithImage
             title={title}
             formatTitle={formatTitle}
@@ -110,7 +110,7 @@ const PageHiroSection = ({
           />
         </div>
       ) : (
-        <div className="w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 place-items-center" style={{ maxWidth: '1400px', marginLeft: 'auto', marginRight: 'auto' }}>
+        <div className="w-full grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 place-items-center" style={{ maxWidth: 'var(--nnb-kolona)', marginLeft: 'auto', marginRight: 'auto' }}>
           <HeroLeft
             title={title}
             description={description}
@@ -222,7 +222,7 @@ const HeroRight = ({ description, illustration, visokHero }) => (
     // Širina je u CSS-u, kao udeo širine okvira — vidi `.page-hero-right`.
     style={{ alignSelf: 'flex-start', pointerEvents: 'none' }}
   >
-    {illustration && <HeroOwlWithEyes kljunPrekoIvice={!visokHero} />}
+    {illustration && <HeroOwlWithEyes />}
   </div>
 )
 
@@ -271,7 +271,7 @@ const HeroWithImage = ({ title, formatTitle, image, illustration, introText }) =
       )}
       {!illustration && <div
         className="flex flex-row grid grid-rows-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 about-us-hero-content"
-        style={{width: '100%', height: '100%', maxWidth: '1400px'}}
+        style={{width: '100%', height: '100%', maxWidth: 'var(--nnb-kolona)'}}
         >
         <div 
           className="flex flex-row w-full align-center items-center gap-[20px]"

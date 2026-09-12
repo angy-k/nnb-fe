@@ -42,7 +42,11 @@ const NavigateMenu = ({
   const firstName = user?.first_name || ''
   const lastName = user?.last_name || ''
   const exhibitorFullName = `${firstName} ${lastName}`.trim() || user?.name || '-'
-  const brandName = user?.name || '-'
+  /* Isto kao u zaglavlju: prikazuje se naziv brenda, a `name` je samo rezerva
+     ako brend nije upisan. Ovde je do sada stajalo samo `user?.name`, pa je
+     mobilni meni pokazivao korisničko ime dok je zaglavlje pokazivalo brend —
+     dva različita naziva za isti nalog. */
+  const brandName = user?.brand_name || user?.name || '-'
 
   const wrapperClassName = className
     ? `${className} bg-[#261A54] flex flex-col overflow-hidden`
@@ -54,7 +58,10 @@ const NavigateMenu = ({
 
   return (
     <div className={wrapperClassName} style={defaultWrapperStyle}>
-      <div className="flex-1 overflow-y-auto pb-8">
+      {/* `navigate-menu-kolona` — kolona sadržaja menija. Na telefonu uzima ceo
+          red, a na tabletu se zaustavlja na 600px (mera u `global.css`), da se
+          spisak i red sa nalogom ne razvlače preko celog ekrana. */}
+      <div className="flex-1 overflow-y-auto pb-8 navigate-menu-kolona">
         <div className='header-menu-items-list'>
           {headerItems.map((item) => (
             <ul key={`header-item-${item.id}`}>
@@ -85,10 +92,13 @@ const NavigateMenu = ({
 
         {user ? (
           <div className="mt-6 flex flex-col gap-4">
+            {/* `nalog-meni` — na telefonu se spisak širi na 80% ekrana. Sa
+                zatečenih 200px duži naziv brenda nije imao gde da stane, a
+                prostora sa strane ima napretek. Mera je u `global.css`. */}
             <Dropdown
               placement="bottom-start"
               classNames={{
-                base: 'min-w-[200px]',
+                base: 'min-w-[200px] nalog-meni',
                 content: 'bg-[#261A54] shadow-xl rounded-2xl p-1 border-none',
               }}
             >
@@ -96,7 +106,16 @@ const NavigateMenu = ({
                 <button type="button" aria-label="Profil" className="header-profile-trigger">
                   <span className="header-profile-name">{brandName}</span>
                   {user?.profile_photo_url ? (
-                    <Avatar src={user.profile_photo_url} radius="full" isBordered className="w-10 h-10" />
+                    /* `name` i `showFallback` kao u zaglavlju: ako se slika ne
+                       učita, ostaje početno slovo umesto praznog kruga. */
+                    <Avatar
+                      src={user.profile_photo_url}
+                      name={brandName || 'U'}
+                      showFallback
+                      radius="full"
+                      isBordered
+                      className="w-10 h-10"
+                    />
                   ) : (
                     <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white" style={{ backgroundColor: '#3ECFCF' }}>
                       <Image src={avatarDefaultIcon} width={22} height={21} alt="avatar" />
@@ -164,7 +183,7 @@ const NavigateMenu = ({
         )}
       </div>
 
-      <div className='shrink-0 pt-10 xl:hidden'>
+      <div className='shrink-0 pt-10 xl:hidden navigate-menu-podnozje'>
         <div className='flex flex-row gap-5' style={{justifyContent: 'flex-end'}}>
           <Image
             src={FacebookIcon}

@@ -11,6 +11,7 @@ import BoothReservationConfirmModal from '@/components/Modal/BoothReservationCon
 import GalleryWarningModal from '@/components/Modal/GalleryWarningModal'
 import Button from '@/components/Button'
 import { electricityOptionsOf, electricityPriceFor, standAllowsElectricity } from '@/utils/electricity'
+import ZaglavljeIzlagaca from '@/components/Profile/ZaglavljeIzlagaca'
 
 const ReservationMapPage = () => {
   const router = useRouter()
@@ -896,17 +897,43 @@ const ReservationMapPage = () => {
     return { ok: true, reason: null }
   }
 
+  const avatarSrc = user?.profile_photo_url || null
+  const brandName = user?.name || ''
+
   return (
-    <div className="mt-72 w-full grid place-items-center bg-[#F0F0F0] pb-32">
+    <div className="w-full grid place-items-center bg-[#F0F0F0] pb-32">
+      {/* Tamno zaglavlje sa avatarom i naslovom — isto kao na Profilu, Mojim
+          rezervacijama i Kalendaru za ulogovanog. Stranici mape se pristupa samo
+          prijavljen, pa druge varijante nema.
+
+          Ranije je ovde stajao samo razmak `mt-72` i naslov „Izaberite mesto" u
+          svetlom delu stranice. */}
+      <ZaglavljeIzlagaca
+        avatar={
+          <div className="kalendar-avatar" style={{
+            flexShrink: 0, width: '223px', height: '223px',
+            borderRadius: '50%', overflow: 'hidden',
+            background: 'rgba(255,255,255,0.08)',
+            border: '2px solid rgba(255,255,255,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {avatarSrc
+              ? <img src={avatarSrc} alt={brandName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ color: '#ffffff', fontSize: '48px', fontWeight: 700 }}>{(brandName || 'U').charAt(0)}</span>}
+          </div>
+        }
+        naslov="Izaberite mesto"
+      />
+
       {/* `min-w-0` je uslov, ne ukras. Ovo je ćelija mreže, a takve po
           podrazumevanom `min-width: auto` ne mogu da se skupe ispod širine
           sadržaja. Mapa štandova unutra ima `min-width: 900px` — namerno, jer
           se skroluje vodoravno — pa je celu stranicu razvlačila na 932px i
           gurala „Nazad" i traku sa dugmadima van ekrana. Sa `min-w-0` skrol
           ostaje na mapi, gde mu je i mesto. */}
-      <div className="w-full min-w-0 max-w-[1400px] px-4 pt-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="text-[#261A54] text-2xl font-bold">Izaberite mesto</div>
+      <div className="w-full min-w-0 max-w-[var(--nnb-kolona)] px-4 pt-6">
+        {/* Naslov je prešao u tamno zaglavlje iznad, pa ovde ostaje samo povratak. */}
+        <div className="flex items-center justify-end mb-6">
           <Button type="outlined-dark" name="Nazad" onClick={() => router.back()} />
         </div>
 

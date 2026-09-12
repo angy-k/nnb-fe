@@ -48,7 +48,8 @@ const MERE = {
 const MyReservations = ({ events = [], onCancelClick = null }) => {
   return (
     <div className="w-full pt-8 pb-16">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Tri kartice od 465 u koloni od 1440 ostavljaju 45 za dva razmaka */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: '22.5px' }}>
         {events.map((event, index) => {
           const status = statusConfig[event.applicationStatus] || statusConfig.waiting
           const canCancel = event.applicationStatus === 'waiting' || event.applicationStatus === 'approved'
@@ -56,7 +57,7 @@ const MyReservations = ({ events = [], onCancelClick = null }) => {
           return (
             <div
               key={`reservation-${index}`}
-              className="flex flex-col bg-white rounded-[20px] overflow-hidden shadow-sm"
+              className="flex flex-col bg-white rounded-[30px] overflow-hidden shadow-sm"
             >
               {/* Cover image — links to event */}
               <Link

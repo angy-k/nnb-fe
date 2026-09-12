@@ -60,8 +60,12 @@ const Footer = () => {
 
   return (
     <>
-    {display && <div className="footer-container flex justify-between items-center w-full left-0 justify-center footer-shadow p-5 mobileMin:w-full md:pl-9 lg:pl-14 lg:pb-11">
-      <div className="w-full gap-x-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2" style={{ justifyContent: 'space-between', width: '100%', maxWidth: '1400px', justifySelf: 'space-between'}}>
+    {/* `lg:pl-14` je na širokom ekranu gurao ceo sadržaj podnožja 56px udesno,
+        pa je unutrašnja kolona od 1440 padala na x 268 umesto na 240, koliko je
+        u dizajnu i koliko iznosi leva ivica sadržaja na svim ostalim sekcijama.
+        Na užim ekranima odmak ostaje, tamo nema šta da se centrira. */}
+    {display && <div className="footer-container flex justify-between items-center w-full left-0 justify-center footer-shadow p-5 mobileMin:w-full md:pl-9 lg:pl-0 lg:pb-11">
+      <div className="w-full gap-x-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2" style={{ justifyContent: 'space-between', width: '100%', maxWidth: 'var(--nnb-kolona)', justifySelf: 'space-between'}}>
         <div className="footer-subsection justify-space-between grid gap-y-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
           <div className="footer-list-container grid grid-cols-1 sm:grid-cols-1 sm:justify-center">
             <div className="footer-list-section sm:text-center">
@@ -112,7 +116,7 @@ const Footer = () => {
       <Divider  className="footer-divider"/>
       {/* `sm:px-5` — kontejner futera na mobilnom nema bočni odmak, pa je ovaj
           red dodirivao ivicu ekrana. */}
-      <span className="w-full text-start sm:px-5" style={{maxWidth: '1400px'}}>{`Design and developed: ...`}</span>
+      <span className="w-full text-start sm:px-5" style={{maxWidth: 'var(--nnb-kolona)'}}>{`Design and developed: ...`}</span>
     </div>}
     </>
   )

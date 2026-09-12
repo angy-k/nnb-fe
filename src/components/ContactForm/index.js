@@ -99,7 +99,7 @@ const ContactForm = ({
         </div>
       )}
       <div
-        className={`flex flex-col-reverse lg:flex-row ${withImage ? '' : 'place-items-center'} justify-center gap-1 ${withImage ? 'sm:gap-24 md:gap-[24px] lg:gap-[24px]' : 'sm:gap-4 md:gap-16 lg:gap-60 sm:py-8 sm:px-4 py-20 px-20 md:px-10 md:py-12'} w-full lg:max-w-[1400px] contact-from bg-[#ffffff] mt-24 sm:mt-6 2xl:max-w-screen-2xl 2xl:mx-auto rounded-3xl overflow-hidden`}
+        className={`flex flex-col-reverse lg:flex-row ${withImage ? '' : 'place-items-center'} justify-center gap-1 ${withImage ? 'sm:gap-24 md:gap-[24px] lg:gap-[24px]' : 'sm:gap-4 md:gap-16 lg:gap-60 sm:py-8 sm:px-4 py-20 px-20 md:px-10 md:py-12'} w-full lg:max-w-[var(--nnb-kolona)] contact-from bg-[#ffffff] mt-24 sm:mt-6 2xl:max-w-screen-2xl 2xl:mx-auto rounded-[30px] overflow-hidden`}
       >
         {withImage ? (
           <div className="relative w-full min-h-[300px] lg:min-h-0 lg:self-stretch lg:w-[45%] flex-shrink-0 overflow-hidden rounded-b-3xl lg:rounded-b-none lg:rounded-l-3xl sm:hidden">

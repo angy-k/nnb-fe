@@ -8,7 +8,7 @@ const UnconfirmedEventsTable = ({ events = [] }) => {
     <div className="w-full bg-[#F0F0F0]">
       <div
         className="w-full blogs-container pt-12 grid place-items-start mx-auto pb-12"
-        style={{ justifySelf: 'center', maxWidth: '1400px', padding: '0 30px 48px' }}
+        style={{ justifySelf: 'center', maxWidth: 'var(--nnb-kolona)', padding: '0 30px 48px' }}
       >
         <span className="our-team-title">Najavljeni događaji</span>
 

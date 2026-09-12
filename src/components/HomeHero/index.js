@@ -138,6 +138,15 @@ const HomeHero = ({
 
       {/* Stats section — centered, below hero content, alternating cards/icons */}
       <div className="home-hero-stats-section" style={{ position: 'relative', zIndex: 1 }}>
+        {/* Strelica nadole — u izvozu 32 × 16 na (944, 922), po sredini
+            stranice, dve bele linije od 22,63 pod ±45°. Stoji u praznom pojasu
+            između uvodnog teksta i brojki. */}
+        <div className="home-hero-strelica" aria-hidden="true">
+          <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
+            <path d="M1 1L16 15L31 1" stroke="#FFFFFF" strokeWidth="1" />
+          </svg>
+        </div>
+
         <div className="home-hero-stats-grid" ref={gridRef}>
           {/* ── Dekorativni listovi ───────────────────────────────────────────
               Sva četiri lista iz dizajna stoje oko bloka sa brojačima, a ne po
@@ -170,28 +179,28 @@ const HomeHero = ({
           </div>
 
           {/* Row 1: card | icon | card */}
-          <div className="home-hero-stat-card" style={{ gridColumn: 1, gridRow: 1, background: '#56C4CF', border: 'none' }}>
-            <span className="home-hero-stat-card-value" style={{ color: '#261A54' }}>{formatNum(counts.events)}{ev.suffix}</span>
-            <span className="home-hero-stat-card-label" style={{ color: '#261A54', opacity: 1 }}>Događaja</span>
+          <div className="home-hero-stat-card" style={{ gridColumn: 1, gridRow: 1 }}>
+            <span className="home-hero-stat-card-value">{formatNum(counts.events)}{ev.suffix}</span>
+            <span className="home-hero-stat-card-label">Događaja</span>
           </div>
           <div className="home-hero-stat-circle home-hero-stat-circle--teal" style={{ gridColumn: 2, gridRow: 1 }}>
-            <Image src={MarketIcon} width={56} height={56} alt="Tržnica" />
+            <Image src={MarketIcon} width={108} height={108} alt="Tržnica" />
           </div>
-          <div className="home-hero-stat-card" style={{ gridColumn: 3, gridRow: 1, background: '#F18020', border: 'none' }}>
-            <span className="home-hero-stat-card-value" style={{ color: '#261A54' }}>{formatNum(counts.visitors)}{vi.suffix}</span>
-            <span className="home-hero-stat-card-label" style={{ color: '#261A54', opacity: 1 }}>Posetilaca</span>
+          <div className="home-hero-stat-card" style={{ gridColumn: 3, gridRow: 1 }}>
+            <span className="home-hero-stat-card-value">{formatNum(counts.visitors)}{vi.suffix}</span>
+            <span className="home-hero-stat-card-label">Posetilaca</span>
           </div>
 
           {/* Row 2: icon | card | icon */}
           <div className="home-hero-stat-circle home-hero-stat-circle--orange" style={{ gridColumn: 1, gridRow: 2 }}>
-            <Image src={EventIcon} width={56} height={56} alt="Događaji" style={{ filter: 'brightness(0) invert(1)' }} />
+            <Image src={EventIcon} width={97} height={97} alt="Događaji" />
           </div>
-          <div className="home-hero-stat-card" style={{ gridColumn: 2, gridRow: 2, background: '#F4C430', border: 'none' }}>
-            <span className="home-hero-stat-card-value" style={{ color: '#261A54' }}>{formatNum(counts.exhibitors)}{ex.suffix}</span>
-            <span className="home-hero-stat-card-label" style={{ color: '#261A54', opacity: 1 }}>Izlagača</span>
+          <div className="home-hero-stat-card" style={{ gridColumn: 2, gridRow: 2 }}>
+            <span className="home-hero-stat-card-value">{formatNum(counts.exhibitors)}{ex.suffix}</span>
+            <span className="home-hero-stat-card-label">Izlagača</span>
           </div>
           <div className="home-hero-stat-circle home-hero-stat-circle--yellow" style={{ gridColumn: 3, gridRow: 2 }}>
-            <Image src={UsersGroupIcon} width={56} height={56} alt="Posetilaci" />
+            <Image src={UsersGroupIcon} width={101} height={101} alt="Posetilaci" />
           </div>
         </div>
       </div>

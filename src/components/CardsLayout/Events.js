@@ -15,7 +15,8 @@ import ReservationOptionsModal from '@/components/Modal/ReservationOptionsModal'
 import EventDetailsModal from '@/components/Modal/EventDetailsModal'
 import BoothReservationConfirmModal from '@/components/Modal/BoothReservationConfirmModal'
 import GalleryWarningModal from '@/components/Modal/GalleryWarningModal'
-import { electricityOptionsOf, electricityPriceFor } from '@/utils/electricity'
+import { electricityOptionsOf } from '@/utils/electricity'
+import { brojDanaPrijave, lokalniTroskovi, predracunSaServera } from '@/utils/troskovi'
 
 const Events = ({
   title,
@@ -33,10 +34,32 @@ const Events = ({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [isReserveModalOpen, setIsReserveModalOpen] = useState(false)
+
+  /* Izabrani dani kod višednevnog događaja.
+   *
+   * Sa kalendara je ovo već stizalo u modal, a odavde nije — pa je izlagač koji
+   * krene sa spiska događaja dobijao modal bez izbora dana, i prijava je odlazila
+   * bez `eventDayIds`. */
+  const [selectedDayIds, setSelectedDayIds] = useState([])
   const [electricityOption, setElectricityOption] = useState('none')
   const [marketingOption, setMarketingOption] = useState('none')
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+
+  /* Saglasnost sa opštim uslovima živi ovde, a ne u modalima.
+   *
+   * Modal opcija i modal potvrde su dva odvojena prozora; dok je svaki držao
+   * svoju kvačicu, ona data u opcijama nije stizala do potvrde — a potvrda bez
+   * `setTermsAccepted` nije mogla ni da je primi (dugme je ostajalo zaključano
+   * zauvek). Isto rešenje već stoji na stranici mape. */
+  const [termsAccepted, setTermsAccepted] = useState(false)
+
   const [confirmCosts, setConfirmCosts] = useState({ cotization: 0, electricity: null, marketing: null })
+  // Šta na ovoj prijavi pokriva gratis nastup iz paketa — stiže uz predračun
+  const [coveredByPackage, setCoveredByPackage] = useState([])
+  /* Razlozi zbog kojih upis ne bi prošao — stižu uz predračun. Bez njih je
+     sažetak umeo da pokaže „0 RSD" za događaj kojem cena nije određena, pa je
+     izlagač slao prijavu misleći da je besplatna. */
+  const [quoteBlockers, setQuoteBlockers] = useState([])
   const [isSubmittingReservation, setIsSubmittingReservation] = useState(false)
   const [reservationError, setReservationError] = useState(null)
   const [reservationSuccess, setReservationSuccess] = useState(null)
@@ -166,9 +189,13 @@ const Events = ({
     setElectricityOption('none')
     setMarketingOption('none')
     setConfirmCosts({ cotization: 0, electricity: null, marketing: null })
+    setCoveredByPackage([])
+    setQuoteBlockers([])
     setReservationError(null)
     setReservationSuccess(null)
     setIsSubmittingReservation(false)
+    setTermsAccepted(false)
+    setSelectedDayIds([])
   }
 
   const closeAllModals = () => {
@@ -190,6 +217,9 @@ const Events = ({
   }
 
   function openReserveModal() {
+    // Polazno je prvi dan; izlagač dalje sam bira kvačicom „više dana".
+    const dani = Array.isArray(selectedEvent?.days) ? selectedEvent.days : []
+    setSelectedDayIds(dani[0]?.id ? [dani[0].id] : [])
     setIsReserveModalOpen(true)
     startSessionTimer()
   }
@@ -213,30 +243,7 @@ const Events = ({
     }
   }
 
-  const computeConfirmCosts = (event, electricityOpt, marketingOpt) => {
-    const cotization = Number(event?.downPayment) || 0
-
-    // Cena zavisi od izabrane jačine priključka; „none" znači da struja nije tražena
-    const electricity = electricityPriceFor(event, electricityOpt)
-
-    const rawFb = event?.fbMarketingCoasts
-    const rawIg = event?.ingMarketingCoasts
-    const fb = rawFb != null && rawFb !== '' ? Number(rawFb) : null
-    const ig = rawIg != null && rawIg !== '' ? Number(rawIg) : null
-    // Cena paketa za obe mreže je zasebna i niža od zbira pojedinačnih;
-    // sabiranje ostaje samo za događaje kojima ta cena nije uneta.
-    const rawBoth = event?.fbIngMarketingCoasts
-    const both = rawBoth != null && rawBoth !== '' ? Number(rawBoth) : null
-
-    let marketing = null
-    if (marketingOpt === 'facebook') marketing = fb
-    else if (marketingOpt === 'instagram') marketing = ig
-    else if (marketingOpt === 'instagram_facebook') marketing = both ?? ((fb ?? 0) + (ig ?? 0))
-
-    return { cotization, electricity, marketing }
-  }
-
-  function submitReservationOptions() {
+  async function submitReservationOptions() {
     // Ako je odabrana reklama, a korisnik nema fotografija u galeriji — prikaži upozorenje
     if (marketingOption !== 'none' && user) {
       const hasGallery =
@@ -248,12 +255,41 @@ const Events = ({
       }
     }
 
-    setConfirmCosts(computeConfirmCosts(selectedEvent, electricityOption, marketingOption))
+    /*
+     * Sažetak je ranije računat samo ovde, sa `downPayment` bez množenja danima
+     * i bez zona — pa je znao da pokaže 0 RSD za prijavu koja se naplaćuje.
+     * Merodavan iznos traži se sa servera, isto kao na mapi tezgi; domaća
+     * procena ostaje samo ako predračun ne stigne.
+     */
+    const dana = brojDanaPrijave(selectedEvent, selectedDayIds)
+    setConfirmCosts(lokalniTroskovi(selectedEvent, electricityOption, marketingOption, dana))
+    setCoveredByPackage([])
+    setQuoteBlockers([])
     closeReserveModal()
     setIsConfirmModalOpen(true)
+
+    const predracun = await predracunSaServera({
+      eventId: selectedEvent?.id,
+      electricityOption,
+      marketingOption,
+      eventDayIds: selectedDayIds,
+    })
+    if (predracun) {
+      setConfirmCosts(predracun.costs)
+      setCoveredByPackage(predracun.covered)
+      setQuoteBlockers(predracun.blockers)
+    }
   }
 
   const confirmReservation = async () => {
+
+    /* Druga brava: dugme je već zaključano bez kvačice, ali prijava ne sme da
+       ode ni ako se do slanja dođe nekim putem koji dugme zaobilazi. */
+    if (!termsAccepted) {
+      setReservationError('Morate prihvatiti opšte uslove izlaganja pre slanja prijave.')
+      return
+    }
+
     const eventId = selectedEvent?.id
 
     if (loggedOut || !user) {
@@ -289,6 +325,8 @@ const Events = ({
         eventId,
         electricityOption,
         marketingOption,
+        // Bez ovoga je prijava sa spiska događaja odlazila bez izabranih dana.
+        eventDayIds: selectedDayIds.length ? selectedDayIds : undefined,
       })
 
       const contentType = res.headers.get('content-type') || ''
@@ -351,8 +389,11 @@ const Events = ({
 
   const limitedEvents = [...upcomingEvents, ...pastEvents]
 
-  const renderCards = (list, keyPrefix, grey = false) => (
-    <div className="blog-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+  /* Prošli događaji se više ne prigušuju: crno-bela slika sa providnošću ostaje
+     samo na „Prethodnim rezervacijama". Ovde su sve kartice iste, kao u
+     dizajnu — redosled po datumu ih već razdvaja. */
+  const renderCards = (list, keyPrefix) => (
+    <div className="blog-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {list.map((event, index) => (
         <div className="event-card" key={`${keyPrefix}-${event.id ?? index}`}>
           <CardComponent
@@ -361,7 +402,6 @@ const Events = ({
             imageWidth={438}
             imageHeight={438}
             imageSquare
-            imageGrey={grey}
             imageRadius={"30px"}
             imageAltText={`Događaj - ${event.name || event.title}`}
             sectionType={'event'}
@@ -373,14 +413,6 @@ const Events = ({
       ))}
     </div>
   )
-
-  // Naslov grupe se pokazuje tek kad postoje obe grupe — inače bi usamljen
-  // naslov iznad jedine liste samo dodavao buku.
-  const showGroupTitles = upcomingEvents.length > 0 && pastEvents.length > 0
-  // Bez horizontalnog odmaka na desktopu, jer ga ni mreža kartica nema — odmak
-  // od 16px dobija tek na mobilnom, gde ga `.blogs-container .blog-container`
-  // dodaje i karticama.
-  const groupTitleClass = 'w-full max-w-[1400px] nnb-gutter text-[#261A54] font-bold text-[36px] sm:text-[28px] text-left mb-6'
 
 
   if (loading) {
@@ -424,21 +456,10 @@ const Events = ({
             onClick={() => previewAllEvents()}
         />}
         {title && <Divider className="section-divider"/>}
-        {upcomingEvents.length > 0 && (
-          <>
-            {showGroupTitles && <h2 className={groupTitleClass}>Aktuelni događaji</h2>}
-            {renderCards(upcomingEvents, 'upcoming-event')}
-          </>
-        )}
-
-        {pastEvents.length > 0 && (
-          <>
-            {showGroupTitles && (
-              <h2 className={groupTitleClass} style={{ marginTop: '70px' }}>Prošli događaji</h2>
-            )}
-            {renderCards(pastEvents, 'past-event', true)}
-          </>
-        )}
+        {/* Dizajn nema podnaslove grupa: sve kartice idu u jednoj mreži,
+            poređane po datumu — prvo aktuelni od najskorijeg ka daljem, pa
+            prošli od skoro održanog unazad. */}
+        {limitedEvents.length > 0 && renderCards(limitedEvents, 'event')}
         {/* pagination */}
         {(pagination && events.length > 12) && <Divider className="section-divider" style={{marginTop: '35px'}}/>}
         {/* {(pagination || events.length > 12) && <PaginationComponent />} */}
@@ -489,6 +510,8 @@ const Events = ({
 
       {/* Reservation Options Modal */}
       <ReservationOptionsModal
+          termsAccepted={termsAccepted}
+          setTermsAccepted={setTermsAccepted}
         isOpen={isReserveModalOpen}
         onClose={cancelReserveModal}
         electricityOption={electricityOption}
@@ -496,6 +519,10 @@ const Events = ({
         setElectricityOption={setElectricityOption}
         marketingOption={marketingOption}
         setMarketingOption={setMarketingOption}
+        eventDays={Array.isArray(selectedEvent?.days) ? selectedEvent.days : []}
+        selectedDayIds={selectedDayIds}
+        setSelectedDayIds={setSelectedDayIds}
+        allowPerDay={!!selectedEvent?.allowPerDayApplications}
         onSubmit={submitReservationOptions}
         submitLabel="Prijavite se"
         showCancel={true}
@@ -505,6 +532,9 @@ const Events = ({
       />
 
       <BoothReservationConfirmModal
+          termsAccepted={termsAccepted}
+          setTermsAccepted={setTermsAccepted}
+          termsPdfUrl={selectedEvent?.termsPdfUrl || selectedEvent?.generatedTermsUrl || null}
         isOpen={isConfirmModalOpen}
         onClose={cancelReservation}
         title="Da li želite da pošaljete prijavu?"
@@ -512,9 +542,10 @@ const Events = ({
         onConfirm={confirmReservation}
         onCancel={cancelReservation}
         costs={confirmCosts}
+        coveredByPackage={coveredByPackage}
         isLoading={isSubmittingReservation}
         successMessage={reservationSuccess}
-        errorMessage={reservationError}
+        errorMessage={reservationError || quoteBlockers[0] || null}
         onDismissMessage={() => {
           setReservationError(null)
           setReservationSuccess(null)

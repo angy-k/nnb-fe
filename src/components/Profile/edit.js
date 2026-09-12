@@ -10,6 +10,7 @@ import useUser from '@/data/use-user'
 import { checkProfileReady } from '@/utils/profileValidation'
 import profileService from '@/services/profileService'
 import activityGroupService from '@/services/activityGroupService'
+import ZaglavljeIzlagaca from '@/components/Profile/ZaglavljeIzlagaca'
 
 // ─── Activity grouped select ─────────────────────────────────────────────────
 // Izabrano „Nema na spisku". Uz oznaku ide i grupa, jer se stavka nudi na dnu
@@ -556,107 +557,110 @@ const ProfileEdit = () => {
   return (
     <>
       {/* ── Header — paddingTop gura sadržaj ispod fixed nava ── */}
-      <div className="w-full bg-[#261A54] profile-page-header" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
-        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6 profile-page-header-inner">
-
-          {/* Avatar + brand name */}
-          <div className="flex items-end gap-6 profile-page-header-left">
-            {/* Avatar with upload overlay */}
-            <div className="flex flex-col items-center gap-2 profile-page-avatar-wrapper" style={{ marginBottom: '-56px' }}>
-              <div className="relative flex-shrink-0 group z-10">
-                <Avatar
-                  isBordered
-                  showFallback
-                  src={avatarSrc || undefined}
-                  name={user?.name || 'U'}
-                  radius="full"
-                  className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
-                />
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-black/40 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  {avatarUploading ? (
-                    <span className="text-white text-[10px] font-medium">Učitava...</span>
-                  ) : (
-                    <>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                        <circle cx="12" cy="13" r="4"/>
-                      </svg>
-                      <span className="text-white text-[10px] mt-1 font-medium">Dodajte logo</span>
-                    </>
-                  )}
-                </label>
-                {/* Visible camera badge so user knows avatar is clickable */}
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute bottom-1 right-1 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer group-hover:opacity-0 transition-opacity"
-                  style={{ background: '#56C4CF' }}
-                  title="Promenite profilnu sliku"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                    <circle cx="12" cy="13" r="4"/>
-                  </svg>
-                </label>
-                <input
-                  id="avatar-upload"
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                />
-              </div>
-              {avatarError && (
-                <p className="text-[11px] text-center max-w-[160px]" style={{ color: '#EC4923' }}>{avatarError}</p>
-              )}
+      <ZaglavljeIzlagaca
+        avatar={
+          <>
+            {/* Bez `profile-page-avatar-wrapper` i pomeraja naniže — to sada
+                nosi zajedničko zaglavlje, pa bi se ovde udvostručilo. */}
+            <div className="flex flex-col items-center gap-2">
+            <div className="relative flex-shrink-0 group z-10">
+            <Avatar
+            isBordered
+            showFallback
+            src={avatarSrc || undefined}
+            name={user?.name || 'U'}
+            radius="full"
+            className="w-[223px] h-[223px] text-2xl bg-[#3d2f7a] border-4 border-white"
+            />
+            <label
+            htmlFor="avatar-upload"
+            className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-black/40 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+            {avatarUploading ? (
+            <span className="text-white text-[10px] font-medium">Učitava...</span>
+            ) : (
+            <>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+            </svg>
+            <span className="text-white text-[10px] mt-1 font-medium">Dodajte logo</span>
+            </>
+            )}
+            </label>
+            {/* Visible camera badge so user knows avatar is clickable */}
+            <label
+            htmlFor="avatar-upload"
+            className="absolute bottom-1 right-1 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer group-hover:opacity-0 transition-opacity"
+            style={{ background: '#56C4CF' }}
+            title="Promenite profilnu sliku"
+            >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+            </svg>
+            </label>
+            <input
+            id="avatar-upload"
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarChange}
+            />
             </div>
-
-            {/* Inline editable brand name */}
+            {avatarError && (
+            <p className="text-[11px] text-center max-w-[160px]" style={{ color: '#EC4923' }}>{avatarError}</p>
+            )}
+            </div>
+          </>
+        }
+        naslov={
+          <>
             <div className="flex flex-col gap-1 pb-2 profile-page-header-name">
-              <div className="flex items-center gap-2 profile-brand-name-row">
-                <input
-                  ref={brandNameRef}
-                  type="text"
-                  value={brandName}
-                  onChange={(e) => setBrandName(e.target.value)}
-                  className="bg-transparent text-3xl font-bold leading-tight outline-none border-b border-transparent focus:border-[#56C4CF]/60 transition min-w-[100px] py-0 h-[38px] profile-brand-name-input"
-                  style={{ color: '#ffffff' }}
-                  placeholder="Naziv brenda"
-                />
-                <button
-                  type="button"
-                  onClick={() => brandNameRef.current?.focus()}
-                  className="opacity-60 hover:opacity-100 transition cursor-pointer flex-shrink-0"
-                  aria-label="Izmeni naziv brenda"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                </button>
-              </div>
-              <span className="text-base" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                {currentActivityName}
-              </span>
-            </div>
-          </div>
-
-          {/* Save button */}
-          <button
+            <div className="flex items-center gap-2 profile-brand-name-row">
+            <input
+            ref={brandNameRef}
+            type="text"
+            value={brandName}
+            onChange={(e) => setBrandName(e.target.value)}
+            /* Naziv brenda je i ovde 48/65, kao na pregledu profila — polje
+            samo omogućava izmenu, ne menja izgled. */
+            className="bg-transparent font-bold outline-none border-b border-transparent focus:border-[#56C4CF]/60 transition min-w-[100px] py-0 profile-brand-name-input"
+            style={{ color: '#ffffff', fontSize: '48px', lineHeight: '65px', height: '65px' }}
+            placeholder="Naziv brenda"
+            />
+            <button
             type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="px-6 py-2.5 rounded-full text-sm font-semibold flex-shrink-0 hover:opacity-90 transition disabled:opacity-60 mb-2"
-            style={{ color: '#ffffff', backgroundColor: '#56C4CF' }}
-          >
-            {saving ? 'Čuvanje...' : success ? 'Sačuvano ✓' : 'Sačuvajte izmene'}
-          </button>
-        </div>
-
-      </div>
+            onClick={() => brandNameRef.current?.focus()}
+            className="opacity-60 hover:opacity-100 transition cursor-pointer flex-shrink-0"
+            aria-label="Izmeni naziv brenda"
+            >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            </button>
+            </div>
+            <span className="text-base" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            {currentActivityName}
+            </span>
+            </div>
+          </>
+        }
+      >
+        <button
+        type="button"
+        onClick={handleSave}
+        disabled={saving}
+        /* Isto dugme kao „Izmenite profil" na pregledu profila: po dizajnu
+        250 × 60, zaobljenje 30,5, natpis 18/600. Ranije 170 × 40 i 14px. */
+        className="font-semibold flex-shrink-0 hover:opacity-90 transition disabled:opacity-60 mb-2"
+        style={{ color: '#ffffff', backgroundColor: '#56C4CF', width: '250px', height: '60px', borderRadius: '30.5px', fontSize: '18px', lineHeight: '25px' }}
+        >
+        {saving ? 'Čuvanje...' : success ? 'Sačuvano ✓' : 'Sačuvajte izmene'}
+        </button>
+      </ZaglavljeIzlagaca>
 
       {/* ── Forma ── */}
       <div className="w-full bg-[#f5f5f5] pb-24 overflow-hidden profile-page-content" style={{ paddingTop: '56px' }}>
@@ -697,7 +701,7 @@ const ProfileEdit = () => {
           ))
 
           return (
-            <div className="max-w-[1400px] mx-auto px-6 pt-4 pb-0 flex flex-col gap-3">
+            <div className="max-w-[var(--nnb-kolona)] mx-auto px-6 pt-4 pb-0 flex flex-col gap-3">
               {requiredMissing.length > 0 && (
                 <div className="rounded-2xl px-6 py-4 flex items-start gap-4" style={{ background: '#FFF3E0', border: '1.5px solid #F18020' }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F18020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
@@ -725,11 +729,11 @@ const ProfileEdit = () => {
         })()}
 
         {error && (
-          <div className="max-w-[1400px] mx-auto px-6 pt-4">
+          <div className="max-w-[var(--nnb-kolona)] mx-auto px-6 pt-4">
             <p className="text-sm rounded-lg px-4 py-2 bg-red-50" style={{ color: '#EC4923' }}>{error}</p>
           </div>
         )}
-        <div className="max-w-[1400px] mx-auto px-6 pt-8 pb-4 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="max-w-[var(--nnb-kolona)] mx-auto px-6 pt-8 pb-4 grid grid-cols-1 md:grid-cols-2 gap-8">
 
           {/* Podaci o vlasniku */}
           <Section title="Podaci o vlasniku">
@@ -964,7 +968,7 @@ const ProfileEdit = () => {
         </div>
 
         {/* Galerija */}
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-[var(--nnb-kolona)] mx-auto px-6">
           <ProfileGallery account={account} editable={true} />
         </div>
       </div>

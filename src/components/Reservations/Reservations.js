@@ -20,7 +20,7 @@ const ReservationsContainer = ({
         showMiddleIcon={false}
         buttonType={'custom'}
         buttonCustomStyle={'viber-button-turquoise'}
-        wrapperStyle={{ maxWidth: '1400px', borderRadius: '30px' }}
+        wrapperStyle={{ maxWidth: 'var(--nnb-kolona)', borderRadius: '30px' }}
       />
     </div>
   )

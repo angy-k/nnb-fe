@@ -142,7 +142,7 @@ const MyPreviousReservations = ({ events = [], page = 1, totalPages = 1, onPageC
 
             {/* Content center */}
             <div
-              className="flex flex-col flex-1"
+              className="flex flex-col flex-1 prev-reservation-card-text"
               style={{ paddingLeft: `${MERE.tekstOdSlike}px`, paddingTop: `${MERE.vrhTeksta}px` }}
             >
               {event.title && (

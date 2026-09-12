@@ -41,9 +41,11 @@ const ViberCommunity = ({
           {showMiddleIcon && (
             <Image
               src={type === 'dark' ? ViberIconDark : ViberIconLight}
-              width={24}
-              height={24}
+              /* Izvoz: 68 × 68 na x 733, natpis počinje na 837 */
+              width={68}
+              height={68}
               alt={'Viber community viber icon.'}
+              className="viber-community-icon"
             />
           )}
           <span className="viber-community-text">{title}</span>

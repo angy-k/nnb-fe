@@ -22,7 +22,9 @@ export default function PolitikaPrivatnostiPage() {
       />
 
       <div className="w-full bg-[#F0F0F0]">
-        <div className="max-w-[860px] mx-auto px-6 py-16">
+        {/* Po dizajnu je tekstualna kolona 1067px široka i usredišćena
+             (x 426–1493 na okviru od 1920). Ovde je bilo 860. */}
+        <div className="max-w-[1115px] mx-auto px-6 py-16">
           <PrivacyPolicyContent compact={false} />
         </div>
       </div>

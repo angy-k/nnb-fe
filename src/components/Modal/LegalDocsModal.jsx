@@ -69,7 +69,9 @@ const LegalDocsModal = ({
           <>
             <ModalHeader className="p-0 h-0 min-h-0" />
 
-            <ModalBody className="px-12 py-12 sm:px-6 sm:py-8 relative">
+            {/* Po dizajnu tekst u modalu stoji na x 426, a modal ide od 240 — dakle
+              186px odmaka sa svake strane. Ranije 48. */}
+            <ModalBody className="px-[186px] py-12 md:px-12 sm:px-6 sm:py-8 relative">
               {/* X zatvaranje — gore desno, kao na dizajnu */}
               <button
                 type="button"
@@ -85,17 +87,19 @@ const LegalDocsModal = ({
               {/* ── Uslovi korišćenja ─────────────────────────────────────── */}
               {sections.includes('terms') && (
                 <>
-              <h2 className="text-[#1B1B1B] text-3xl sm:text-2xl font-bold mb-5">
+              <h2 className="text-[#1B1B1B] text-[36px] leading-[49px] sm:text-2xl font-semibold mb-5">
                 Uslovi korišćenja
               </h2>
 
               {expanded.terms ? (
                 <div className="mb-2">
-                  <ExhibitionTermsContent compact />
+                  {/* Bez `compact`: po dizajnu su naslovi 36/600, a tekst 22/30 — isto kao
+                      na samostalnim stranicama. */}
+                  <ExhibitionTermsContent compact={false} />
                   {!sam && <div className="mt-2"><ReadMore section="terms" /></div>}
                 </div>
               ) : (
-                <p className="text-[#1B1B1B] text-base sm:text-sm leading-relaxed mb-2">
+                <p className="text-[#1B1B1B] text-[22px] leading-[30px] sm:text-sm mb-2">
                   {TERMS_EXCERPT}{' '}
                   <ReadMore section="terms" />
                 </p>
@@ -123,13 +127,13 @@ const LegalDocsModal = ({
               {/* ── Politika privatnosti ──────────────────────────────────── */}
               {sections.includes('privacy') && (
                 <>
-              <h2 className="text-[#1B1B1B] text-3xl sm:text-2xl font-bold mb-5">
+              <h2 className="text-[#1B1B1B] text-[36px] leading-[49px] sm:text-2xl font-semibold mb-5">
                 Politika privatnosti
               </h2>
 
               {expanded.privacy ? (
                 <div className="mb-8">
-                  <PrivacyPolicyContent />
+                  <PrivacyPolicyContent compact={false} />
                   {!sam && <div className="mt-2"><ReadMore section="privacy" /></div>}
                 </div>
               ) : (

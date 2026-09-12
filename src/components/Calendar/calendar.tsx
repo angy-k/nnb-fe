@@ -21,6 +21,9 @@ export type CalendarProps = {
   date?: string | number | Date;
   onEventClick?: (eventId: string) => void;
   onDayClick?: (date: Date) => void;
+  /* Naziv meseca je u dizajnu 26/35 za posetioca, a 36/49 na stranici kalendara
+     za prijavljenog izlagača. Do sada je svuda bio 26. */
+  velikiNaziv?: boolean;
 };
 
 export const Calendar: React.FC<CalendarProps> = ({
@@ -29,6 +32,7 @@ export const Calendar: React.FC<CalendarProps> = ({
     view = "month",
     onEventClick,
     onDayClick,
+    velikiNaziv = false,
 }) => {
     const [curView, setCurView] = useState<View>(view);
     const [curDate, setCurDate] = useState<Date>(new Date(date));
@@ -111,7 +115,7 @@ return (
         <section id="calendar-header" className="mb-6 sm:mb-3 nnb-gutter w-full flex md:grid lg:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] justify-between items-center gap-2 pb-8 sm:pb-4">
             <div aria-hidden="true" />
             <div className="flex gap-2 items-center min-w-0 justify-center flex-1 md:flex-none lg:flex-none">
-                <span className="calendar-title capitalize sm:text-[20px]">
+                <span className={`calendar-title capitalize sm:text-[20px]${velikiNaziv ? ' calendar-title--veliki' : ''}`}>
                     {formatDateForView(curDate).toLowerCase()}
                 </span>
             </div>

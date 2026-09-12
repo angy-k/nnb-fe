@@ -26,7 +26,7 @@ const OurTeam = ({ members = [], title = 'Naš tim' }) => {
 
   return (
     <div className="w-full blogs-container pt-24 grid place-items-start mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto pb-48 bg-[#f0f0f0]">
-      <div className="text-start" style={{ justifySelf: 'center', maxWidth: '1400px' }}>
+      <div className="text-start" style={{ justifySelf: 'center', maxWidth: 'var(--nnb-kolona)' }}>
         <span className="our-team-title">{title}</span>
         <Divider className="section-divider" />
         <div className="our-team-container">

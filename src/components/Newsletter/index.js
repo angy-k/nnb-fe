@@ -150,8 +150,13 @@ const Newsletter = () => {
                         )}
                     </div>
 
-                    <ViberCommunity type="light" />
                 </div>
+            </div>
+
+            {/* Viber traka je u dizajnu široka koliko i kolona (240–1680), a ne
+                koliko uži blok sa newsletterom u kom je do sada stajala. */}
+            <div className="newsletter-viber-red">
+                <ViberCommunity type="light" />
             </div>
 
             {/* `onOpenChange` je dovoljan za kontrolisani modal. */}

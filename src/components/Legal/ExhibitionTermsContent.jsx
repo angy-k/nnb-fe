@@ -19,19 +19,19 @@ export const TERMS_EXCERPT =
  */
 const ExhibitionTermsContent = ({ compact = false }) => {
   const H = ({ children }) => (
-    <h2 className={`text-[#261A54] font-bold mt-8 mb-3 ${compact ? 'text-base mt-5 mb-2' : 'text-xl'}`}>
+    <h2 className={`text-[#261A54] font-bold mt-8 mb-3 ${compact ? 'text-base mt-5 mb-2' : 'text-[36px] leading-[49px] mt-12 mb-4'}`}>
       {children}
     </h2>
   )
 
   const P = ({ children }) => (
-    <p className={`leading-relaxed mb-3 ${compact ? 'text-sm' : 'text-base'}`} style={{ color: '#333333' }}>
+    <p className={`leading-relaxed mb-3 ${compact ? 'text-sm' : 'text-[22px] leading-[30px]'}`} style={{ color: '#333333' }}>
       {children}
     </p>
   )
 
   const Li = ({ children }) => (
-    <li className={`leading-relaxed mb-2 ${compact ? 'text-sm' : 'text-base'}`} style={{ color: '#333333' }}>
+    <li className={`leading-relaxed mb-2 ${compact ? 'text-sm' : 'text-[22px] leading-[30px]'}`} style={{ color: '#333333' }}>
       {children}
     </li>
   )

@@ -22,19 +22,19 @@ export const PRIVACY_EXCERPT =
  */
 const PrivacyPolicyContent = ({ compact = true }) => {
   const H = ({ children }) => (
-    <h3 className={`text-[#261A54] font-semibold mt-4 mb-1 ${compact ? 'text-sm' : 'text-lg mt-8 mb-2'}`}>
+    <h3 className={`text-[#261A54] font-semibold mt-4 mb-1 ${compact ? 'text-sm' : 'text-[36px] leading-[49px] mt-12 mb-4'}`}>
       {children}
     </h3>
   )
 
   const P = ({ children }) => (
-    <p className={`text-[#1B1B1B] leading-relaxed mb-2 ${compact ? 'text-sm' : 'text-base mb-3'}`}>
+    <p className={`text-[#1B1B1B] leading-relaxed mb-2 ${compact ? 'text-sm' : 'text-[22px] leading-[30px] mb-3'}`}>
       {children}
     </p>
   )
 
   const Li = ({ children }) => (
-    <li className={`text-[#1B1B1B] leading-relaxed mb-1 ${compact ? 'text-sm' : 'text-base'}`}>
+    <li className={`text-[#1B1B1B] leading-relaxed mb-1 ${compact ? 'text-sm' : 'text-[22px] leading-[30px]'}`}>
       {children}
     </li>
   )

@@ -24,6 +24,31 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+
+  /* Širina kolone sadržaja.
+   *
+   * Dizajn je rađen na okviru od 1920 sa marginama od 240, dakle kolona je
+   * 1440. `left: 240px` je najčešća leva ivica na svakoj stranici, a
+   * `calc(50% - 1440px/2)` se ponavlja kroz Početnu, Kalendar, O nama, Blog,
+   * Događaje i Prijatelje.
+   *
+   * Dugo je ovde bilo 1400, prepisano na tridesetak mesta. Sada stoji na jednom
+   * mestu, pa se sve mere iz dizajna mogu prepisati doslovno, bez množenja
+   * činiocem 0,972 kojim su do sada svođene na užu kolonu. */
+  --nnb-kolona: 1440px;
+
+  /* Tirkizni sjaj u tamnim trakama.
+   *
+   * U dizajnu svaka tamna traka (#261A54) ima u sebi maskiranu elipsu sa ovim
+   * prelivom — otuda svetlija sredina koja se na sajtu nije videla, jer je
+   * traka bila ravne boje. Mereno na pikselima izvoza: sredina trake je
+   * (64, 117, 149), ivice tačno (38, 26, 84).
+   *
+   * Elipsa je uvek ista, menja joj se samo veličina i koliko je izvučena iznad
+   * trake; zato mere idu u `background-size` i `background-position`, a preliv
+   * stoji ovde. Mere su u `vw` da prate širinu ekrana, sa gornjom granicom na
+   * vrednosti iz dizajna (okvir 1920). */
+  --nnb-sjaj: radial-gradient(44.51% 44.51% at 50% 50%, rgba(86, 196, 207, 0.6) 0%, rgba(38, 26, 84, 0.6) 100%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -34,70 +59,11 @@
   }
 }
 
-.profile-hero {
-  width: 100%;
-  display: grid;
-  place-items: center;
-  background: radial-gradient(circle at 50% 50%, rgba(86, 196, 207, 0.35) 0%, rgba(38, 26, 84, 1) 65%);
-  padding-top: 150px;
-  padding-bottom: 70px;
-}
-
-.profile-hero-inner {
-  width: 100%;
-  max-width: 1400px;
-}
-
-.profile-hero-left {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  gap: 26px;
-}
-
-.profile-hero-avatar-wrap {
-  transform: translateY(65px);
-}
-
 /* NextUI Avatar: data-[loaded=true]:opacity-100 klasa se ne generiše u
    Tailwind buildu jer NextUI dodaje klasu dinamički na runtime.
    Ovaj override osigurava da se slika prikaže kada je učitana. */
 img[data-loaded="true"] {
   opacity: 1;
-}
-
-.profile-hero-avatar {
-  width: 223px;
-  height: 223px;
-  background: #261A54;
-  padding: 36px;
-}
-
-.profile-hero-text {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-bottom: 26px;
-}
-
-.profile-hero-brand {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 48px;
-  font-weight: 700;
-  line-height: 65.36px;
-  color: #ffffff;
-}
-
-.profile-hero-type {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 24.51px;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.profile-content {
-  padding-top: 60px;
 }
 
 body {
@@ -157,15 +123,21 @@ body {
 
  /* Pravni modal ima svoj okvir — `nnb-modal-base` nameće fiksnih 982px visine,
     a ovaj treba da raste sa sadržajem kad se „pročitaj više" proširi. */
+ /* Po dizajnu je ovaj modal širok koliko i kolona sadržaja — bela ploča ide od
+    x 240 do 1680 — a tekst u njemu stoji na 426, dakle 186px odmaka sa svake
+    strane. Zaobljenje je 50, kao kod ostalih prozora iz istog toka. Ranije je
+    modal bio 1000 širok sa zaobljenjem 32. */
  .nnb-legal-modal-base {
-   width: min(1000px, calc(100vw - 2rem)) !important;
+   width: min(1440px, calc(100vw - 2rem)) !important;
    max-width: none !important;
    max-height: min(86vh, 860px) !important;
    margin: 0 !important;
    background: #ffffff !important;
-   border-radius: 32px !important;
-   /* Blagi gradijent ka donjem desnom uglu, kao na dizajnu */
-   background-image: radial-gradient(120% 90% at 100% 100%, #e6f7f8 0%, #ffffff 55%) !important;
+   border-radius: 50px !important;
+   /* Sjaj ka donjem desnom uglu, kao na dizajnu. Mereno na izvozu: u tom uglu
+      je (206, 238, 241), što je tirkiz na 30% preko bele; do levog i gornjeg
+      ruba se gubi. Ranije pogođeno „od oka" sa #e6f7f8. */
+   background-image: radial-gradient(circle at 100% 100%, rgba(86, 196, 207, 0.3) 0%, rgba(86, 196, 207, 0) 70%) !important;
  }
 
  /* NextUI modal base — same frame as WelcomeModal */
@@ -207,17 +179,20 @@ body {
    border-radius: 3px;
  }
 
+ /* Polja u modalima za prijavu i registraciju: po dizajnu 391 × 60 sa
+    zaobljenjem od 100px, natpis 18px uvučen 41px. Ranije 15px slova,
+    zaobljenje 30 i odmak 20 — polje je ispadalo 49px visoko. */
  .auth-modal input,
  .auth-modal select {
    font-family: 'Open Sans', sans-serif;
    font-weight: 400;
-   font-size: 15px;
-   border-radius: 30px;
+   font-size: 18px;
+   border-radius: 100px;
    line-height: 25px;
  }
 
  .auth-modal input:not([type='radio']):not([type='checkbox']):not([type='file']) {
-   padding: 12px 20px;
+   padding: 17px 41px;
    background: #f0f0f0;
    border: none;
    outline: none;
@@ -417,6 +392,12 @@ h6 {
   border: 1px solid #ffffff;
   .text {
       color: #ffffff;
+      /* „Postani izlagač" je u dizajnu 15px sa redom od 20px — natpis je 103px
+         širok u dugmetu od 172, dakle 35px odmaka sa svake strane. Zajednička
+         mera za sva dugmad je 18px, pa se ovde zadaje izričito.
+         Isto dugme stoji i u padajućem meniju na manjim ekranima. */
+      font-size: 15px;
+      line-height: 20px;
   }
   &:hover,
   &:active {
@@ -441,6 +422,51 @@ h6 {
 
 .header-profile-name {
   white-space: nowrap;
+}
+
+/* Spisak naloga u mobilnom meniju.
+ *
+ * NextUI ga iscrtava u zasebnom sloju izvan menija, pa mu se širina ne može
+ * zadati odatle — otud razred i pravilo ovde. Zatečenih 200px je mera za kratak
+ * naziv; sa dužim nazivom brenda spisak je ostajao uzak nasred širokog praznog
+ * prostora. Gornja granica ga drži unutar istog odmaka od ivice kao i ostatak
+ * sajta. */
+/* Hamburger meni se koristi sve do 1299px, pa ista pravila važe na telefonu i
+   na tabletu — razlika je samo u tome gde se šireći sadržaj zaustavlja.
+ *
+ * Na telefonu kolona uzima ceo red umanjen za odmak. Na tabletu je red i preko
+ * 1200px širok: spisak od sedam stavki i dugmad bi lebdeli u praznini, a red sa
+ * nalogom bi se razvukao preko celog ekrana. Zato se kolona zaustavlja na
+ * 600px, uz levu ivicu — i spisak i nalog dele istu širinu i isto poravnanje. */
+@media screen and (max-width: 1299px) {
+  .navigate-menu-kolona,
+  .navigate-menu-podnozje {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .nalog-meni {
+    min-width: min(88vw, calc(100vw - 2 * var(--nnb-odmak)), 600px);
+    max-width: min(calc(100vw - 2 * var(--nnb-odmak)), 600px);
+  }
+
+  /* Dugme koje otvara spisak uzima ceo red menija, pa avatar i strelica stoje
+     uz njegovu desnu ivicu umesto da se zbiju uz naziv. Naziv preuzima sav
+     slobodan prostor i skraćuje se sa tri tačke kad ga nestane — pun naziv
+     ionako stoji u prvoj stavci spiska, zajedno sa imenom i prezimenom. */
+  .navigate-menu-wrapper .header-profile-trigger {
+    width: 100%;
+  }
+
+  .navigate-menu-wrapper .header-profile-name {
+    flex: 1;
+    /* Bez ovoga se flex stavka ne da skupiti ispod širine svog teksta, pa
+       skraćivanja nema — dugačak naziv bi i dalje gurao strelicu iz reda. */
+    min-width: 0;
+    max-width: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .header-profile-caret {
@@ -528,135 +554,6 @@ h6 {
   }
 }
 
-.submit-button-outlined-dark {
-  border: 1px solid #1B1B1B;
-  background-color: #261A54;
-  border-radius: 30.5px;
-  height: 53px;
-  .text {
-      color: #ffffff;
-  }
-}
-
-.icon-button {
-  width: 204px;
-  height: 204px;
-  gap: 0px;
-
-
-  &__orange {
-      background: #F18020;
-  }
-  &__light {
-      background: #56C4CF;
-  }
-  &__yellow {
-      background: #FACE06;
-  }
-}
-.outlined-icon-button {
-  align-self: flex-end;
-  margin-right: 20px;
-  background-color: transparent;
-  width: 50px;
-  height: 60px;
-}
-
-.title-description-button {
-  background: transparent;
-  width: 465px;
-  height: 204px;
-  gap: 0px;
-  border-radius: 102px 0px 0px 0px;
-  border: 1px  solid #ffffff;
-
-  &__orange:hover {
-    background-color: #F18020;
-    color: #261A54;
-  }
-  &__light:hover {
-    background: #56C4CF;
-    color: #261A54;
-  }
-  &__yellow:hover {
-    background: #FACE06;
-    color: #261A54;
-  }
-
-  &__title {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 64px;
-    font-weight: 700;
-    line-height: 87.16px;
-    text-align: center;
-    color: #FFFFFF;
-
-  }
-  &__description {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 27px;
-    font-weight: 400;
-    line-height: 36.77px;
-    text-align: center;
-    color: #FFFFFF;
-  }
-}
-
-.card-component {
-  display: flex;
-  flex-direction: column;
-  justify-items: center;
-  padding-bottom: 60px;
-
-  &-author {
-    padding-top: 52px;
-    max-width: 438px;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 18px;
-    font-weight: 400;
-    line-height: 24.51px;
-    text-align: left;
-    color: #1B1B1B;
-  }
-  &-title {
-    padding: 30px 0;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 36px;
-    font-weight: 700;
-    line-height: 49.03px;
-    text-align: left;
-    color: #261A55;
-  }
-  &-title-blog {
-    padding-top: 6px;
-    padding-bottom: 30px;
-    max-width: 438px;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 36px;
-    font-weight: 700;
-    line-height: 49.03px;
-    text-align: left;
-    color: #1B1B1B;
-  }
-
-  &-creation-date {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 18px;
-    font-weight: 400;
-    line-height: 24.51px;
-    text-align: left;
-    color: #808080;
-  }
-}
-
-.our-team-title {
-  font-family: 'MADE GoodTime Script', sans-serif;
-  font-size: 64px;
-  font-weight: 400;
-  line-height: 87.04px;
-  text-align: left;
-  color: #261A54;
-}
 /* Linija koja razdvaja sekcije.
 
    Dve stvari nisu bile po dizajnu. Debljina: `border: 1px` na `<hr>` daje
@@ -669,7 +566,7 @@ h6 {
 .section-divider,
 .section-divider-light {
   width: 100%;
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   margin-left: auto;
   margin-right: auto;
   height: 1px;
@@ -683,101 +580,6 @@ h6 {
 .section-divider-light {
   background-color: #ffffff;
 }
-.footer-container {
-  display: flex;
-  flex-direction: column;
-  left: 0;
-  bottom: 0;
-  padding: 75px 0;
-  color: #ffffff;
-  @media screen and (max-width: 599px) {
-    padding: 20px 0;
-    align-items: center;
-  }
-}
-
-.footer-subsection {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px;
-  @media screen and (max-width: 599px) {
-    max-width: 420px;
-    grid-template-columns: 1fr;
-    justify-self: center;
-  }
-}
-
-.footer-logo {
-  @media screen and (max-width: 599px) {
-    grid-template-columns: 1fr;
-    justify-self: center;
-    img {
-        max-width: 200px;
-    }
-  }
-}
-
-.footer-divider {
-  border-top: 1px solid #ffffff;
-  border-left: 0px; 
-  border-right: 0px; 
-  border-bottom: 0px;
-  max-width: 1766px;
-  margin: 20px 0;
-}
-
-.footer-shadow {
-  box-shadow: 0px 4px 100px -25px #56C4CF;
-}
-
-.our-team-container {
-  padding: 90px 20px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: auto auto;
-
-  @media screen and (max-width: 1200px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media screen and (max-width: 599px) {
-    grid-template-columns: repeat(1, 1fr);
-  }
-  
-  .card-container {
-    padding: 0 20px;
-    background-color: transparent;
-  }
-  .card-item {
-    background-color: transparent;
-    text-align: center;
-  }
-  
-  /* Style to lower the second and fourth items in each row */
-  .card-container:nth-child(2),
-  .card-container:nth-child(4),
-  .card-container:nth-child(6),
-  .card-container:nth-child(8) {
-    margin-top: 53px;
-  }
-
-  .team-card-gradient {
-    background: radial-gradient(44.51% 44.51% at 50% 50%, rgba(86, 196, 207, 0.4) 0%, rgba(240, 240, 240, 0.4) 100%) left #f0f0f0;
-    background-position-x: -100px;
-  }
-  .team-card-gradient:nth-child(4),
-  .team-card-gradient:nth-child(8) {
-    background-repeat: no-repeat;
-  }
-
-    /* this is example for circle gradient which is positioned 3/4 from top and 0 from left of the div */
-    /* .my-div {
-        width: 100%;
-        height: 400px; /* Adjust the height as needed */
-        /* background: radial-gradient(circle at 0 75%, #FF5733, #C70039); */
-    /* }  */
-    
-}
-
 /* Mreža kartica objava.
  *
  * Pravila su ranije stajala ugnježdena u `.blogs-container`, pa su važila samo
@@ -792,8 +594,13 @@ h6 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: auto auto;
-  gap: 28px;
-  max-width: 1400px;
+  /* Vodoravni razmak je iz dizajna: tri kartice po 445 sa razmakom 52 daju
+     tačno kolonu od 1440 (Blog, Projekti i Događaji koriste isti raspored).
+     Uspravni ostaje 28 — uz `padding-bottom: 60px` koji nosi sama kartica to
+     je 88px između redova, koliko je i u dizajnu. */
+  column-gap: 52px;
+  row-gap: 28px;
+  max-width: var(--nnb-kolona);
   width: 100%;
 }
 
@@ -813,21 +620,15 @@ h6 {
   background-color: transparent;
   text-align: center;
 }
-.blog-title {
-  font-family: 'MADE GoodTime Script', sans-serif;
-  font-size: 64px;
-  font-weight: 400;
-  line-height: 87.04px;
-  text-align: left;
-  color: #261A54;
-}
+/* Izvoz: naslov objave je 64/87 (dva reda daju 174, koliko blok i jeste) i
+   `#1B1B1B`. Bio je red od 100% i tamnoplava boja. */
 .single-blog-title {
   font-family: 'Open Sans', sans-serif;
   font-size: 64px;
   font-weight: 700;
   text-align: left;
-  line-height: 100%;
-  color: #261A54;
+  line-height: 87px;
+  color: #1B1B1B;
   overflow-wrap: anywhere;
 }
 .single-blog-content {
@@ -952,53 +753,6 @@ h6 {
   }
 }
 
-.vertical-reverse {
-  display: flex;
-  flex-direction: column-reverse;
-}
-
-.contact-section {
-  &-title {
-    font-family: 'MADE GoodTime Script', sans-serif;
-    font-size: 64px;
-    font-weight: 400;
-    line-height: 64px;
-    text-align: left;
-    color: #261A54;
-    text-align: left;
-  }
-}
-
-.contact-form {
-  border-radius: 30px;
-  .office-contact {
-    display: flex;
-    flex-direction: column;
-    &-section-title {
-      font-family: 'Open Sans', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 20.43px;
-      text-align: left;
-    }
-    &-section-content {
-      font-family: 'Open Sans', sans-serif;
-      font-size: 15px;
-      font-weight: 400;
-      line-height: 20.43px;
-      text-align: left;
-    }
-  }
-  &-fields {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    @media screen and (max-width: 1023px) {
-      grid-template-columns: repeat(1, 1fr);;
-    }
-  }
-}
-
 .contact-form-inputs input[type='text'],
 .contact-form-inputs input[type='email'],
 .contact-form-inputs textarea {
@@ -1020,15 +774,93 @@ h6 {
   outline: none;
 }
 
+/* Donji, tamni deo Početne — jedna podloga za utiske, newsletter, Viber,
+   pitanja i kontakt, sa jednom elipsom sjaja u sebi (izvoz: pravougaonik
+   1920 × 4082 od y 5735, elipsa 2384 pomerena 536 levo od sredine, 82 od vrha
+   sekcije). Dok je svaka sekcija crtala svoje, na spojevima su se videle
+   vodoravne linije. */
+/* Luk prelaza — u izvozu se od ivice ekrana do sredine diže 135px */
+.pocetna-svetla-zona {
+  border-radius: 50% 50% 0 0 / min(7.03vw, 135px) min(7.03vw, 135px) 0 0;
+}
+
+.pocetna-tamni-deo {
+  /* Isti luk, samo naviše: tamna zona ulazi u svetlu po sredini. Odmak gore
+     poništava pomeranje, da sadržaj ostane gde je bio. */
+  border-radius: 50% 50% 0 0 / min(7.03vw, 135px) min(7.03vw, 135px) 0 0;
+  margin-top: max(-7.03vw, -135px);
+  padding-top: min(7.03vw, 135px);
+  position: relative;
+  z-index: 2;
+
+  background-color: #261A54;
+  background-image: var(--nnb-sjaj);
+  background-repeat: no-repeat;
+  background-size: min(124.1667vw, 2384px) min(124.1667vw, 2384px);
+  background-position: calc(50% - min(90vw, 1728px)) min(4.2708vw, 82px);
+}
+
+/* Kontakt stranica — razmaci među sekcijama po izvozu: 90 između pitanja i
+   kartice sa formom, i 90 između kartice i Viber trake. Zatečeno je bilo 192
+   (96 odmaka sekcije + 96 margine kartice) i svega 20. */
+.kontakt-stranica .contact-section {
+  padding-top: 0;
+}
+
+.kontakt-stranica .contact-section > div {
+  margin-top: 90px;
+}
+
+.kontakt-stranica .viber-community-container {
+  margin-top: 90px;
+}
+
+/* Viber traka se koristi na četiri mesta, a odmak od ivice joj je do sada davao
+   samo omotač na Početnoj (`.newsletter-viber-red`). Na kontaktu i na profilu
+   („Moje rezervacije") stajala je sama u mreži stranice i na telefonu dodirivala
+   obe ivice. Mera ide na samu traku, a omotači koji je već imaju izuzimaju se —
+   `!important` zbog toga što profil zadaje najveću širinu inline. */
 .viber-community-container {
-  border-radius: 20px;
+  max-width: min(var(--nnb-kolona), 100% - 2 * var(--nnb-odmak)) !important;
+}
+
+.newsletter-viber-red .viber-community-container,
+.nnb-gutter .viber-community-container {
+  max-width: var(--nnb-kolona) !important;
+}
+
+/* Red sa Viber trakom unutar newslettera — široka koliko i kolona sadržaja */
+.newsletter-viber-red {
+  width: 100%;
+  max-width: var(--nnb-kolona);
+  margin: 0 auto;
+  padding: 0 0 60px;
+
+  /* Odmak sa strane treba tek kad traka dodira ivicu ekrana. Traka je šira od
+     kolone sadržaja, pa joj odmak treba ranije (1487) nego ostatku sajta. */
+  @media screen and (max-width: 1487px) {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  /* Od 1431 naniže važi zajednička mera — vidi `--nnb-odmak`. */
+  @media screen and (max-width: 1431px) {
+    padding-left: var(--nnb-odmak);
+    padding-right: var(--nnb-odmak);
+  }
+}
+
+/* Izvoz: traka 1440 × 157 sa zaobljenjem 30, natpis 36/49 na 700, dugme
+   192 × 53. Ranije: zaobljenje 20, visina 150, natpis 16/500, dugme 172. */
+.viber-community-container {
+  border-radius: 30px;
   overflow: hidden;
   width: 100%;
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   max-height: 157px;
   margin-top: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  height: 150px;
+  height: 157px;
   align-content: center;
   padding-right: 50px;
   /* 50px odmaka je mera za široku traku; na užoj oduzima prostor natpisu. */
@@ -1089,8 +921,30 @@ h6 {
 .viber-community-middle {
   display: flex;
   align-items: center;
-  gap: 10px;
+  /* Izvoz: ikonica se završava na 801, natpis počinje na 837 */
+  gap: 36px;
   padding: 0 15px;
+
+  @media screen and (max-width: 1299px) {
+    gap: 16px;
+  }
+}
+
+.viber-community-icon {
+  width: 68px;
+  height: 68px;
+
+  @media screen and (max-width: 1299px) {
+    width: 40px;
+    height: 40px;
+  }
+  @media screen and (max-width: 599px) {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.viber-community-middle {
   @media screen and (max-width: 599px) {
     padding: 0;
     justify-content: center;
@@ -1124,12 +978,27 @@ h6 {
 
 .viber-community-text {
   font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 36px;
+  line-height: 49px;
+  font-weight: 700;
+
+  /* Na užoj traci se natpis od 36px lomi u tri reda, pa se smanjuje */
+  @media screen and (max-width: 1299px) {
+    font-size: 24px;
+    line-height: 33px;
+  }
+  @media screen and (max-width: 899px) {
+    font-size: 18px;
+    line-height: 25px;
+  }
+  @media screen and (max-width: 599px) {
+    font-size: 16px;
+    line-height: 22px;
+  }
 }
 
 .viber-button {
-  min-width: 172px;
+  min-width: 192px;
   height: 53px;
   border-radius: 30.5px;
   background-color: #261A54;
@@ -1284,10 +1153,41 @@ h6 {
   font-family: 'MADE GoodTime Script', sans-serif;
   font-size: 64px;
   font-weight: 400;
-  line-height: 87.04px;
+  /* Odnos, ne piksel: 64 × 1,36 = 87,04 — tačno mera iz dizajna, ali sada prati
+     veličinu slova. Sa zakucanih 87px naslov od 40px na telefonu je u dva reda
+     dobijao 174px visine, sa procepom većim od samog teksta. */
+  line-height: 1.36;
   text-align: left;
   color: #261A54;
 }
+
+/* Ime člana tima: u dizajnu pisano, 36px sa redom od 49px. Naslovi događaja i
+   objava ostaju Open Sans, pa se razlika nosi dodatkom na klasu. */
+/* Naslov kartice je u dizajnu 36/49 i staje u najviše dva reda (na Blogu je
+   tačno 98 visok, na Događajima 49). Naslovi iz administracije umeju da odu i u
+   četiri reda, pa su kartice u istom redu ispadale različite visine — zato se
+   odsecaju posle drugog reda, sa „…". Ime člana tima se ne odseca: ono je
+   kratko i ide u svom, pisanom fontu. */
+.card-component-title:not(.card-component-title--tim) .card-component-title-tekst,
+.card-component-title-blog .card-component-title-tekst {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Ime člana tima se ne odseca — raspon ostaje običan tekst */
+.card-component-title--tim .card-component-title-tekst {
+  display: inline;
+}
+
+.card-component-title--tim {
+  font-family: 'MADE GoodTime Script', sans-serif;
+  font-weight: 400;
+  line-height: 49px;
+  padding: 31px 0 0;   /* 31px ispod fotografije, po dizajnu */
+}
+
 .footer-container {
   display: flex;
   flex-direction: column;
@@ -1295,6 +1195,11 @@ h6 {
   bottom: 0;
   padding: 75px 0;
   color: #ffffff;
+  /* Sitan tekst u podnožju je po dizajnu 15px sa redom od 20px — kontakti,
+     linkovi na uslove, potpis i godina. Do sada je nasleđivao 16px sa `body`.
+     Spisak stranica je izuzetak i vraća se na 18px, vidi `.footer-list-item`. */
+  font-size: 15px;
+  line-height: 20px;
   @media screen and (max-width: 599px) {
     padding: 20px 0;
     align-items: center;
@@ -1336,20 +1241,30 @@ h6 {
 }
 
 .our-team-container {
-  padding: 90px 20px;
+  /* Po dizajnu: četiri kartice po 345 sa razmakom 20 daju tačno kolonu od 1440,
+     a prva počinje na levoj ivici kolone — otuda bez bočnog odmaka.
+
+     Razmak je ranije bio napravljen odmakom *unutar* svake kartice
+     (`padding: 0 20px`), pa se kartica sužavala umesto da se samo odmakne od
+     suseda: ispadala je 310 umesto 345. */
+  padding: 90px 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* `minmax(0, 1fr)`, a ne `1fr`: `1fr` ima podrazumevani najmanji iznos
+     `auto`, pa staza ne može da bude uža od `min-content` kartice. Na 320px je
+     kartica tražila 287, a sa odmacima 335 — i time celu stranicu „O nama"
+     vukla u vodoravni skrol. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: auto auto;
+  column-gap: 20px;
 
   @media screen and (max-width: 1200px) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   @media screen and (max-width: 599px) {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
-  
+
   .card-container {
-    padding: 0 20px;
     background-color: transparent;
   }
   .card-item {
@@ -1365,22 +1280,44 @@ h6 {
     margin-top: 53px;
   }
 
+  /* Sjaj oko kartice člana tima.
+   *
+   * U izvozu je to krug od 316 (Ellipse 6–13) sa središtem tačno na **donjem
+   * levom uglu fotografije**: središta su na x 243 / 605 / 970 / 1335, a to su
+   * leve ivice kartica, i na y 5581 / 5634, što je donja ivica fotografije
+   * (5138 + 443). Preliv je isti kao svuda, samo blaži — tirkiz 0,4 ka
+   * `rgba(240,240,240,0.4)`.
+   *
+   * Ranije je ovde stajao preliv razvučen preko cele kartice, pomeren 100px
+   * ulevo — pa je bio i krupniji i na pogrešnom mestu.
+   *
+   * Mere su u udelima širine kartice (345 u dizajnu): krug 316 = 91,6%, a
+   * donja ivica fotografije 443 = 128,4%. `margin-top` u procentima se računa
+   * od širine, pa prati karticu na svakoj širini ekrana. */
   .team-card-gradient {
-    background: radial-gradient(44.51% 44.51% at 50% 50%, rgba(86, 196, 207, 0.4) 0%, rgba(240, 240, 240, 0.4) 100%) left #f0f0f0;
-    background-position-x: -100px;
-  }
-  .team-card-gradient:nth-child(4),
-  .team-card-gradient:nth-child(8) {
-    background-repeat: no-repeat;
+    background: #f0f0f0;
+    position: relative;
   }
 
-    /* this is example for circle gradient which is positioned 3/4 from top and 0 from left of the div */
-    /* .my-div {
-        width: 100%;
-        height: 400px; /* Adjust the height as needed */
-        /* background: radial-gradient(circle at 0 75%, #FF5733, #C70039); */
-    /* }  */
-    
+  .team-card-gradient::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin-top: 128.4058%;
+    width: 91.594%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(44.51% 44.51% at 50% 50%, rgba(86, 196, 207, 0.4) 0%, rgba(240, 240, 240, 0.4) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Sadržaj kartice ide iznad sjaja */
+  .team-card-gradient > * {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* Pravila za `.blog-container` i `.blog-card` stoje iznad,
@@ -1389,7 +1326,8 @@ h6 {
   font-family: 'MADE GoodTime Script', sans-serif;
   font-size: 64px;
   font-weight: 400;
-  line-height: 87.04px;
+  /* Vidi `.our-team-title` — isti odnos, isti razlog. */
+  line-height: 1.36;
   text-align: left;
   color: #261A54;
 }
@@ -1456,7 +1394,9 @@ h6 {
 }
 
 .newsletter-wrapper {
-  background: linear-gradient(#56C4CF, #261A54);
+  /* Newsletter u dizajnu nema svoju podlogu — stoji na istoj tamnoj sekciji
+     kao utisci, Viber i pitanja. Podlogu i sjaj nosi `.pocetna-tamni-deo`. */
+  background: transparent;
   width: 100%;
   padding: 60px 0;
   @media screen and (max-width: 599px) {
@@ -1468,9 +1408,10 @@ h6 {
     align-items: center;
     justify-content: center;
     width: 100%;
-    max-width: 1400px;
+    max-width: var(--nnb-kolona);
     margin: 0 auto;
-    padding: 0 16px;
+    /* Zajednička mera odmaka — vidi `--nnb-odmak`. */
+    padding: 0 var(--nnb-odmak);
     position: relative;
   }
 
@@ -1502,20 +1443,24 @@ h6 {
     }
   }
 
+  /* Mere sa izvoza (okvir 1920): naslov 56/76 na y 7501, podnaslov 26/39 na
+     7572, polje 751 × 73 sa zaobljenjem 66,5 na 7642, saglasnost 553 široka na
+     7763. Ranije su stajale vrednosti pogođene od oka — 48, 18 i polje 620 × 45. */
   .newsletter-title {
     font-family: 'MADE GoodTime Script', sans-serif;
-    font-size: 48px;
+    font-size: 56px;
     color: #FFFFFF;
-    margin-bottom: 5px;
-    line-height: 1.2;
+    margin-bottom: 0;
+    line-height: 76px;
     text-align: center;
   }
 
   .newsletter-subtitle {
     font-family: 'Open Sans', sans-serif;
-    font-size: 18px;
+    font-size: 26px;
+    line-height: 39px;
     color: #FFFFFF;
-    margin-bottom: 25px;
+    margin-bottom: 31px;
     text-align: center;
   }
 
@@ -1523,7 +1468,8 @@ h6 {
     margin-bottom: 30px;
     justify-self: center;
     align-content: center;
-    max-width: 620px;
+    max-width: 751px;
+    width: 100%;
     padding-bottom: 110px;
   }
 
@@ -1532,19 +1478,22 @@ h6 {
     gap: 10px;
     margin-bottom: 15px;
     background: #FFFFFF;
-    border-radius: 30px;
+    height: 73px;
+    border-radius: 66.5px;
+    align-items: center;
     justify-content: center;
-    /* padding: 5px; */
-    
+
     .newsletter-email-field {
       flex: 1;
       background-color: transparent;
       color: #6b7280;
       border: none;
       outline: none;
-      padding: 0 16px;
+      /* Natpis u polju kreće 36 od leve ivice */
+      padding: 0 36px;
       font-family: 'Open Sans', sans-serif;
       font-size: 15px;
+      line-height: 20px;
     }
     .newsletter-email-field:focus {
       outline: none;
@@ -1552,19 +1501,22 @@ h6 {
       box-shadow: none;
     }
 
+    /* Dugme u izvozu: 136 × 73, naleže na desnu ivicu polja */
     .newsletter-button {
-      min-width: 110px;
-      height: 45px;
-      border-radius: 30px;
+      min-width: 136px;
+      height: 73px;
+      border-radius: 66.5px;
       background-color: #56C4CF;
       color: #FFFFFF;
       border: none;
-      /* margin-right: 5px; */
+      font-family: 'Open Sans', sans-serif;
+      font-size: 18px;
+      line-height: 25px;
       span {
         color: #ffffff;
         font-family: 'Open Sans', sans-serif;
         font-weight: 600;
-        font-size: 16px;
+        font-size: 18px;
       }
     }
   }
@@ -1629,14 +1581,37 @@ h6 {
   }
 }
 
+/* Mere su iz dizajna (okvir 1920): okvir 1440 × 617 na x 240, a pitanja u njemu
+   1340 široka na x 290 — dakle 50px odmaka sa svake strane. Pitanje počinje na
+   337, tj. 47px unutar svoje ploče, a krug sa plusom je 58 × 58 i stoji 22px od
+   njene desne ivice. Ploča je popunjena providnom tirkiznom (#56C4CF na 50%),
+   ne samo obrisana. */
 .faq-container {
   border: 1px solid #FFFFFF;
   border-radius: 30px;
   background: #56C4CF;
+  padding: 50px !important;
+
+  /* 50px je mera za ploču od 1440. Na telefonu bi od 375 ostalo 227 za samo
+     pitanje, pa se unutrašnji odmak smanjuje zajedno sa pločom. */
+  @media screen and (max-width: 1299px) {
+    padding: 32px !important;
+  }
+
+  @media screen and (max-width: 599px) {
+    padding: 20px !important;
+  }
+  /* NextUI svom `Accordion`-u dodaje `px-2`, pa je ploča pitanja ispadala 8px
+     uvučena sa svake strane — 1322 umesto 1340. */
+  .px-2 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
   &-accordion {
     border: 1px solid #261A54;
     border-radius: 30px;
-    padding: 10px;
+    background: rgba(86, 196, 207, 0.5);
+    padding: 0 22px 0 47px;
     h2 {
       font-family: 'Open Sans', sans-serif;
       font-size: 36px;
@@ -1760,9 +1735,18 @@ h6 {
   }
 }
 /* ── Header padding — kontrolisano ovde da može mobile override ── */
+/* Logotip je u izvozu na y 101 (192 × 60), a stavke menija na 116 — obe sredine
+   padaju na ~130. Red zato kreće na 101 i poravnava se po sredini; donji odmak
+   je za toliko veći da ukupna visina ostane 237, koliko računa
+   `--nnb-zaglavlje`. Ranije je ceo red počinjao na 116, pa je logotip stajao
+   15px prenisko. */
 .nnb-header {
-  padding-top: 116px;
-  padding-bottom: 60px;
+  padding-top: 101px;
+  padding-bottom: 75px;
+}
+
+.nnb-header .header-subcontainer {
+  align-items: center;
 }
 
 @media screen and (max-width: 599px) {
@@ -1815,7 +1799,7 @@ h6 {
     flex-direction: row;
     justify-content: space-between;
     width: 100%;
-    max-width: 1400px;
+    max-width: var(--nnb-kolona);
     justify-self: center;
     .main-list {
       display: flex;
@@ -1825,11 +1809,15 @@ h6 {
     }
     .header-items-list {
       display: flex;
-      /* U dizajnu je razmak 50px, ali tada osam stavki plus logo plus desna
-         grupa ulogovanog korisnika premaše kolonu od 1400 — i to na svakoj
-         širini, jer je kolona fiksna. Ranije se to samo nije videlo: flex je
-         stiskao „O nama" u dva reda umesto da red izađe iz okvira. Sa 40px
-         sve staje, uz rezervu za duže ime naloga. */
+      /* U dizajnu je razmak 55px, ali dizajn prikazuje samo neulogovano stanje.
+         Kod ulogovanog korisnika desno stoji i „Rezervišite tezgu" sa imenom i
+         slikom naloga — ta grupa počinje oko x 1283, pa između logotipa (do
+         432) i nje ostaje 851px. Osam stavki na 18px zauzima 513px, što sa
+         razmakom od 55 daje red od 898 — 47px preko. Sa 40px red je 793 i
+         ostaje rezerva za duže ime naloga.
+
+         Ranije se to nije videlo kao prelivanje: flex je stiskao „O nama" u dva
+         reda umesto da red izađe iz okvira. */
       gap: 40px;
       text-align: left;
       justify-items: space-between;
@@ -1849,6 +1837,13 @@ h6 {
         text-decoration: none;
         color: #ffffff;
         white-space: nowrap;
+        /* Po dizajnu 18px sa redom od 25px. Ovde ranije nije stajala nijedna
+           mera, pa je stavka nasleđivala 16px sa `body` — 18px je imao samo
+           padajući meni na manjim ekranima. */
+        font-family: 'Open Sans', sans-serif;
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 25px;
       }
       .header-item:hover {
         color: #ffffff;
@@ -1881,9 +1876,17 @@ h6 {
     }
   }
 }
+/* Dve kolone spiska: u izvozu prva kreće na 240, druga na 379, a najšira
+   stavka u prvoj („DOGAĐAJI") je 86 — dakle 53 razmaka među kolonama. Bile su
+   priljubljene. */
 .footer-list-container {
   display: flex;
   flex-direction: row;
+  gap: 53px;
+
+  @media screen and (max-width: 599px) {
+    gap: 24px;
+  }
 }
 .footer-list-section {
   display: flex;
@@ -1891,10 +1894,16 @@ h6 {
 }
 
 
+/* Spisak stranica u podnožju: 18px sa redom od 25px, a stavke se smenjuju na
+   svakih 36px — otuda 5.5px odmaka gore i dole. Ranije je bilo 10px odmaka sa
+   svih strana i nasleđenih 16px, pa je korak ispadao 44px, a prva kolona je
+   počinjala 10px unutar kolone sadržaja umesto tačno na njenoj ivici. */
 .footer-list-item {
-  padding: 10px;
+  padding: 5.5px 0;
   break-inside: avoid;
   text-transform: uppercase;
+  font-size: 18px;
+  line-height: 25px;
 }
 
 /* Kontakti u footeru su linkovi (mailto:/tel:) — izgled ostaje isti kao ranije,
@@ -1936,6 +1945,14 @@ a.office-contact-section-content:focus-visible {
   text-align: left;
   color: #1B1B1B; /*var(--black);*/
 }
+/* Stranica kalendara za prijavljenog izlagača — u izvozu
+   `kalendar--ulogovan-korisnik` naziv meseca je 36/49, dok je za posetioca
+   (i na početnoj) 26/35. */
+.calendar-title--veliki {
+  font-size: 36px;
+  line-height: 49px;
+}
+
 .calendar-buttons {
   border-radius: 24px;
   border: 1px solid #1B1B1B;
@@ -1962,7 +1979,7 @@ a.office-contact-section-content:focus-visible {
 
 .about-us-container {
   width: 100%;
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2026,7 +2043,7 @@ a.office-contact-section-content:focus-visible {
    bela boja, 18px, obostrano poravnanje. Širina prati hero kontejner (1400px). */
 .about-us-intro-text {
   width: 100%;
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   padding: 0 40px;
   color: #ffffff;
   font-size: 18px;
@@ -2150,6 +2167,32 @@ a.office-contact-section-content:focus-visible {
  * jednoj svojoj ivici, stoje jedna uz drugu bez razmaka, pa spoj ostaje prav.
  * Isto važi i kad se na telefonu slože jedna ispod druge: okvir i dalje
  * zaobljava samo svoja četiri ugla. */
+/* Tamna zona na stranici projekta — isti sjaj kao hero trake na podstranicama
+   (elipsa 1536 × 1536, vrh −815), ali bez odsecanja: sadržaj sme da pređe
+   preko donje ivice. */
+.projekat-tamna-zona {
+  background-image: var(--nnb-sjaj);
+  background-repeat: no-repeat;
+  background-size: min(80vw, 1536px) min(80vw, 1536px);
+  background-position: center max(-42.4479vw, -815px);
+}
+
+/* Glavna slika projekta prelazi preko donje ivice tamne zone. U izvozu se ona
+   završava na 2812, a slika (1440 × 751 na y 2106) na 2857 — dakle viri 45, što
+   je 3,125% njene širine. Mera ide u procentima jer se procenat margine računa
+   od širine roditelja (a to je ovde širina slike), pa preklop ostaje isti udeo
+   na svakoj širini ekrana. Uz to se poništava i donji odmak tamne zone (80). */
+.projekat-glavna-slika {
+  position: relative;
+  z-index: 2;
+  margin-bottom: calc(-80px - 3.125%);
+}
+
+.projekat-svetli-deo {
+  position: relative;
+  z-index: 1;
+}
+
 .projekat-uvodne-slike {
   display: grid;
   grid-template-columns: repeat(var(--broj-slika, 2), minmax(0, 1fr));
@@ -2197,9 +2240,11 @@ a.office-contact-section-content:focus-visible {
   }
 }
 
+/* Na telefonu jedna slika u redu. Sličice se ne otvaraju niti uvećavaju, pa od
+   dve u redu nema koristi — samo su upola manje i teže se vidi šta je na njima. */
 @media screen and (max-width: 599px) {
   .projekat-galerija {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -2258,9 +2303,20 @@ a.office-contact-section-content:focus-visible {
 .contact-section-title {
   display: block;
   width: 100%;
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   margin-left: auto;
   margin-right: auto;
+}
+
+/* Bela kartica kontakt forme bila je `w-full` bez ikakve gornje granice ispod
+   1300px, pa je na telefonu dodirivala obe ivice ekrana — za razliku od naslova
+   sekcije i uvodne rečenice iznad nje, koji odmak imaju.
+
+   `min()` čini oba posla odjednom: na širokom ekranu drži kolonu od 1440, a na
+   uskom se povlači za zajednički odmak sa svake strane. Kartica je u mreži sa
+   `justify-items: center`, pa uža ostaje po sredini. */
+.contact-from {
+  max-width: min(var(--nnb-kolona), 100% - 2 * var(--nnb-odmak));
 }
 
 /* Uvodna rečenica u okviru bele Viber trake.
@@ -2273,7 +2329,7 @@ a.office-contact-section-content:focus-visible {
   max-height: none;
   min-height: 150px;
   border-radius: 30px;
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   padding: 0 0 0 50px;
   margin-top: 0;
 }
@@ -2345,30 +2401,142 @@ a.office-contact-section-content:focus-visible {
   }
 }
 
-.nnb-gutter {
-  padding-left: 16px;
-  padding-right: 16px;
+/* ── Odmak sadržaja od ivice ekrana ────────────────────────────────────────
+ *
+ * Jedna mera za ceo sajt, u promenljivoj, da se ne bi razilazila od stranice do
+ * stranice. Zatečeno stanje na telefonu bilo je: zaglavlje 0, pitanja 0,
+ * kartice i newsletter 16, blog detalj i Viber 24, stranica projekta 60.
+ *
+ *   ≥ 1432   0   kolona od 1440 staje u ekran, odmak nije potreban
+ *   1300–1431  16   toliko fali da kolona ne dodiruje ivicu
+ *   600–1299   40
+ *   < 600      24
+ *
+ * Preko 1300 mere ostaju onakve kakve su merene sa izvoza; menja se samo ono
+ * što dizajn nije pokrivao. */
+:root {
+  --nnb-odmak: 0px;
 }
 
-/* Isti odmak dobijaju i naslovi sekcija i mreže kartica, koji nemaju gde da
-   prime klasu jer se stil postavlja preko postojećih klasa. */
+@media screen and (max-width: 1431px) {
+  :root {
+    --nnb-odmak: 16px;
+  }
+}
+
+@media screen and (max-width: 1299px) {
+  :root {
+    --nnb-odmak: 40px;
+  }
+}
+
+@media screen and (max-width: 599px) {
+  :root {
+    --nnb-odmak: 24px;
+  }
+}
+
+.nnb-gutter {
+  padding-left: var(--nnb-odmak);
+  padding-right: var(--nnb-odmak);
+}
+
+/* ── Newsletter na telefonu ───────────────────────────────────────────────────
+ *
+ * U dizajnu su polje i dugme u jednoj beloj piluli: polje ima 36px odmaka sa
+ * svake strane, dugme je najmanje 136 široko. Na ekranu od 320 kolona sadržaja
+ * je 272, a samo to dvoje traži 329 — polje ne može ispod svoje urođene širine,
+ * pa je newsletter razvlačio celu Početnu u vodoravni skrol.
+ *
+ * Na telefonu zato idu jedno ispod drugog, u istoj beloj piluli. */
+@media screen and (max-width: 599px) {
+  .newsletter-input-group {
+    flex-direction: column;
+    height: auto;
+    border-radius: 30px;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .newsletter-input-group .newsletter-email-field {
+    width: 100%;
+    /* Bez ovoga polje zadržava urođenu širinu i ne da se skupiti. */
+    min-width: 0;
+    height: 52px;
+    padding: 0 20px;
+  }
+
+  .newsletter-input-group .newsletter-button {
+    width: 100%;
+    min-width: 0;
+    height: 52px;
+  }
+}
+
+/* Hamburger na telefonu stoji apsolutno uz levu ivicu trake. Dugme ima i svoj
+   odmak od 8px (`px-2`), pa se od zajedničke mere oduzima toliko da ikonica
+   padne tačno u istu liniju kao i sadržaj ispod. */
+@media screen and (max-width: 599px) {
+  .header-hamburger {
+    left: calc(var(--nnb-odmak) - 8px);
+  }
+}
+
+/* Kolona sadržaja na stranici jednog projekta. Na desktopu ostaje 60px koliko
+   je mereno sa izvoza; ispod 1300 prelazi na zajedničku meru. */
+.projekat-kolona {
+  padding-left: 60px;
+  padding-right: 60px;
+}
+
+@media screen and (max-width: 1299px) {
+  .projekat-kolona {
+    padding-left: var(--nnb-odmak);
+    padding-right: var(--nnb-odmak);
+  }
+}
+
+/* Isti odmak dobijaju i naslovi sekcija, crte ispod njih i mreže kartica, koji
+   nemaju gde da prime klasu jer se stil postavlja preko postojećih klasa. */
 .our-team-title,
 .blog-title,
 .blogs-container .blog-container,
 .blogs-container .our-team-container {
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: var(--nnb-odmak);
+  padding-right: var(--nnb-odmak);
 }
 
-@media screen and (min-width: 1432px) {
-  .nnb-gutter,
-  .our-team-title,
-  .blog-title,
-  .blogs-container .blog-container,
-  .blogs-container .our-team-container {
-    padding-left: 0;
-    padding-right: 0;
-  }
+/* Crta ispod naslova sekcije mora da prati naslov, inače naslov bude uvučen a
+   crta ide od ivice do ivice. Ovde ne pomaže odmak: sama crta je pozadina
+   elementa, a pozadina se crta i ispod odmaka — vidi se ista linija. Zato se
+   skraćuje širina, a automatske margine je drže po sredini. */
+.section-divider,
+.section-divider-light {
+  width: calc(100% - 2 * var(--nnb-odmak));
+}
+
+/* Naslovi sekcija su u kodu `span`-ovi, dakle redni elementi. Bočni odmak na
+   rednom elementu ne pomera prvi red onako kako se očekuje — „Kalendar
+   događaja" je zbog toga ostajao na samoj ivici iako je odmak bio zadat. Oni
+   ionako stoje sami u redu, sa crtom ispod sebe. */
+.our-team-title,
+.blog-title {
+  display: block;
+}
+
+/* Dvostruki odmak: naslov koji već stoji u omotaču sa `nnb-gutter` dobijao bi
+   meru dvaput (na Početnoj je „Blog" ispadao na 48 umesto na 24). */
+.nnb-gutter .our-team-title,
+.nnb-gutter .blog-title,
+.paketi-sekcija .blog-title {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.nnb-gutter .section-divider,
+.nnb-gutter .section-divider-light,
+.paketi-sekcija .section-divider {
+  width: 100%;
 }
 
 /* ─── Povratak na vrh ──────────────────────────────────────────────────── */
@@ -2422,11 +2590,12 @@ a.office-contact-section-content:focus-visible {
 
 /* Zaglavlje je iznad 1432px široko 1400px i centrirano, pa mu sa strane ostaje
    po 20px. Ispod te širine se razvlači do ivica, i logo levo i ime naloga desno
-   dodiruju ekran. Isti odmak vraća sklad. */
+   dodiruju ekran. Isti odmak vraća sklad — i to onaj zajednički celom sajtu,
+   `--nnb-odmak`, da zaglavlje ne bi bilo uvučeno drugačije od sadržaja ispod. */
 @media screen and (max-width: 1431px) {
   .header-container .header-subcontainer {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: var(--nnb-odmak);
+    padding-right: var(--nnb-odmak);
   }
 }
 
@@ -2474,28 +2643,45 @@ a.office-contact-section-content:focus-visible {
     position: relative; 
     width: 100%; 
   }
+  /* Staklena kartica sa rečju organizatorke.
+   *
+   * Po dizajnu je 710px široka i njena desna ivica stoji 23px unutar kolone
+   * sadržaja. Ranije je bila zadata kao `width: 40%` uz `left: 68%` i pomeraj
+   * za pola širine — a taj procenat se računa prema koloni od 1400, ne prema
+   * ekranu, pa je ispadala 560px umesto 710. Uža kartica prelama isti tekst u
+   * više redova, pa je i rasla u visinu (1134 prema 1070 u dizajnu).
+   *
+   * Vezivanje za desnu ivicu umesto za procenat znači i da kartica sama prati
+   * kolonu kad se ona promeni. */
   .section-main-word {
-    max-width: 710px;
+    width: 710px;
+    max-width: 100%;
     box-shadow: 0px 0px 80px 0px #00000059;
     background: #FFFFFF73;
     border-radius: 30px;
-    padding: 80px 50px;
+    /* Po dizajnu: 80px odozgo, 100px sa strane — tekst unutra je 511px širok
+       (710 − 2 × 100). Sa 50px sa strane tekst je bio 610px, pa je stajao
+       razređenije nego što treba. */
+    padding: 80px 100px;
     position: absolute;
-    left: 68%; 
-    width: 40%;
+    right: 23px;
+    left: auto;
     max-height: 100%;
-    transform: translateX(-50%);
     backdrop-filter: blur(5px); /* Apply blur effect */
     @media screen and (max-width: 599px) {
       max-width: 500px;
+      right: auto;
       left: 20%;
       width: 80%;
     }
     
+    /* Ime i uloga stoje jedno uz drugo, bez razmaka — u dizajnu su jedan
+       tekstualni blok visok 119px (87 za ime + 32 za ulogu). Razmak od 20px
+       ih je razmicao na 142. Odmak do biografije nosi sam tekst. */
     .section-main-subcomponent {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 0;
     }
     .section-main-word-title {
       font-family: 'MADE GoodTime Script', sans-serif;
@@ -2523,14 +2709,17 @@ a.office-contact-section-content:focus-visible {
       display: flex;
       flex-direction: column;
       gap: 25px;
+      margin-top: 41px;   /* razmak od uloge do biografije, po dizajnu */
     }
   }
 }
 
+/* Traka sa citatom ispod fotografije. Po dizajnu je visoka 271px, a citat
+   počinje 83px od njenog vrha. */
 .organizer-section-quote {
   display: flex;
   flex-direction: column;
-  padding: 50px 0;
+  padding: 80px 0;
 }
 .organizer-section-main-quote {
   font-family: 'MADE GoodTime Script', sans-serif;
@@ -2553,7 +2742,7 @@ a.office-contact-section-content:focus-visible {
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   width: 100%;
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   margin: 0 auto;
   padding: 0 16px;
 }
@@ -2633,9 +2822,85 @@ a.office-contact-section-content:focus-visible {
   }
 }
 
+/* ── Dugme na kartici ─────────────────────────────────────────────────────────
+ *
+ * Zajednička mera za sva dugmad je 172 × 53 sa natpisom od 18px. Kartice u
+ * dizajnu imaju uža dugmad koja prate natpis: „Detaljnije" 129 × 53 sa 18/25,
+ * „Pročitaj više" 139 × 53 sa 15/20. Zato širina ovde ide po sadržaju, sa
+ * odmakom od 26 sa svake strane — što daje 131 odnosno 136. */
+.card-component-button {
+  /* `width: auto` u koloni sa `stretch` razvuče dugme celom širinom kartice */
+  width: fit-content;
+  align-self: flex-start;
+  padding: 0 26px;
+
+  .text {
+    line-height: 25px;
+  }
+}
+
+.card-component-button--sitan .text {
+  font-size: 15px;
+  line-height: 20px;
+}
+
+/* ── Sjaj u tamnim trakama ────────────────────────────────────────────────────
+ *
+ * Elipsa je u izvozu zasebni sloj maskiran na traku; ovde ide kao pozadinska
+ * slika same trake, pa je okvir seče bez dodatnog omotača (i bez zavisnosti od
+ * `overflow`, koji hero namerno drži otvorenim zbog sove).
+ *
+ * Po izvozima:
+ *   podstranice          1536 × 1536, vrh −815     (Blog, Događaji, Kalendar,
+ *                                                    Galerija, Kontakt, 404…)
+ *   Početna i O nama     2080 × 2080, vrh −1133
+ *   stranice za ulogovanog 1536 × 1565,68, vrh −830,75  (Profil, rezervacije,
+ *                                                    kalendar, mapa)
+ * Sve tri su iste elipse, samo krupnije; razlika među njima je 2%, ali se
+ * prepisuju doslovno jer je mera poznata.
+ */
+.page-hero-section {
+  background-image: var(--nnb-sjaj);
+  background-repeat: no-repeat;
+  background-size: min(80vw, 1536px) min(80vw, 1536px);
+  background-position: center max(-42.4479vw, -815px);
+}
+
+/* Zaglavlje je učvršćeno i neprozirno, pa je pokrivalo gornjih 237px trake i
+   sjaj je počinjao tek ispod njega — vidljivim šavom. U dizajnu elipsa ide i
+   iza menija, pa zaglavlje nosi isti preliv sa istim polazištem (obe trake
+   počinju na vrhu stranice, pa se nastavljaju bez prekida).
+   Mere su podstraničine; razlika prema Početnoj i O nama je na visini
+   zaglavlja manja od tri nijanse, pa jedno pravilo pokriva sve stranice. */
+.nnb-header {
+  background-image: var(--nnb-sjaj);
+  background-repeat: no-repeat;
+  background-size: min(80vw, 1536px) min(80vw, 1536px);
+  background-position: center max(-42.4479vw, -815px);
+}
+
+.home-hero-wrapper,
+.page-hero-section--slika {
+  background-image: var(--nnb-sjaj);
+  background-repeat: no-repeat;
+  background-size: min(108.3333vw, 2080px) min(108.3333vw, 2080px);
+  background-position: center max(-59.0104vw, -1133px);
+}
+
+/* Tamna traka na stranicama za prijavljenog izlagača — Profil, izmena profila,
+   Moje rezervacije, Prethodne rezervacije, kalendar i mapa. Prvo je ovde
+   stajala klasa `.profile-hero`, ali nju nijedna komponenta ne koristi (bila je
+   ostatak ranije verzije, sa još osam mrtvih pravila uz sebe — uklonjena). */
+.profile-page-header {
+  background-image: var(--nnb-sjaj);
+  background-repeat: no-repeat;
+  background-size: min(80vw, 1536px) min(81.5458vw, 1565.68px);
+  background-position: center max(-43.2682vw, -830.75px);
+}
+
 /* Modal sa opcijama rezervacije — struja, reklama, dani, saglasnost.
 
-   Mere su iz dizajna (okvir 1920, modal 1036 x 897) i ranije su stajale kao
+   Mere su iz dizajna (okvir 1920, modal 1066 x 923) i ranije su stajale kao
    inline stil, uz `sm:` klase koje je trebalo da ih smanje na telefonu. Te
    klase nisu radile ništa: **inline stil uvek pobeđuje klasu**, pa je na
    telefonu ostajalo 185px bočnog odmaka i naslov od 33px — sadržaju je na
@@ -2643,20 +2908,22 @@ a.office-contact-section-content:focus-visible {
 
    Sada su mere promenljive, pa ih medijski upit može zameniti. */
 .opcije-modal {
-  --om-vrh: 115px;
-  --om-bok: 185px;
-  --om-dno: 105px;
-  --om-pitanje: 33px;
-  --om-opcija: 22px;
-  --om-krug: 29px;
+  /* Vrednosti su iz dizajna, bez svođenja: modal je 1066 × 923, a ranije je
+     ovde sve bilo umanjeno činiocem 0,972 da stane u kolonu od 1400. */
+  --om-vrh: 118px;
+  --om-bok: 190px;
+  --om-dno: 108px;
+  --om-pitanje: 34px;
+  --om-opcija: 23px;
+  --om-krug: 30px;
   --om-tacka: 15px;
-  --om-krug-tekst: 19px;
-  --om-razmak-opcija: 18px;      /* korak 47 minus krug 29 */
-  --om-pitanje-opcije: 27px;
-  --om-opcije-pitanje: 44px;
-  --om-opcije-dugme: 34px;
-  --om-dugme-s: 202px;
-  --om-dugme-v: 57px;
+  --om-krug-tekst: 20px;
+  --om-razmak-opcija: 19px;      /* korak 48 minus krug 30 */
+  --om-pitanje-opcije: 28px;
+  --om-opcije-pitanje: 45px;
+  --om-opcije-dugme: 35px;
+  --om-dugme-s: 208px;
+  --om-dugme-v: 59px;
 }
 
 @media screen and (max-width: 899px) {
@@ -2710,6 +2977,10 @@ a.office-contact-section-content:focus-visible {
   gap: min(1.042vw, 20px);
   text-decoration: none;
   color: inherit;
+  /* Natpisi ispod krugova su po dizajnu 15px sa redom od 20px; nasleđivali su
+     16px sa `body`. */
+  font-size: 15px;
+  line-height: 20px;
 }
 
 .page-hero-ikona-krug {
@@ -2743,10 +3014,112 @@ a.office-contact-section-content:focus-visible {
   padding-top: calc(var(--nnb-zaglavlje) + min(1.4583vw, 28px));
 }
 
+/* ── Sova u hero traci: isti presek na svakoj širini ──────────────────────────
+ *
+ * Na izvozu (okvir 1920) sova je 661 × 627 i počinje 264 od vrha trake, a traka
+ * se završava na 572 (niska), 891 (sa ikonicama) i 1040 (visoka). Odatle tri
+ * odnosa, izražena u visini same sove:
+ *
+ *   niska traka     presek na 49,1% sove  → vrh kljuna viri ispod ivice
+ *   sa ikonicama    sova se završava tačno na donjoj ivici trake
+ *   visoka traka    sova se završava 23,8% svoje visine iznad ivice
+ *
+ * Dok i traka i sova prate širinu ekrana, odnos se održava sam — na 1024 presek
+ * je i dalje 49,1%. Ali visina trake ima donju granicu, da se naslov na užem
+ * ekranu ne bi stešnjao, pa ispod ~820px traka prestaje da se smanjuje a sova
+ * nastavlja: presek klizi na 53% na 768 i na 69% na 600, i sova se „podiže" iz
+ * trake umesto da je preseca kroz kljun.
+ *
+ * Zato se odmak sove više ne meri od vrha trake nego od njenog dna:
+ * `dno trake − udeo × širina sove`. Na 1920 daje istih 264, na 1024 istih 251. */
+@media screen and (min-width: 600px) {
+  .page-hero-section--nizak .page-hero-right {
+    padding-top: calc(var(--nnb-zaglavlje) + max(144px, min(17.5vw, 336px)) - 0.4658 * min(34.43vw, 661px));
+  }
+
+  .page-hero-section--ikonice .page-hero-right {
+    padding-top: calc(var(--nnb-zaglavlje) + max(384px, min(34.114vw, 655px)) - 0.9486 * min(34.43vw, 661px));
+  }
+
+  .page-hero-section--visok .page-hero-right {
+    padding-top: calc(var(--nnb-zaglavlje) + max(514px, min(41.875vw, 804px)) - 1.174 * min(34.43vw, 661px));
+  }
+}
+
+/* Na telefonu se mreža hero-a slaže u jednu kolonu, pa je sova padala ispod
+   naslova, smanjena na 16px odmaka od vrha — od dizajna, gde stoji desno uz
+   naslov i traka je seče kroz kljun, nije ostajalo ništa.
+ *
+ * Zato se sova vadi iz toka i kači za donju ivicu trake, a `translateY` je
+ * spušta za onaj udeo njene visine koji po dizajnu viri ispod te ivice. Udeo se
+ * računa od visine samog elementa, pa važi bez obzira koliko je sova velika.
+ * Naslov dobija odmak zdesna da ne uđe pod nju. */
 @media screen and (max-width: 599px) {
   .page-hero-right {
-    padding-top: 16px;
+    position: absolute;
+    right: var(--nnb-odmak);
+    /* Spuštanje ide kroz `bottom`, a ne kroz `translateY`, iako bi udeo visine
+       bio zgodniji: `transform` pravi zaseban sloj (stacking context), pa bi
+       vrh kljuna ostao zatvoren u njemu i svetla sekcija bi ga prekrila — a
+       ceo smisao tog sloja je da izađe iznad nje.
+       Visina sove je 0,9486 njene širine (crtež 661 × 627), a ispod ivice po
+       dizajnu viri 50,9% te visine: 0,509 × 0,9486 = 0,4828. */
+    bottom: calc(-0.4828 * min(34.43vw, 661px));
+    width: min(34.43vw, 661px);
+    padding-top: 0;
+    /* Crtež je unutra `inline-block`; bez ovoga ispod njega ostane procep od
+       osnovne linije reda i sova se podigne za par piksela. */
+    line-height: 0;
   }
+
+  /* Na traci sa ikonicama (Galerija) sova se po dizajnu završava tačno na
+     donjoj ivici — ne preseca je, pa ni ne viri ispod. */
+  .page-hero-section--ikonice .page-hero-right {
+    bottom: 0;
+  }
+
+  /* Visoka traka (Kontakt) je na telefonu visoka koliko i njen opis, pa bi sova
+     po desktopskom odnosu — 23,8% svoje visine iznad dna — završila da lebdi
+     nasred teksta. Na telefonu se zato ponaša kao na niskoj traci: preseca je
+     donja ivica, a kljun viri ispod. */
+  .page-hero-section--visok .page-hero-kljun {
+    display: block;
+  }
+
+  .page-hero-left {
+    padding-right: calc(min(34.43vw, 661px) + 12px);
+  }
+
+  /* Galerija: uz sovu na 375px za natpise ostaje oko 210px, pa se „Fotografije"
+     i „Video snimci" sudaraju sa njom i međusobno. Ikonice same nose značenje,
+     a na tabletu i desktopu natpisi ostaju. */
+  .page-hero-section-icons .page-hero-ikona-link span {
+    display: none;
+  }
+
+  /* Kad natpisa nema, ikonica nosi sve značenje — a po udelu iz dizajna
+     (7,292vw) krug bi na 320px bio 23px, presitan i da se pogodi prstom. */
+  .page-hero-ikona-krug {
+    width: 48px;
+    height: 48px;
+    padding: 12px;
+  }
+
+  .page-hero-section-icons {
+    gap: 16px;
+  }
+}
+
+/* Vrh kljuna se vidi samo tamo gde svetla sekcija zaista preseca sovu — na
+   niskoj traci (Blog, Događaji, Projekti, Prijatelji, Kalendar za posetioca).
+   Na Galeriji sova staje cela, a na Kontaktu je iznad ivice, pa bi tamo taj
+   trougao visio sam u vazduhu. */
+.page-hero-kljun {
+  display: none;
+}
+
+.page-hero-section--nizak .page-hero-kljun {
+  display: block;
 }
 
 .page-hero-section {
@@ -2813,7 +3186,7 @@ a.office-contact-section-content:focus-visible {
   flex-direction: row;
   justify-content: space-between;
   align-items: center; 
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   @media screen and (max-width: 599px) {
     flex-direction: column;
   }
@@ -2906,7 +3279,7 @@ a.office-contact-section-content:focus-visible {
   }
 
   &-component {
-    max-width: 1400px;
+    max-width: var(--nnb-kolona);
     max-height: 223px;
     display: flex;
     flex-direction: row;
@@ -2964,7 +3337,9 @@ a.office-contact-section-content:focus-visible {
    `vw` uključuje i traku za pomeranje, pa bi sove virile za njenu širinu i
    napravile vodoravno pomeranje. */
 .home-hero-container {
-  --hero-bok: 80px;
+  /* U dizajnu naslov kreće tačno na levoj ivici kolone (x 240); odmak od 80 ga
+     je gurao na 320. Na užim ekranima odmak ostaje, da tekst ne naleže na ivicu. */
+  --hero-bok: 0px;
 
   display: flex;
   flex-direction: row;
@@ -2977,7 +3352,7 @@ a.office-contact-section-content:focus-visible {
 
   @media screen and (min-width: 600px) {
     max-width: none;
-    padding-left: calc(max(0px, (100% - 1400px) / 2) + var(--hero-bok));
+    padding-left: calc(max(0px, (100% - var(--nnb-kolona)) / 2) + var(--hero-bok));
     padding-right: 0;
   }
 
@@ -2989,9 +3364,9 @@ a.office-contact-section-content:focus-visible {
   }
   @media screen and (max-width: 599px) {
     /* naslov → sova → rest (ne reverse) */
-    max-width: 1400px;
+    max-width: var(--nnb-kolona);
     flex-direction: column;
-    padding: 8px 24px 32px 24px;
+    padding: 8px var(--nnb-odmak) 32px var(--nnb-odmak);
   }
 }
 
@@ -3011,71 +3386,71 @@ a.office-contact-section-content:focus-visible {
   /* Razmak između dva reda naslova diktira strut ovog elementa, a ne raspone u
      njemu. Kao `h1` je nasleđivao globalnih 128px, pa je i na telefonu razmicao
      redove za 141px iako je tekst visok 52px. Veličine prate raspone. */
-  font-size: 96px;
+  font-size: 140px;
   @media screen and (max-width: 1299px) {
-    font-size: 72px;
+    font-size: 100px;
   }
   @media screen and (max-width: 599px) {
-    font-size: 52px;
+    font-size: 56px;
   }
 }
 
 .home-hero-title-white {
-  font-size: 96px;
+  font-size: 140px;
   color: #ffffff;
   @media screen and (max-width: 1299px) {
-    font-size: 72px;
+    font-size: 100px;
   }
   @media screen and (max-width: 599px) {
-    font-size: 52px;
+    font-size: 56px;
   }
 }
 
 .home-hero-title-teal {
-  font-size: 96px;
+  font-size: 140px;
   color: #56C4CF;
   @media screen and (max-width: 1299px) {
-    font-size: 72px;
+    font-size: 100px;
   }
   @media screen and (max-width: 599px) {
-    font-size: 52px;
+    font-size: 56px;
   }
 }
 
 .home-hero-title-red {
-  font-size: 96px;
+  font-size: 140px;
   color: #EC4923;
   @media screen and (max-width: 1299px) {
-    font-size: 72px;
+    font-size: 100px;
   }
   @media screen and (max-width: 599px) {
-    font-size: 52px;
+    font-size: 56px;
   }
 }
 
 .home-hero-slogan {
   font-family: 'MADE GoodTime Script', sans-serif;
   font-weight: 400;
-  font-size: 44px;
+  font-size: 64px;
   color: #56C4CF;
   margin: 0;
-  line-height: 1.2;
+  line-height: 87px;
   @media screen and (max-width: 1299px) {
-    font-size: 34px;
+    font-size: 48px;
   }
   @media screen and (max-width: 599px) {
-    font-size: 26px;
+    font-size: 32px;
   }
 }
 
 .home-hero-subtitle {
   font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.65);
   margin: 0;
-  max-width: 500px;
-  line-height: 1.6;
+  max-width: 663px;
+  line-height: 23px;
   @media screen and (max-width: 599px) {
     font-size: 14px;
   }
@@ -3144,22 +3519,39 @@ a.office-contact-section-content:focus-visible {
   @media screen and (max-width: 1299px) {
     max-width: 440px;
   }
+  /* I na telefonu sove naležu na desnu ivicu ekrana, kao i na svim širim
+     prikazima — grana u dizajnu nigde ne lebdi u sredini. Sekcija ima svoj
+     bočni odmak, pa ga negativna desna margina poništava taman za sove. */
   @media screen and (max-width: 599px) {
     width: 100%;
-    max-width: 320px;
-    margin: 0 auto;
-    justify-content: center;
+    max-width: calc(320px + var(--nnb-odmak));
+    margin: 0 calc(-1 * var(--nnb-odmak)) 0 auto;
+    justify-content: flex-end;
   }
 }
 
+/* Traka sa događajima ispod brojača. U izvozu je 1920 × 103, bez svoje podloge
+   — stoji na istoj tamnoj sekciji — a natpisi su krupni beli i razdvojeni
+   tirkiznim kapsulama 77 × 26. Zatečeno je bila traka od 53px sa svetlom
+   podlogom i natpisima od 16px. */
 .home-hero-bar {
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.08);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  height: 103px;
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  border-top: none;
+
+  @media screen and (max-width: 1299px) {
+    height: 78px;
+  }
+  @media screen and (max-width: 599px) {
+    height: 56px;
+  }
 }
 
 .home-hero-bar-inner {
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   margin: 0 auto;
   padding: 16px 80px;
   display: flex;
@@ -3185,30 +3577,55 @@ a.office-contact-section-content:focus-visible {
   letter-spacing: 0.08em;
 }
 
-.home-hero-bar-sep {
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 14px;
+/* Razdvajači su u izvozu tirkizne kapsule 77 × 26, ne strelica i tačka */
+.home-hero-bar-sep,
+.home-hero-bar-bullet {
+  display: inline-block;
+  width: 77px;
+  height: 26px;
+  border-radius: 13px;
+  background: #56C4CF;
+  font-size: 0;
+  color: transparent;
+  flex-shrink: 0;
+
+  @media screen and (max-width: 1299px) {
+    width: 56px;
+    height: 19px;
+    border-radius: 9.5px;
+  }
+  @media screen and (max-width: 599px) {
+    width: 34px;
+    height: 12px;
+    border-radius: 6px;
+  }
 }
 
-.home-hero-bar-name {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: #ffffff;
-}
-
+/* Naziv i datum su u izvozu isti: belo, podebljano, oko 44px (visina slova sa
+   produžecima 47). Datum je ranije bio tirkizan i sitan. */
+.home-hero-bar-name,
 .home-hero-bar-date {
   font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  color: #56C4CF;
+  font-size: 44px;
+  line-height: 60px;
+  font-weight: 700;
+  color: #ffffff;
+
+  @media screen and (max-width: 1299px) {
+    font-size: 32px;
+    line-height: 44px;
+  }
+  @media screen and (max-width: 599px) {
+    font-size: 20px;
+    line-height: 28px;
+  }
 }
 
 /* ── Error page — mobile ──────────────────────────────────────────────────── */
 @media screen and (max-width: 599px) {
   .error-page-content {
     flex-direction: column !important;
-    padding: 32px 24px 48px !important;
+    padding: 32px var(--nnb-odmak) 48px !important;
     align-items: center !important;
     justify-content: flex-start !important;
     gap: 32px !important;
@@ -3229,10 +3646,15 @@ a.office-contact-section-content:focus-visible {
     font-size: 15px !important;
     padding: 14px 28px !important;
   }
+  /* Sove naležu na desnu ivicu ekrana i ovde, kao i na Početnoj: red je na
+     telefonu složen u kolonu sa `align-items: center`, pa se sove moraju
+     izuzeti iz tog centriranja i prevući preko bočnog odmaka sekcije. */
   .error-page-owls {
-    justify-content: center !important;
-    max-width: 300px;
-    margin: 0 auto;
+    align-self: flex-end !important;
+    justify-content: flex-end !important;
+    max-width: calc(300px + var(--nnb-odmak));
+    width: 100%;
+    margin: 0 calc(-1 * var(--nnb-odmak)) 0 auto !important;
   }
 }
 
@@ -3246,7 +3668,7 @@ a.office-contact-section-content:focus-visible {
    Uvlačenje ide preko `100%` (širina roditelja), ne `100vw`, da traka za
    pomeranje ne gurne sove preko ivice. */
 .error-page-content {
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   margin: 0 auto;
   padding: 40px 0;
 }
@@ -3255,7 +3677,49 @@ a.office-contact-section-content:focus-visible {
   .error-page-content {
     max-width: none;
     margin: 0;
-    padding: 40px 0 40px calc(max(0px, (100% - 1400px) / 2));
+    /* Uvlačenje dovodi tekst na levu ivicu kolone sadržaja — na 1920 je to 240.
+       Čim ekran postane uži od 1440, taj račun daje nulu i tekst se lepi za
+       ivicu: na tabletu i užem laptopu stajao je na 0. Zato je zajednički odmak
+       donja granica, a od 1440 naviše i dalje vodi kolona. */
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-right: 0;
+    padding-left: max(24px, var(--nnb-odmak), calc((100% - var(--nnb-kolona)) / 2));
+  }
+}
+
+/* ── Profile / Reservation page headers ─────────────────────────────────────
+   Mere su iz dizajna (okvir 1920): avatar 223, naziv 48/65, dugme 250 × 60.
+   Ispod 1300px kolona je uža od 1440, pa se te mere ne uklapaju — avatar plus
+   dugi naziv plus dugme prelaze ivicu i prave vodoravni skrol. Zato se od tog
+   praga sve srazmerno smanjuje. */
+@media screen and (min-width: 600px) and (max-width: 1299px) {
+  .profile-page-avatar-wrapper [class*="w-[223px]"],
+  .profile-page-avatar-wrapper > div > span,
+  .profile-page-avatar-wrapper span,
+  .kalendar-avatar {
+    width: 150px !important;
+    height: 150px !important;
+  }
+
+  .profile-page-header-left {
+    gap: 24px !important;
+  }
+
+  .profile-page-header-name span,
+  .profile-page-header-name input {
+    font-size: 32px !important;
+    line-height: 44px !important;
+    height: auto !important;
+  }
+
+  .profile-page-header-inner button,
+  .profile-page-header-actions span {
+    width: auto !important;
+    min-width: 0;
+    padding-left: 24px;
+    padding-right: 24px;
+    font-size: 15px !important;
   }
 }
 
@@ -3310,7 +3774,21 @@ a.office-contact-section-content:focus-visible {
   }
 }
 
-/* ── Cancel reservation modal — mobile ────────────────────────────────────── */
+/* Natpis u polju za YouTube link je u dizajnu #A8A8A8 */
+#video-url-input::placeholder {
+  color: #A8A8A8;
+  opacity: 1;
+}
+
+/* ── Cancel reservation modal ─────────────────────────────────────────────── */
+/* Natpis u praznom polju je u dizajnu tamnoplav na 30% — do sada je bio
+   podrazumevani sivi natpis pregledača. */
+.cancel-modal-inner input::placeholder,
+.cancel-modal-inner textarea::placeholder {
+  color: rgba(38, 26, 84, 0.3);
+  opacity: 1;
+}
+
 @media screen and (max-width: 599px) {
   .cancel-modal-inner { padding: 32px 20px !important; }
   .cancel-modal-grid { grid-template-columns: 1fr !important; }
@@ -3318,9 +3796,26 @@ a.office-contact-section-content:focus-visible {
 
 /* ── Previous reservations cards — mobile ─────────────────────────────────── */
 @media screen and (max-width: 599px) {
-  .prev-reservation-card { flex-direction: column !important; min-height: unset !important; }
-  .prev-reservation-card-image { width: 100% !important; }
-  .prev-reservation-card-status { padding: 0 16px 16px !important; justify-content: flex-start !important; }
+  /* Kartica se slaže u kolonu, ali joj je visina zadata u komponenti (208px,
+     mereno sa izvoza za vodoravni raspored). `min-height: unset` tu ne pomaže
+     — `height` ostaje, pa je kartici na 375px trebalo 510px, a `overflow:
+     hidden` je višak odsecao: naslov, datum i pilula sa statusom nestajali su
+     ispod donje ivice. Visina zato ovde prelazi na sadržaj. */
+  .prev-reservation-card { flex-direction: column !important; height: auto !important; min-height: unset !important; }
+
+  /* Slika je u izvozu 462 × 208, dakle 2,22 : 1. Preko cele širine kartice
+     zadržava taj odnos umesto da nasledi visinu kartice. */
+  .prev-reservation-card-image { width: 100% !important; height: auto !important; aspect-ratio: 2.22 / 1; }
+  .prev-reservation-card-image img { width: 100% !important; height: 100% !important; object-fit: cover; }
+
+  /* Odmaci i slova su mereni za karticu od 1352px; na 327 su naslov od 34px i
+     uvlačenje od 51px bili nesrazmerni. */
+  .prev-reservation-card-text { padding: 20px 20px 0 20px !important; }
+  .prev-reservation-card-text > :first-child { font-size: 20px !important; }
+  .prev-reservation-card-text > :not(:first-child) { font-size: 15px !important; }
+
+  .prev-reservation-card-status { padding: 16px 20px 20px !important; justify-content: flex-start !important; }
+  .prev-reservation-card-status > div { width: 100% !important; max-width: 263px; }
 }
 
 .home-hero-bar-link {
@@ -3336,88 +3831,130 @@ a.office-contact-section-content:focus-visible {
 }
 
 /* ── Stats section ─────────────────────────────────── */
+/* Razmak do brojki. U izvozu se ilustracija sa sovama završava na 1022, a blok
+   sa brojkama počinje na 1187 — dakle 165 vazduha ispod najvišeg elementa
+   heroja. Tu, u tom praznom pojasu, stoje i dva gornja lista (sredine na 1026 i
+   1060). Sa zatečenih 48 listovi su padali preko uvodnog pasusa. */
 .home-hero-stats-section {
   width: 100%;
-  padding: 48px 80px 72px 80px;
+  padding: 165px 80px 72px 80px;
   display: flex;
   justify-content: center;
   @media screen and (max-width: 1299px) {
-    padding: 40px 40px 64px 40px;
+    padding: 120px 40px 64px 40px;
   }
   @media screen and (max-width: 599px) {
-    padding: 32px 24px 56px 24px;
+    padding: 64px 24px 56px 24px;
   }
 }
 
+/* Strelica nadole ispod uvodnog teksta. U izvozu je na 922, a uvodni pasus se
+   završava na 870 — dakle 52 ispod njega, po sredini stranice. */
+.home-hero-strelica {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  line-height: 0;
+  pointer-events: none;
+
+  @media screen and (max-width: 599px) {
+    display: none;
+  }
+}
+
+/* Blok sa brojkama, po izvozu (okvir 1920): 1166 × 424 usredišten, dva reda sa
+   razmakom 16. Prvi red je pilula 465 – krug 204 – pilula 465 (tačno 1166), a
+   drugi krug – pilula – krug (905, pa se sam usredišti). Otuda savijanje reda
+   umesto mreže sa tri jednake kolone, koja je davala pilule od 312 i krugove od
+   130. */
 .home-hero-stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: auto auto;
-  gap: 20px 32px;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-items: stretch;
-  max-width: 1000px;
+  justify-content: center;
+  gap: 16px;
+  max-width: 1166px;
   width: 100%;
   /* Listovi se postavljaju u udelima ove mreže, pa ona mora da bude njihova
      referentna ravan. Bez ovoga procenti se računaju od šire sekcije oko nje. */
   position: relative;
+  @media screen and (max-width: 1299px) {
+    max-width: 875px;
+  }
   @media screen and (max-width: 599px) {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
+    flex-direction: column;
     gap: 16px;
   }
 }
 
+/* Pilula je u izvozu 465 × 204 sa zaobljenjem 102, prazna i sa belim okvirom od
+   1px — boja stoji na krugovima, ne na pilulama. Bila je 312 × 98, ispunjena. */
 .home-hero-stat-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 18px 40px;
-  border-radius: 60px;
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  width: 100%;
+  gap: 19px;
+  width: 465px;
+  height: 204px;
+  border-radius: 102px;
+  background-color: transparent !important;
+  border: 1px solid #ffffff !important;
   text-align: center;
+  flex-shrink: 0;
   @media screen and (max-width: 1299px) {
-    padding: 16px 28px;
-    border-radius: 52px;
+    width: 349px;
+    height: 153px;
+    border-radius: 76.5px;
+    gap: 14px;
   }
   @media screen and (max-width: 599px) {
-    padding: 16px 24px;
-    border-radius: 40px;
-    grid-column: 1 !important;
-    grid-row: auto !important;
+    width: 100%;
+    height: auto;
+    padding: 24px;
+    border-radius: 60px;
+    gap: 8px;
   }
 }
 
+/* Mereno na pikselima izvoza: visina brojki 45 (dakle 64px), visina natpisa 19
+   (26px), razmak među njima 19. Bilo je 40 i 12. */
 .home-hero-stat-card-value {
   font-family: 'Open Sans', sans-serif;
-  font-size: 40px;
+  font-size: 64px;
   font-weight: 700;
-  color: #ffffff;
+  color: #ffffff !important;
   line-height: 1;
   @media screen and (max-width: 1299px) {
-    font-size: 32px;
+    font-size: 48px;
   }
   @media screen and (max-width: 599px) {
-    font-size: 28px;
+    font-size: 36px;
   }
 }
 
 .home-hero-stat-card-label {
   font-family: 'Open Sans', sans-serif;
-  font-size: 12px;
+  font-size: 26px;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.6);
+  color: #ffffff !important;
+  opacity: 1 !important;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
+  line-height: 1;
+  @media screen and (max-width: 1299px) {
+    font-size: 20px;
+  }
+  @media screen and (max-width: 599px) {
+    font-size: 16px;
+  }
 }
 
 .home-hero-stat-circle {
-  width: 130px;
-  height: 130px;
+  /* Izvoz: krug 204 × 204 */
+  width: 204px;
+  height: 204px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -3425,8 +3962,8 @@ a.office-contact-section-content:focus-visible {
   flex-shrink: 0;
   justify-self: center;
   @media screen and (max-width: 1299px) {
-    width: 100px;
-    height: 100px;
+    width: 153px;
+    height: 153px;
   }
   @media screen and (max-width: 599px) {
     display: none;
@@ -3445,13 +3982,14 @@ a.office-contact-section-content:focus-visible {
   background-color: #F4C430;
 }
 
+/* Izvoz: ikonice u krugovima su 97–108 velike i tamnoplave, ne bele od 56. */
 .home-hero-stat-circle img {
-  width: 56px;
-  height: 56px;
-  filter: brightness(0) invert(1);
+  width: 100px;
+  height: 100px;
+  filter: brightness(0) saturate(100%) invert(11%) sepia(51%) saturate(2878%) hue-rotate(243deg) brightness(93%) contrast(101%);
   @media screen and (max-width: 1299px) {
-    width: 44px;
-    height: 44px;
+    width: 75px;
+    height: 75px;
   }
 }
 
@@ -3603,7 +4141,7 @@ a.office-contact-section-content:focus-visible {
 .home-hero-ticker-overflow {
   overflow: hidden;
   width: 100%;
-  padding: 14px 0;
+  padding: 0;
 }
 
 .home-hero-ticker-track {
@@ -3617,15 +4155,11 @@ a.office-contact-section-content:focus-visible {
 .home-hero-ticker-item {
   display: inline-flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 32px;
+  /* Razmak oko kapsula je u izvozu ~55 sa svake strane */
+  gap: 55px;
+  padding: 0 0 0 55px;
   white-space: nowrap;
   flex-shrink: 0;
-}
-
-.home-hero-bar-bullet {
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 14px;
 }
 
 @keyframes ticker-scroll {
@@ -3649,7 +4183,10 @@ a.office-contact-section-content:focus-visible {
 
 .wm-card {
   position: relative;
-  background: linear-gradient(145deg, #deedf7 0%, #f4faff 30%, #ffffff 50%, #eef5fb 70%, #deedf7 100%);
+  /* Isti preliv kao ostali prozori ovog toka: plavičasto dole levo, ka beloj
+     gore desno. Peterostruki preliv od 145° koji je ovde stajao imao je plavo i
+     u gornjem levom i u donjem desnom uglu — u dizajnu je desna strana bela. */
+  background: linear-gradient(to top right, #d5e8ed 0%, #e9eef2 38%, #ffffff 72%);
   border-radius: var(--nnb-modal-radius, 50px);
   width: var(--nnb-modal-w, min(1440px, calc(100vw - 2rem)));
   height: var(--nnb-modal-h, min(982px, calc(100vh - 8rem)));
@@ -3829,32 +4366,120 @@ a.office-contact-section-content:focus-visible {
   margin: 0;
 }
 
-/* ─── Paketi stranica — responsive ─────────────────────────────────────── */
+/* ─── Paketi stranica ──────────────────────────────────────────────────── */
 
-/* Red je: rezervisan prostor za sovu (280px) + mreža osobina u tri kolone.
-   Ispod 1300px trima kolonama ostane premalo — na 768px po 93px, pa sadržaj
-   ispada iz ekrana i stranica dobija horizontalni skrol. Sve mere su inline u
-   komponenti, otud `!important`. */
-@media (max-width: 1299px) {
+/* Naslov stranice je u dizajnu 200px, a ne 128px koliko nose naslovi ostalih
+   stranica. Red je 92,19% od veličine slova, kako stoji u izvozu. */
+.paketi-hero-naslov {
+  font-size: 200px;
+  line-height: 0.9219;
+}
+
+/* Naziv paketa: 128px, isti red. `.blog-title` nosi 64px. */
+.paketi-naziv {
+  font-size: 128px;
+  line-height: 0.9219;
+}
+
+@media screen and (max-width: 1299px) {
+  .paketi-hero-naslov { font-size: 128px; }
+  .paketi-naziv       { font-size: 88px; }
+}
+
+@media screen and (max-width: 599px) {
+  .paketi-hero-naslov { font-size: 72px; }
+  .paketi-naziv       { font-size: 48px; }
+}
+
+/* Mreža osobina: po dizajnu tri kolone po 345 sa razmakom od 202. Ispod 1300px
+   trima kolonama ostane premalo — na 768px po 93px, pa sadržaj ispada iz ekrana
+   i stranica dobija horizontalni skrol. Sve mere su inline u komponenti, otud
+   `!important`. */
+/* Prag je 1439, a ne 1299: do te širine kolona sadržaja dodiruje ivicu sekcije,
+   pa joj sova pada preko prvog reda i mreža se uvlači za njenu širinu (vidi
+   pravilo niže). Sa tri kolone bi tada ostajalo po 193px — premalo za tekst od
+   26px. Tri kolone zato kreću tek kad se kolona sama odmakne od sove. */
+@media (max-width: 1439px) {
   .paketi-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 40px 32px !important;
+    /* `minmax(0, 1fr)`, ne `1fr`: ćelija mreže po podrazumevanom
+       `min-width: auto` ne sme da se skupi ispod širine sadržaja, pa je sa
+       tekstom od 26px kolona ostajala 346px i na ekranu od 620 — a mreža je
+       tada bila šira od ekrana i pravila vodoravni skrol. */
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: 64px !important;
+    row-gap: 64px !important;
   }
 }
 
 /* Ispod 900px sova pojede skoro pola reda, pa se sklanja zajedno sa prostorom
-   koji rezerviše — dve kolone tako dobiju punu širinu. */
+   koji rezerviše — dve kolone tako dobiju punu širinu.
+
+   Sekcija tada sme i da odseca: `overflow: visible` joj treba samo da bi nožice
+   sove virile preko donje ivice, a sove više nema. Bez toga krug preliva, koji
+   je širi od ekrana, pravi vodoravni skrol na uskim prozorima. */
 @media (max-width: 899px) {
   .paketi-owl-absolute,
   .paketi-owl-spacer {
     display: none !important;
   }
+
+  /* Preliv postoji zbog sove — on je njen sjaj, ne ukras sekcije. Kad sove
+     nema, ostajala je samo svetla mrlja u donjem uglu bez povoda, pa odlazi sa
+     njom. */
+  .paketi-sjaj {
+    display: none !important;
+  }
+
+  .paketi-sekcija {
+    overflow: hidden !important;
+  }
+}
+
+/* Sova stoji apsolutno uz ivicu sekcije, široka 280px, i u sloju je iznad
+   sadržaja. Dok je kolona sadržaja uža od 1440 ona počinje odmah uz ivicu, pa
+   joj sova sa leve strane pada preko poslednjeg reda stavki.
+ *
+ * Zato se u tom rasponu mreža stavki uvlači toliko da izađe iza sove: sova se
+ * završava na 280, a `--nnb-odmak` je već potrošen na samoj sekciji, pa se od
+ * 300 oduzima. Naslov paketa ostaje gde jeste — iznad njega sove ionako nema.
+ *
+ * Iznad 1440 kolona je usredišćena i sama se odmakne od sove, pa ovoga nema. */
+@media (min-width: 900px) {
+  .paketi-sekcija--sova-levo .paketi-grid {
+    /* Sova se završava na 280 od ivice sekcije, pa sadržaj kreće na 300.
+     *
+     * Od uvlačenja se oduzima koliko se kolona već sama odmakla: ona je široka
+     * 1440 i usredišćena, pa počinje na `(širina ekrana − 1440) / 2` — na 1440
+     * to je nula, na 1920 punih 240. Množilac 1,25 podešava da uvlačenje padne
+     * na nulu tačno na 1920, gde je dizajn meren i gde sova ulazi u kolonu
+     * onoliko koliko ulazi i na izvozu. Iznad toga izraz je negativan, pa ga
+     * `max()` svodi na nulu — gornja granica u upitu nije potrebna. */
+    padding-left: max(0px, calc(300px - var(--nnb-odmak) - max(0px, (100vw - var(--nnb-kolona)) / 2) * 1.25));
+  }
+}
+
+/* Razmak među kolonama od 202 je mera za kolone od 345 na okviru od 1920. Od
+   1440 do 1919 mreža je uvučena za sovu (vidi gore), pa bi sa tim razmakom
+   kolone pale na 245 — razmak je tada širi od pola kolone. */
+@media (min-width: 1440px) and (max-width: 1919px) {
+  .paketi-grid {
+    column-gap: 96px !important;
+  }
 }
 
 @media (max-width: 599px) {
   .paketi-grid {
-    grid-template-columns: 1fr !important;
-    gap: 32px 0 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    column-gap: 0 !important;
+    row-gap: 48px !important;
+  }
+
+  /* Bočni odmak trake paketa je u komponenti zadat kao 40px — mera za tablet i
+     desktop. Na telefonu bi od 320 ostalo 240, pa ovde prelazi na zajedničku
+     meru (`--nnb-odmak`). Uspravni odmaci ostaju kakvi jesu. */
+  .paketi-sekcija {
+    padding-left: var(--nnb-odmak) !important;
+    padding-right: var(--nnb-odmak) !important;
   }
 }
 
@@ -3924,6 +4549,7 @@ a.office-contact-section-content:focus-visible {
   .section-main-word {
     position: static !important;
     left: unset !important;
+    right: unset !important;
     transform: none !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -3964,9 +4590,26 @@ a.office-contact-section-content:focus-visible {
     text-align: left !important;
   }
 
-  /* OurTeam naslov */
-  .our-team-title {
+  /* Naslovi sekcija. `.blog-title` je do sada ostajao na 64px dok je
+     `.our-team-title` padao na 40 — ista uloga, dve veličine: „Blog" i
+     „Pročitaj još" su zato bili osetno krupniji od „Očekivanih događaja", a
+     duži se lomio u dva reda.
+
+     Red je uži nego na širem ekranu: 1,36 je mera za jedan red na 64px, a na 40
+     u dva reda daje procep veći nego što je potrebno pisanom pismu. */
+  .our-team-title,
+  .blog-title {
     font-size: 40px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Crta ispod naslova: iznad nje se gubi vazduh koji je ranije davao visok
+     red, a ispod je podsekcija naletala na nju — mereno 21–24px do prve
+     kartice. */
+  .section-divider,
+  .section-divider-light {
+    margin-top: 12px;
+    margin-bottom: 16px;
   }
 
   /* Hamburger meni — poravnanje ispod mobilnog headera (12px padding + ~60px logo + 12px = ~84px) */
@@ -4030,8 +4673,12 @@ a.office-contact-section-content:focus-visible {
   width: 100%;
   /* Ista kolona sadržaja kao i na ostalim stranicama. Na njoj kartica ispada
      453px, što je isti udeo kolone kao dizajnovih 467 na koloni od 1440. */
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   margin: 0 auto;
+  /* Mreža prijatelja je jedina od četiri (blog, događaji, projekti, prijatelji)
+     koja nije dobijala odmak od ivice — vidi `--nnb-odmak`. */
+  padding-left: var(--nnb-odmak);
+  padding-right: var(--nnb-odmak);
 }
 
 /* Kartica je u dizajnu kvadratna, 467 × 467. Sama po sebi ima samo najmanju
@@ -4067,14 +4714,15 @@ a.office-contact-section-content:focus-visible {
 .galerija-glavna {
   position: relative;
   width: 100%;
-  max-width: 1400px;
+  max-width: var(--nnb-kolona);
   margin: 0 auto 24px;
 }
 
 .galerija-glavna-okvir {
   width: 100%;
   aspect-ratio: 1440 / 754;
-  border-radius: 20px;
+  /* Po dizajnu je zaobljenje 30px, kao i na ostalim fotografijama sajta. */
+  border-radius: 30px;
   overflow: hidden;
   background: #ddd;
 }
@@ -4120,21 +4768,32 @@ a.office-contact-section-content:focus-visible {
   will-change: transform;
 }
 
+/* Umanjeni prikaz u traci. U izvozu je 448 × 300 sa zaobljenjem 30, a onaj koji
+   nije tekući dobija tamnoplavu koprenu `rgba(38, 26, 84, 0.7)` (Rectangle 100
+   u „galerija-foto", Rectangle 101 u „galerija-video"). Ranije je to bila samo
+   providnost od 0,75, pa su susedne slike ispadale isprane u belo. */
 .galerija-umanjena {
   flex: 0 0 23.3vw;
   aspect-ratio: 448 / 300;
   border: none;
   padding: 0;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 30px;
   overflow: hidden;
-  opacity: 0.75;
-  transition: opacity 0.2s;
   position: relative;
 }
 
-.galerija-umanjena--tekuca {
-  opacity: 1;
+.galerija-umanjena::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(38, 26, 84, 0.7);
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.galerija-umanjena--tekuca::after {
+  opacity: 0;
 }
 
 /* Hero fotografija na „O nama" i dugme preko nje.
@@ -4392,6 +5051,7 @@ a.office-contact-section-content:focus-visible {
   .section-main-word {
     position: static !important;
     left: unset !important;
+    right: unset !important;
     transform: none !important;
     width: 100% !important;
     max-width: 860px !important;
@@ -4437,5 +5097,127 @@ a.office-contact-section-content:focus-visible {
 
   .page-hero-left--visok {
     padding-top: calc(var(--nnb-zaglavlje) + min(8.9063vw, 171px));
+  }
+}
+
+/* ── Mreža sa jednom kolonom ───────────────────────────────────────────────
+ *
+ * Skoro svaka stranica je uvijena u `grid place-items-center`. Kolone nisu
+ * zadate, pa mreža pravi jednu `auto` stazu, a takva staza ne može da bude uža
+ * od `min-content` svog sadržaja. Dovoljno je da jedan jedini red u njoj bude
+ * širi od ekrana — legenda ispod kalendara, red od sedam dana — pa da se cela
+ * stranica razvuče i dobije vodoravni skrol; sadržaj koji sa tom stazom nema
+ * veze biva izguran iz okvira.
+ *
+ * Isti uzrok je već jednom viđen na 1024 (legenda, `min-content` 1063), samo
+ * je tada lečena posledica. `minmax(0, 1fr)` daje istu sliku — staza i dalje
+ * popunjava širinu, sadržaj je i dalje po sredini — ali staza više ne raste po
+ * sadržaju, nego sadržaj mora da se uklopi u nju.
+ *
+ * Izuzeti su elementi koji sami zadaju kolone (`grid-cols-*`), jer bi im ovo
+ * pravilo pregazilo raspored. */
+.grid.place-items-center:not([class*="grid-cols"]),
+.grid.place-items-start:not([class*="grid-cols"]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ══ Mali ekrani ═════════════════════════════════════════════════════════════
+ *
+ * Dizajn je isporučen samo za 1920, pa ove mere nisu prepisane sa izvoza nego
+ * izvedene: sve je zadržalo oblik i odnose iz dizajna, a smanjeno je taman
+ * toliko da stane. Pravilo je bilo da ništa ne sme da izađe iz svog okvira,
+ * ni vodoravno (skrol) ni uspravno (`overflow: hidden` koji odseca tekst). */
+
+/* ── Zaglavlje na malom tabletu (600–767) ─────────────────────────────────────
+ *
+ * Tačno na 600px se prikazuju dugme „Rezervišite tezgu" i profil sa nazivom
+ * brenda, a zaglavlje istovremeno uzima punu desktop visinu od 236px. Taj red
+ * je na 600px tražio 717px i izlazio iz ekrana — najviše zbog dugmeta od 172px,
+ * odmaka od 32px pred njim i naziva brenda koji se ne prelama. Od 768px naviše
+ * red staje sam, pa tamo ostaje dizajn kakav je proveren.
+ *
+ * Ovde se ništa ne sakriva: samo se odmaci stežu, a naziv brenda dobija gornju
+ * granicu i tri tačke, da dugačko ime brenda ostane pod kontrolom. */
+@media screen and (min-width: 600px) and (max-width: 767px) {
+  /* Prazan prostor koji stranice čuvaju za učvršćeno zaglavlje mora da prati
+     njegovu novu visinu: 24 + logotip 60 + 24. */
+  :root {
+    --nnb-zaglavlje: 108px;
+  }
+
+  .nnb-header {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .nnb-header .header-subcontainer {
+    gap: 12px;
+  }
+
+  /* Blok sa dugmetom i profilom mora da sme da se skupi — podrazumevani
+     `min-width: auto` flex stavke držao ga je na punoj širini sadržaja. */
+  .nnb-header .header-subcontainer > :last-child {
+    min-width: 0;
+    padding-left: 0 !important;
+    gap: 12px !important;
+  }
+
+  .header-reserve-btn {
+    min-width: 0;
+    padding: 0 14px;
+  }
+
+  .header-profile-name {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* ── Legenda ispod kalendara ──────────────────────────────────────────────────
+ *
+ * Najduža stavka („Novosadski noćni bazar - startup") je na 18px široka 275px,
+ * a uz sovu od 77px, razmak od 25 i odmak kartice od 37+37 tražila je 451px.
+ * Na telefonu sova ide na 48 × 36, tekst na 15px i sme da se prelomi. */
+.kalendar-legenda-tekst {
+  white-space: nowrap;
+}
+
+@media screen and (max-width: 599px) {
+  .kalendar-legenda {
+    padding: 16px !important;
+    column-gap: 16px !important;
+    row-gap: 12px !important;
+  }
+
+  .kalendar-legenda-stavka {
+    gap: 12px !important;
+  }
+
+  .kalendar-legenda-sova {
+    width: 48px;
+    height: 36px;
+  }
+
+  .kalendar-legenda-tekst {
+    font-size: 15px;
+    white-space: normal;
+  }
+}
+
+/* ── Naslovna slika objave ────────────────────────────────────────────────────
+ * U dizajnu je 1440 × 411, dakle odnos 3,5 : 1. Na 375 je fiksnih 411px činilo
+ * skoro kvadrat. Visina sada prati širinu, sa istim odnosom. */
+@media screen and (max-width: 599px) {
+  .single-blog-cover {
+    height: auto !important;
+    aspect-ratio: 3.5 / 1;
+    min-height: 140px;
+  }
+
+  /* Ploča „Pročitaj još" je merena za 345px širine, gde odmak od 62 sa svake
+     strane ostavlja 221 za naslove. Na 327 bi ostalo 203, pa odmak pada. */
+  .blog-slicne-ploca {
+    padding: 28px 24px !important;
   }
 }

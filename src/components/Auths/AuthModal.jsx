@@ -450,8 +450,8 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
               odsečen odozgo, a link sa instrukcijama odozdo. `justify-start` uz
               `my-auto` na sadržaju daje isto centriranje kad ima mesta, a uredno
               skrolovanje kad nema. */}
-          <div className="w-full md:w-1/2 lg:w-1/2 h-full flex flex-col justify-start [&>*]:my-auto bg-white px-6 md:px-12 lg:px-12 py-10 overflow-y-auto">
-            <h2 className="text-[#261A54] font-bold mb-1" style={{ fontSize: '32px', lineHeight: 1.2 }}>Prijavite se</h2>
+          <div className="w-full md:w-1/2 lg:w-1/2 h-full flex flex-col justify-start [&>*]:my-auto bg-white px-6 md:px-12 lg:px-[164px] py-10 overflow-y-auto">
+            <h2 className="text-[#261A54] font-bold mb-1" style={{ fontSize: '36px', lineHeight: '49px' }}>Prijavite se</h2>
             <p className="text-sm mb-6" style={{ color: '#4B5563' }}>Prijavite se na vaš nalog</p>
 
             {/* Zaključano dok saglasnost nije data — inače bi Google put
@@ -639,12 +639,12 @@ const AuthModal = ({ onSuccess, onClose, initialTab }) => {
             return (
               <Form
                 className="w-full h-full overflow-y-auto"
-                style={{ background: 'linear-gradient(145deg, #deedf7 0%, #f4faff 30%, #ffffff 50%, #eef5fb 70%, #deedf7 100%)' }}
+                style={{ background: 'linear-gradient(to top right, #d5e8ed 0%, #e9eef2 38%, #ffffff 72%)' }}
               >
                 <div className="w-full lg:w-[960px] lg:mx-auto px-6 md:px-12 py-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-8 gap-y-3">
                     <div>
-                      <h2 className="text-[#261A54] font-bold mb-1" style={{ fontSize: '32px', lineHeight: 1.2 }}>Napravite profil</h2>
+                      <h2 className="text-[#261A54] font-bold mb-1" style={{ fontSize: '36px', lineHeight: '49px' }}>Napravite profil</h2>
                       <p className="text-sm mb-5" style={{ color: '#4B5563' }}>Registrujte se kao izlagač</p>
 
                       {/* Isto pravilo kao na prijavi: bez saglasnosti nema

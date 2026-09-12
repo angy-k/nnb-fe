@@ -40,7 +40,7 @@ const ErrorPage = () => {
           justifyContent: 'space-between',
           flex: 1,
           width: '100%',
-          maxWidth: '1400px',
+          maxWidth: 'var(--nnb-kolona)',
           padding: '40px 80px',
           gap: '40px',
         }}

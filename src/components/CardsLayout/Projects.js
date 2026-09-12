@@ -113,7 +113,7 @@ const Projects = ({
             kolone sa istim razmakom. Ovde su ranije stajale klase
             `sm:grid-template-1 md:grid-template-2`, kojih nema u Tailwind-u, pa
             mreža nije ni dobijala kolone odavde. */}
-        <div className="blog-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+        <div className="blog-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {limitedProjects.map((project, index) => (
             <div className="blog-card" key={`project-card-${index}`}>
               <CardComponent
@@ -130,6 +130,7 @@ const Projects = ({
                 creationDate={project.creationDate}
                 buttonAction={() => goToSingleProject(project)}
                 buttonText="Pročitaj više"
+                buttonSmallText
               />
             </div>
           ))}

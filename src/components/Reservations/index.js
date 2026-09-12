@@ -7,6 +7,7 @@ import applicationService from '@/services/applicationService'
 import useUser from '@/data/use-user'
 import { formatDate } from '@/utils/dateHelpers'
 import MERE_DUGMETA from './headerActionStyle'
+import ZaglavljeIzlagaca from '@/components/Profile/ZaglavljeIzlagaca'
 
 // ── Sad face SVG ──────────────────────────────────────────────────────────────
 // Mereno na izvozu: 85 × 85 na okviru od 1920, dakle 83 ovde.
@@ -27,7 +28,7 @@ const IksZatvori = ({ onClick }) => (
     type="button"
     onClick={onClick}
     style={{
-      position: 'absolute', top: '44px', right: '50px',
+      position: 'absolute', top: '46px', right: '52px',
       background: 'none', border: 'none', cursor: 'pointer',
       color: '#261A54', lineHeight: 0, padding: 0, zIndex: 1, opacity: 0.75,
     }}
@@ -42,35 +43,43 @@ const IksZatvori = ({ onClick }) => (
 
 /**
  * Mere modala za otkazivanje, sa izvoza dizajna (okvir 1920, modal izvezen ceo
- * sa zaobljenim uglovima: 2880 × 1334, dakle 1440 × 667).
+ * sa zaobljenim uglovima: 2880 × 1334, dakle 1440 × 667). Kolona sajta je sada
+ * 1440, pa se sve prepisuje doslovno — ranije su vrednosti bile umanjene
+ * činiocem 0,972.
  *
  * Kao i ostali modali u ovom projektu, širok je koliko i kolona sadržaja, a
  * sam sadržaj stoji u užoj usredišćenoj koloni. Ranije je ovde stajalo 920.
  */
 const M = {
-  sirina: 1400,      // 1440
-  visina: 648,       // 667
-  radijus: 24,       // 24,5
-  kolona: 827,       // 851 — dve kolone po 403 sa razmakom 20
-  stubac: 403,       // 415
-  razmakStubaca: 20, // 21
-  vrhNaslova: 131,   // ink na 140
-  naslov: 34,        // 35
-  naslovDoPolja: 59,
-  visinaPolja: 58,   // 60
-  razmakPolja: 20,   // 20
-  visinaOpisa: 206,  // 212
-  opisDoDugmeta: 22, // 23
-  dugmeSirina: 272,  // 280
-  dugmeVisina: 57,   // 59
-  dno: 125,
+  sirina: 1440,
+  visina: 667,
+  radijus: 30,   // Rectangle 54: 1440 × 667, zaobljenje 30
+  // Izvoz: sadržaj 851 × 409 po sredini (129 od vrha i od dna), dve kolone
+  // 416 i 415,5 sa razmakom 20, razmak naslov–polja 60.
+  kolona: 851,
+  stubac: 415.5,
+  razmakStubaca: 20,
+  vrhNaslova: 129,
+  naslov: 36,
+  redNaslova: 49,
+  naslovDoPolja: 60,
+  visinaPolja: 60,
+  razmakPolja: 20,
+  visinaOpisa: 215,
+  opisDoDugmeta: 20,
+  dugmeSirina: 280,
+  dugmeVisina: 59,
+  dugmeRadijus: 30.5,
+  dno: 129,
+  poljeBoja: '#F1F1F1',
 }
 
 // ── Input style helper ────────────────────────────────────────────────────────
 const inputStyle = {
-  width: '100%', height: `${M.visinaPolja}px`, borderRadius: `${M.visinaPolja / 2}px`,
-  background: '#f0f0f0', border: 'none', outline: 'none',
-  padding: '0 28px', fontSize: '18px', color: '#333',
+  width: '100%', height: `${M.visinaPolja}px`, borderRadius: '100px',
+  background: M.poljeBoja, border: 'none', outline: 'none',
+  // Natpis u polju kreće 41 od leve ivice.
+  padding: '0 41px', fontSize: '18px', lineHeight: '25px', color: '#261A54',
   fontFamily: 'inherit',
 }
 
@@ -223,47 +232,37 @@ const MyReservationsComponent = () => {
   return (
     <>
       {/* Dark header */}
-      <div className="w-full bg-[#261A54] profile-page-header" style={{ paddingTop: '260px', paddingBottom: '50px' }}>
-        <div className="max-w-[1400px] w-full mx-auto px-6 flex items-end justify-between gap-6 profile-page-header-inner">
-          <div className="flex items-end gap-6 profile-page-header-left">
-            <div className="relative z-10 flex-shrink-0 profile-page-avatar-wrapper" style={{ marginBottom: '-56px' }}>
-              <Avatar
-                isBordered
-                src={avatarSrc || undefined}
-                name={!avatarSrc ? (user?.name || 'U') : undefined}
-                radius="full"
-                className="w-[150px] h-[150px] text-2xl bg-[#3d2f7a] border-4 border-white"
-              />
-            </div>
-            <div className="flex flex-col gap-1 pb-2 profile-page-header-name">
-              {/* U dizajnu je naslov 40px na okviru od 1920, dakle 39 ovde.
-                  `text-3xl` je davao 30. */}
-              <span className="text-[39px] font-bold leading-tight" style={{ color: '#ffffff' }}>Moje rezervacije</span>
-            </div>
-          </div>
-          <div className="flex items-end gap-5 pb-2 profile-page-header-actions">
-            <Link href="/profil">
-              <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', ...MERE_DUGMETA }}>
-                Vrati se na profil
-              </span>
-            </Link>
-            <Link href="/prethodne-rezervacije">
-              <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', ...MERE_DUGMETA }}>
-                Prethodne rezervacije
-              </span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      <ZaglavljeIzlagaca
+        avatarSrc={avatarSrc}
+        avatarIme={user?.name || 'U'}
+        naslov="Moje rezervacije"
+      >
+        <Link href="/profil">
+          <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', ...MERE_DUGMETA }}>
+            Vrati se na profil
+          </span>
+        </Link>
+        <Link href="/prethodne-rezervacije">
+          <span style={{ border: '1px solid #ffffff', borderRadius: '30px', whiteSpace: 'nowrap', ...MERE_DUGMETA }}>
+            Prethodne rezervacije
+          </span>
+        </Link>
+      </ZaglavljeIzlagaca>
 
       {/* Sivi sadržaj */}
       {/* U dizajnu napomena kreće 29px ispod tamne trake, ne 70. */}
       <div className="w-full bg-[#f5f5f5] profile-page-content" style={{ paddingTop: '29px', paddingBottom: '96px' }}>
-        <div className="max-w-[1400px] mx-auto px-6">
+        {/* Odmak sa strane treba na uskim ekranima; da bi kartice ipak počinjale
+            na levoj ivici kolone (x 240) i završavale na desnoj (1680), najveća
+            širina je za dvostruki odmak veća — isto kao u zaglavlju. Mera je
+            zajednička celom sajtu, vidi `--nnb-odmak`. */}
+        <div className="mx-auto nnb-gutter" style={{ maxWidth: 'calc(var(--nnb-kolona) + 2 * var(--nnb-odmak))' }}>
           {/* Napomena je uvučena da ne naleti na krug sa logotipom, koji viri
               ispod trake. U dizajnu počinje tačno ispod naslova iznad, pa je
               uvlaka širina avatara plus razmak do naslova (150 + 24). */}
-          <span className="font-normal text-[18px] text-[#261A54] block pl-[174px] sm:pl-0">
+          {/* Napomena je u izvozu na x 509, u istoj koloni kao i naslov iznad —
+              dakle 269 od leve ivice kolone sadržaja. */}
+          <span className="font-normal text-[18px] text-[#261A54] block pl-[269px] sm:pl-0">
             *Rezervaciju je moguće otkazati kontaktiranjem Noćnog Bazara.
           </span>
           {loading && (
@@ -295,7 +294,7 @@ const MyReservationsComponent = () => {
               /* ── STEP 1: Form ─────────────────────────────────────────── */
               <div className="cancel-modal-inner" style={{ padding: `${M.vrhNaslova}px 24px ${M.dno}px` }}>
                 {/* Title */}
-                <h2 style={{ fontSize: `${M.naslov}px`, lineHeight: 1.2, fontWeight: '700', color: '#1B1B1B', textAlign: 'center', marginBottom: `${M.naslovDoPolja}px` }}>
+                <h2 style={{ fontSize: `${M.naslov}px`, lineHeight: `${M.redNaslova}px`, fontWeight: '700', color: '#1B1B1B', textAlign: 'center', marginBottom: `${M.naslovDoPolja}px` }}>
                   Otkazivanje rezervacije
                 </h2>
 
@@ -336,8 +335,9 @@ const MyReservationsComponent = () => {
                     <textarea
                       style={{
                         width: '100%', height: `${M.visinaOpisa}px`, borderRadius: '20px',
-                        background: '#f0f0f0', border: 'none', outline: 'none',
-                        padding: '22px 28px', fontSize: '18px', color: '#333',
+                        background: M.poljeBoja, border: 'none', outline: 'none',
+                        // Natpis kreće na (43, 25) unutar polja.
+                        padding: '25px 43px', fontSize: '18px', lineHeight: '25px', color: '#261A54',
                         fontFamily: 'inherit', resize: 'none',
                       }}
                       placeholder="Navedite razlog otkazivanja rezervacije"
@@ -355,7 +355,7 @@ const MyReservationsComponent = () => {
                         disabled={cancelling}
                         style={{
                           width: `${M.dugmeSirina}px`, height: `${M.dugmeVisina}px`,
-                          borderRadius: `${M.dugmeVisina / 2}px`,
+                          borderRadius: `${M.dugmeRadijus}px`,
                           background: '#EC4923', color: '#ffffff', fontWeight: '600',
                           fontSize: '18px', border: 'none',
                           cursor: cancelling ? 'not-allowed' : 'pointer',

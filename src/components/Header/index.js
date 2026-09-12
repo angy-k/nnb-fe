@@ -87,7 +87,10 @@ const Header = ({bgColor = '#261A54'}) => {
         <button
           onClick={()=>setOpenMenu(!openMenu)}
           aria-label="Hamburger button"
-          className="inline-flex items-center justify-center pb-2 px-2 text-black-400 transition duration-150 ease-in-out lg:hidden xl:hidden sm:absolute sm:left-0 sm:top-1/2 sm:-translate-y-1/2"
+          /* Hamburger je apsolutno postavljen, pa odmak roditelja ne važi za
+             njega — kod apsolutnog postavljanja `left: 0` znači ivicu okvira, a
+             ne ivicu odmaka. Zato meru dobija sam, kroz `header-hamburger`. */
+          className="inline-flex items-center justify-center pb-2 px-2 text-black-400 transition duration-150 ease-in-out lg:hidden xl:hidden sm:absolute header-hamburger sm:top-1/2 sm:-translate-y-1/2"
         >
           <svg
             className="h-6 w-6"

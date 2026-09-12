@@ -107,7 +107,8 @@ const BlogDetailPage = () => {
     padding: '10px 24px',
     background: 'transparent',
     color: '#261A54',
-    fontSize: '14px',
+    fontSize: '15px',
+    lineHeight: '20px',
     fontWeight: '500',
     cursor: 'pointer',
     transition: 'opacity 0.2s',
@@ -141,9 +142,17 @@ const BlogDetailPage = () => {
             Greška prilikom učitavanja objave.
           </div>
         )}
-        <div className="max-w-7xl mx-auto px-6 w-full">
+        {/* Odmak sa strane treba na uskim ekranima, ali bi na širokom uvukao
+            sadržaj na x 264 umesto na 240. Zato je najveća širina za dvostruki
+            odmak veća, pa sam sadržaj ispadne tačno 1440 širok i počne na levoj
+            ivici kolone — a kako je odmak sada promenljiva zajednička celom
+            sajtu (`--nnb-odmak`), i ova mera je prati. */}
+        <div className="mx-auto nnb-gutter w-full" style={{ maxWidth: 'calc(var(--nnb-kolona) + 2 * var(--nnb-odmak))' }}>
           {/* ── White card ── */}
-          <div className="bg-white rounded-lg mb-6">
+          {/* Bez bele kartice: po dizajnu sadržaj objave stoji direktno na
+              svetloj podlozi stranice, a naslov i datum počinju na levoj ivici
+              kolone (x 240). Kartica ih je uvlačila još 136px udesno. */}
+          <div className="mb-6">
             {blog && (
               <>
                 {/* Breadcrumb and Publication Date */}
@@ -153,20 +162,25 @@ const BlogDetailPage = () => {
                     i bočna kolona završavali levo ispod naslova umesto desno.
                     Zato je red podrazumevano vodoravan, a `sm:` ga slaže samo na
                     mobilnom. */}
-                <div className="flex flex-row sm:flex-col justify-between items-center sm:items-start gap-4 mb-8 p-8 pb-0">
-                  <div className="text-sm text-[#1B1B1B]">
+                <div className="flex flex-row sm:flex-col justify-between items-center sm:items-start gap-4 mb-8">
+                  {/* Datum i mrvice su u izvozu sivi (`#808080`), a kućica
+                      tamnoplava — odatle i utisak da je ikonica „teža" od
+                      teksta. Ranije je i tekst bio skoro crn. */}
+                  <div style={{ fontSize: '18px', lineHeight: '25px', color: '#808080' }}>
                     Objavljeno: {blog.creationDate}
                   </div>
-                  <nav className="text-sm text-[#1B1B1B] flex flex-wrap items-center">
+                  <nav className="flex flex-wrap items-center" style={{ fontSize: '18px', lineHeight: '25px', color: '#808080' }}>
                     <button
                       onClick={() => router.push('/')}
                       className="hover:opacity-70 cursor-pointer"
                     >
+                      {/* U izvozu je kućica 32 × 32 na (1310, 693). Ovde je 25,
+                          koliko je i red teksta, da ne nadjača mrvice. */}
                       <Image
                         src={HomeIcon}
-                        alt="Home"
-                        width={16}
-                        height={16}
+                        alt="Početna"
+                        width={25}
+                        height={25}
                       />
                     </button>
                     <span className="mx-2">/</span>
@@ -174,29 +188,34 @@ const BlogDetailPage = () => {
                       onClick={() => router.push('/blog')}
                       className="hover:text-[#1B1B1B] cursor-pointer"
                     >
-                      sve objave
+                      Sve objave
                     </button>
                     <span className="mx-2">/</span>
-                    <span className="text-[#1B1B1B]">
-                      {blog.title.length > 30 ? blog.title.substring(0, 30) + '...' : blog.title}
-                    </span>
+                    {/* U izvozu ovde stoji „Trenutna objava", ne skraćen naslov
+                        objave — naslov je ionako odmah ispod, velikim slovima. */}
+                    <span>Trenutna objava</span>
                   </nav>
                 </div>
 
                 {/* Title and Author */}
-                <div className="flex flex-row sm:flex-col justify-between items-end sm:items-start mb-8 px-8 gap-18 sm:gap-4">
+                <div className="flex flex-row sm:flex-col justify-between items-end sm:items-start mb-8 gap-18 sm:gap-4">
                   <h1 className="single-blog-title flex-1 min-w-0" style={{wordWrap: 'break-word', whiteSpace: 'normal'}}>
                     {blog.title}
                   </h1>
+                  {/* U izvozu autor stoji 19px iznad donje ivice naslova
+                      (avatar 836–909, naslov 754–928), ne poravnat s njom. */}
                   <AuthorBadge author={blog.author} team={team} />
                 </div>
 
-                <div className="px-8 pb-10">
+                <div className="pb-10">
                   {/* Cover image */}
                   <img
                     src={blog.coverImage || blog.heroImage || '/card-component-default-image.png'}
                     alt={blog.title}
-                    className="w-full h-80 object-cover rounded-lg mb-8"
+                    /* Po dizajnu 1440 × 411 sa zaobljenjem od 30px — preko
+                       cele kolone. Ranije 320px visine i zaobljenje 8px. */
+                    className="w-full object-cover mb-8 single-blog-cover"
+                    style={{ height: '411px', borderRadius: '30px' }}
                   />
 
                   {/* Content + sidebar */}
@@ -217,15 +236,23 @@ const BlogDetailPage = () => {
 
                     {/* Similar Blogs Sidebar */}
                     {similarBlogs && similarBlogs.length > 0 && (
-                      <div className="w-72 sm:w-full flex-shrink-0">
-                        <h3 className="text-sm font-semibold text-[#1B1B1B] mb-3">Pročitaj još:</h3>
-                        <div className="bg-[#261A54] rounded-xl p-5 md:sticky md:top-28">
+                      /* `max-w-full` je ovde uslov, ne ukras: `sm:w-full` ne
+                         može da pobedi inline `width: 345px`, pa je bočna
+                         kolona na telefonu ostajala 345px široka i sa odmakom
+                         od 2 × 24 razvlačila stranicu na 393px. */
+                      <div className="sm:w-full max-w-full flex-shrink-0" style={{ width: '345px' }}>
+                        <h3 className="font-semibold text-[#1B1B1B] mb-3" style={{ fontSize: '17px', lineHeight: '23px' }}>Pročitaj još:</h3>
+                        {/* Po dizajnu: ploča 345 × 223 sa zaobljenjem od 30px, a stavke u njoj
+                            stoje 62px od bočnih i 47px od gornje ivice. Ranije 288 široka,
+                            zaobljenje 12, odmak 20. */}
+                        <div className="bg-[#261A54] md:sticky md:top-28 blog-slicne-ploca" style={{ borderRadius: '30px', padding: '47px 62px' }}>
                           <ul className="flex flex-col gap-2">
                             {similarBlogs.map((similarBlog, index) => (
                               <li key={index}>
                                 <button
                                   onClick={() => router.push(`/blog/${formatTitleForUri(similarBlog.title)}`)}
-                                  className="text-white hover:opacity-70 text-sm font-medium text-left w-full transition-opacity duration-200"
+                                  className="text-white hover:opacity-70 font-medium text-left w-full transition-opacity duration-200"
+                                  style={{ fontSize: '17px', lineHeight: '23px' }}
                                 >
                                   {similarBlog.title}
                                 </button>
@@ -257,7 +284,7 @@ const BlogDetailPage = () => {
                   onMouseOver={e => e.currentTarget.style.opacity = '0.7'}
                   onMouseOut={e => e.currentTarget.style.opacity = '1'}
                 >
-                  ← Prethodna objava
+                  Prethodna objava
                 </button>
               ) : <div />}
               {nextBlog && (
@@ -268,7 +295,7 @@ const BlogDetailPage = () => {
                   onMouseOver={e => e.currentTarget.style.opacity = '0.7'}
                   onMouseOut={e => e.currentTarget.style.opacity = '1'}
                 >
-                  Sledeća objava →
+                  Sledeća objava
                 </button>
               )}
             </div>
@@ -296,6 +323,7 @@ const BlogDetailPage = () => {
                       creationDate={similarBlog.creationDate}
                       buttonAction={() => router.push(`/blog/${formatTitleForUri(similarBlog.title)}`)}
                       buttonText="Pročitaj više"
+                buttonSmallText
                     />
                   </div>
                 ))}
@@ -322,24 +350,26 @@ const AuthorBadge = ({ author, team }) => {
 
   const sadrzaj = (
     <>
-      <span className="text-sm text-[#1B1B1B] whitespace-nowrap">
+      <span className="text-[#1B1B1B] whitespace-nowrap" style={{ fontSize: '18px', lineHeight: '25px' }}>
         Autor: {author}
       </span>
       {slika ? (
         <img
           src={slika}
           alt={author}
-          width={36}
-          height={36}
-          style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }}
+          width={73}
+          height={73}
+          style={{ width: 73, height: 73, borderRadius: '50%', objectFit: 'cover' }}
         />
       ) : (
-        <Image src={OwlIcon} alt={author} width={36} height={36} />
+        <Image src={OwlIcon} alt={author} width={73} height={73} />
       )}
     </>
   );
 
-  const klase = 'flex items-center gap-2 self-end sm:self-start';
+  /* U izvozu autor ne naleže na donju ivicu naslova nego stoji 19px iznad nje:
+     avatar je 836–909, a naslov 754–928. */
+  const klase = 'flex items-center gap-2 self-end sm:self-start mb-[19px] sm:mb-0';
 
   if (!clan) {
     return <div className={klase}>{sadrzaj}</div>;

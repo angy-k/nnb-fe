@@ -98,10 +98,17 @@ const ProjectDetailPage = () => {
   return (
     <>
       {/* ── Tamni deo: bedž, naslov, podnaslov, logotipi, slike, uvodni tekst ── */}
-      <div className="w-full bg-[#261A54] page-hero-section" style={{ display: 'flex' }}>
+      {/* Tamna zona projekta ima svoj razred, bez `overflow: hidden` koje nosi
+          `page-hero-section`. To odsecanje je tu zbog sove koja viri iz hero
+          trake na drugim stranicama, ali je ovde seklo glavnu sliku tačno na
+          ivici — pa je izgledalo kao da se slika i svetla zona dodiruju. */}
+      <div className="w-full bg-[#261A54] projekat-tamna-zona" style={{ display: 'flex' }}>
         <div
-          className="mx-auto w-full pt-[352px] sm:pt-[120px]"
-          style={{ maxWidth: '1400px', paddingLeft: '60px', paddingRight: '60px', paddingBottom: '80px' }}
+          /* Odmak sa strane je bio zakucan na 60px, pa je na telefonu od 375
+             ostajalo 255 za sadržaj — dvostruko više nego bilo gde drugde.
+             `projekat-kolona` drži 60 na desktopu, a niže zajedničku meru. */
+          className="mx-auto w-full pt-[352px] sm:pt-[120px] projekat-kolona"
+          style={{ maxWidth: 'var(--nnb-kolona)', paddingBottom: '80px' }}
         >
           {project?.funderBadge && (
             <img
@@ -151,10 +158,15 @@ const ProjectDetailPage = () => {
             />
           )}
 
+          {/* Glavna slika u dizajnu prelazi preko donje ivice tamne zone: ona se
+              završava na 2812, a slika (1440 × 751 na y 2106) tek na 2857 —
+              dakle poslednjih 45px slike stoji na svetloj podlozi. Do sada je
+              cela bila unutar tamnog dela. */}
           {project?.featureImage && (
             <img
               src={project.featureImage}
               alt=""
+              className="projekat-glavna-slika"
               style={{ width: '100%', height: 'auto', borderRadius: '30px', marginTop: '48px' }}
             />
           )}
@@ -162,12 +174,12 @@ const ProjectDetailPage = () => {
       </div>
 
       {/* ── Svetli deo: glavni tekst, događaji, rezultati ── */}
-      <div className="w-full pt-24 pb-24 grid place-items-center bg-[#F0F0F0]">
+      <div className="w-full pt-24 pb-24 grid place-items-center bg-[#F0F0F0] projekat-svetli-deo">
         {loading && <div className="text-center text-[#261A54]">Učitavanje projekta...</div>}
         {error && <div className="text-[#EC4923] text-center mb-4">Greška: {error}</div>}
 
         {project && (
-          <div className="w-full" style={{ maxWidth: '1400px', paddingLeft: '60px', paddingRight: '60px' }}>
+          <div className="w-full projekat-kolona" style={{ maxWidth: 'var(--nnb-kolona)' }}>
             {/* Mrvice samo na starijem, blogovskom izgledu — vidi `bogataStranica`. */}
             {!bogataStranica && (
             <nav className="text-sm text-[#1B1B1B] flex flex-wrap items-center mb-10">

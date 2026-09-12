@@ -16,7 +16,9 @@ const PartnerCard = ({ partner, onClick }) => (
     style={{
       position: 'relative',
       background: '#ffffff',
-      borderRadius: '20px',
+      /* Po dizajnu je kartica 467 × 467 sa zaobljenjem od 30px — isto kao sve
+         ostale kartice na sajtu. Ovde je stajalo 20. */
+      borderRadius: '30px',
       padding: '48px 40px',
       cursor: 'pointer',
       display: 'flex',
@@ -29,21 +31,24 @@ const PartnerCard = ({ partner, onClick }) => (
     onMouseOut={e => e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06)'}
   >
     {/* + button — top-right */}
+    {/* Krug sa plusom u gornjem desnom uglu. Po dizajnu je 58 × 58, sa ivicom
+        od 1px u boji naslova (#261A54), i stoji 30px od vrha i od desne ivice
+        kartice. Ranije je bio 30 × 30, sivkast, na 16px od uglova. */}
     <div
       aria-hidden="true"
       style={{
         position: 'absolute',
-        top: '16px',
-        right: '16px',
-        width: '30px',
-        height: '30px',
+        top: '30px',
+        right: '30px',
+        width: '58px',
+        height: '58px',
         borderRadius: '50%',
-        border: '1.5px solid #c0c0c0',
+        border: '1px solid #261A54',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#999',
-        fontSize: '18px',
+        color: '#261A54',
+        fontSize: '26px',
         lineHeight: 1,
         userSelect: 'none',
       }}
@@ -87,13 +92,22 @@ const PartnerModal = ({ partner, onClose }) => {
       <div
         style={{
           background: 'linear-gradient(to bottom, #ffffff 60%, #dff4f5 100%)',
-          borderRadius: '20px',
-          padding: '48px 56px 56px',
-          // U dizajnu je modal 1206 širok na okviru od 1920, dakle 62,8% širine —
-          // 904px na 1440. Ovde je stajalo 760, pa je bio osetno uži.
-          maxWidth: '904px',
+          borderRadius: '30px',
+          /* U dizajnu modal zauzima celu kolonu sadržaja: bela ploča ide od
+             x 240 do 1680, dakle 1440. Tekst u njoj stoji na 404 i širok je
+             1113 — to je 164px odmaka sa svake strane (11,4% širine modala).
+             Odmak je zadat u procentu da se na užem prozoru sam skupi.
+
+             Ranije je stajalo 904px, dobijeno svođenjem dizajnove mere na
+             prozor od 1440 — ali modal ne prati kolonu, nego prozor, pa je na
+             1920 ispadao osetno uži nego u dizajnu. */
+          maxWidth: 'var(--nnb-kolona)',
           width: '100%',
           maxHeight: '85vh',
+          paddingTop: '48px',
+          paddingBottom: '56px',
+          paddingLeft: 'clamp(24px, 11.4%, 164px)',
+          paddingRight: 'clamp(24px, 11.4%, 164px)',
           overflowY: 'auto',
           position: 'relative',
         }}

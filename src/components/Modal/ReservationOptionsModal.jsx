@@ -6,10 +6,11 @@ import SaglasnostIzlaganja from '@/components/Reservations/SaglasnostIzlaganja'
 
 /**
  * Mere sa izvoza dizajna (`Opcije-rezervacije.png`, okvir 1920; modal 1066 × 923
- * → 1036 × 897 ovde, činilac 0,972).
+ * → ranije 1036 × 897 ovde, činilac 0,972. Otkako je kolona 1440, mere se
+ * prepisuju doslovno: 1066 × 923.
  */
 const M = {
-  radijus: 47,        // ~48
+  radijus: 50,        // po dizajnu
   bok: 185,           // 190
   vrh: 115,           // ink prvog reda pitanja na 118,5
   pitanje: 33,        // ~34
@@ -107,10 +108,22 @@ const ReservationOptionsModal = ({
   eventDays = [],
   selectedDayIds = [],
   setSelectedDayIds = null,
+  // Prijavu po danu dopušta samo događaj kojem je to uključeno. Kod ostalih
+  // prijava pokriva sve dane i naplaćuje se za sve — pa izbor dana ne sme ni
+  // da se ponudi: server bi ga ignorisao, a iznos bi izlagača iznenadio.
+  allowPerDay = false,
 }) => {
-  const jeViseDnevni = Array.isArray(eventDays) && eventDays.length > 1
+  const jeViseDnevni = Array.isArray(eventDays) && eventDays.length > 1 && allowPerDay
+  const sviDaniBezIzbora = Array.isArray(eventDays) && eventDays.length > 1 && !allowPerDay
   const sviDani = eventDays.map((d) => d.id)
   const izabraniSvi = jeViseDnevni && sviDani.length > 0 && sviDani.every((id) => selectedDayIds.includes(id))
+  /* Kvačica „više dana" mora da bude zasebno stanje, ne samo posledica izbora:
+     da je izvedena iz `selectedDayIds.length > 1`, ne bi se mogla ni uključiti —
+     dok je isključena, klik na dan postavlja tačno taj jedan dan, pa se drugi
+     nikad ne bi ni dodao. Uključuje se i sama, ako je već izabrano više dana
+     (na primer kad se modal otvori sa kalendara). */
+  const [rucnoViseDana, setRucnoViseDana] = useState(false)
+  const viseDana = rucnoViseDana || selectedDayIds.length > 1
 
   const [sopstvenaSaglasnost, setSopstvenaSaglasnost] = useState(false)
   const saglasan = setTermsAccepted ? termsAccepted : sopstvenaSaglasnost
@@ -127,7 +140,7 @@ const ReservationOptionsModal = ({
       classNames={{
         backdrop: 'nnb-modal-backdrop',
         wrapper: 'nnb-modal-wrapper items-center justify-center',
-        base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[1036px]',
+        base: 'shadow-2xl w-[calc(100vw-2rem)] max-w-[1066px]',
         body: 'p-0',
       }}
     >
@@ -160,31 +173,99 @@ const ReservationOptionsModal = ({
               >
                 <TimerChip timeRemaining={timeRemaining} />
 
-                {/* Broj dana — samo kod višednevnih događaja. Bez ovoga se
-                    prijava sa kalendara slala uvek za jedan dan, pa je izlagač
-                    morao da ponavlja postupak za svaki dan posebno. */}
+                {/* Izbor dana kod višednevnih događaja.
+                 *
+                 * Isti blok kao na stranici mape: istaknuta kartica sa kvačicom
+                 * „Prijavljujem se za više dana" i dugmadima po danu, sa datumom
+                 * i vremenom. Ranije su ovde stajala samo dva radio dugmeta —
+                 * „1 dan" i „svi dani" — pa izlagač na događaju u drugom mestu
+                 * nije imao načina da izabere *koji* dan mu treba. */}
                 {jeViseDnevni && setSelectedDayIds && (
-                  <>
-                    <h2 className="text-[#261A54] font-bold" style={{ fontSize: 'var(--om-pitanje)', lineHeight: M.redPitanja, marginBottom: 'var(--om-pitanje-opcije)' }}>
-                      Za koliko dana se prijavljujete?
-                    </h2>
-                    <div className="flex flex-col" style={{ gap: 'var(--om-razmak-opcija)', marginBottom: 'var(--om-opcije-pitanje)' }}>
-                      <RadioOption
-                        name="dani"
-                        value="jedan"
-                        checked={!izabraniSvi}
-                        onChange={() => setSelectedDayIds(selectedDayIds.slice(0, 1).length ? selectedDayIds.slice(0, 1) : sviDani.slice(0, 1))}
-                        label="Prijavljujem se za 1 dan"
+                  <div
+                    className="rounded-2xl"
+                    style={{ background: '#ffffff', border: '2px solid #EC4923', padding: '20px', marginBottom: 'var(--om-opcije-pitanje)' }}
+                  >
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={viseDana}
+                        onChange={(e) => {
+                          setRucnoViseDana(e.target.checked)
+                          if (e.target.checked) return
+                          // Gašenjem se vraća na jedan dan — onaj koji je već izabran
+                          const prvi = selectedDayIds[0] ?? sviDani[0]
+                          setSelectedDayIds(prvi ? [prvi] : [])
+                        }}
+                        className="w-6 h-6 accent-[#EC4923] cursor-pointer flex-shrink-0"
                       />
-                      <RadioOption
-                        name="dani"
-                        value="svi"
-                        checked={izabraniSvi}
-                        onChange={() => setSelectedDayIds(sviDani)}
-                        label={`Prijavljujem se za sve dane (${sviDani.length})`}
-                      />
+                      <span className="text-[#261A54] font-bold" style={{ fontSize: '26px', lineHeight: 1.15 }}>
+                        Prijavljujem se za više dana
+                      </span>
+                    </label>
+
+                    <p className="text-[#555] mt-3" style={{ fontSize: '17px' }}>
+                      {viseDana
+                        ? 'Izaberite dane. Prijava važi za sve izabrane dane.'
+                        : 'Događaj traje više dana. Prijava za više dana je povoljnija od zbira pojedinačnih.'}
+                    </p>
+
+                    <div className="flex flex-wrap gap-3 mt-4">
+                      {eventDays.map((day) => {
+                        const izabran = selectedDayIds.includes(day.id)
+                        const jedini = selectedDayIds.length === 1 && izabran
+                        return (
+                          <button
+                            key={day.id}
+                            type="button"
+                            onClick={() => {
+                              if (!viseDana) {
+                                setSelectedDayIds([day.id])
+                              } else if (izabran) {
+                                if (jedini) return
+                                setSelectedDayIds(selectedDayIds.filter((id) => id !== day.id))
+                              } else {
+                                setSelectedDayIds([...selectedDayIds, day.id])
+                              }
+                            }}
+                            className="rounded-xl border-2 px-4 py-3 text-left transition"
+                            style={{
+                              borderColor: izabran ? '#56C4CF' : '#e0e0e0',
+                              background: izabran ? '#eafafb' : '#ffffff',
+                              cursor: jedini && viseDana ? 'default' : 'pointer',
+                            }}
+                          >
+                            <div className="text-[#261A54] font-bold" style={{ fontSize: '21px', lineHeight: 1.2 }}>
+                              {day.dayNumber}. dan
+                            </div>
+                            <div className="text-[#555]" style={{ fontSize: '17px' }}>{day.date}</div>
+                            {day.timeRange && (
+                              <div className="text-[#888] text-sm mt-0.5">{day.timeRange}</div>
+                            )}
+                          </button>
+                        )
+                      })}
                     </div>
-                  </>
+
+                    <p className="text-[#555] mt-3" style={{ fontSize: '15px' }}>
+                      Klikom na dan birate rezervaciju za izabrani dan.
+                    </p>
+                  </div>
+                )}
+
+                {/* Višednevni događaj bez prijave po danu: izbora nema, ali
+                    izlagač mora da zna da se prijavljuje (i plaća) za sve dane. */}
+                {sviDaniBezIzbora && (
+                  <div
+                    className="rounded-2xl"
+                    style={{ background: '#ffffff', border: '2px solid #EC4923', padding: '20px', marginBottom: 'var(--om-opcije-pitanje)' }}
+                  >
+                    <p className="text-[#261A54] font-bold" style={{ fontSize: '21px', lineHeight: 1.2 }}>
+                      Prijava važi za sve dane događaja
+                    </p>
+                    <p className="text-[#555] mt-2" style={{ fontSize: '17px' }}>
+                      {eventDays.map((d) => d.date).filter(Boolean).join(' · ')}
+                    </p>
+                  </div>
                 )}
 
                 <h2 className="text-[#261A54] font-bold" style={{ fontSize: 'var(--om-pitanje)', lineHeight: M.redPitanja, marginBottom: 'var(--om-pitanje-opcije)' }}>

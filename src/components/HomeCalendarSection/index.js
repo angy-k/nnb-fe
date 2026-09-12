@@ -23,7 +23,8 @@ import OwlDrugoMesto from '@/icons/owl-drugo-mesto.svg'
 import eventService from '@/services/eventService'
 import applicationService from '@/services/applicationService'
 import useUser from '@/data/use-user'
-import { electricityOptionsOf, electricityPriceFor } from '@/utils/electricity'
+import { electricityOptionsOf } from '@/utils/electricity'
+import { brojDanaPrijave, lokalniTroskovi, predracunSaServera } from '@/utils/troskovi'
 import RegistrationInstructionsModal from '@/components/Modal/RegistrationInstructionsModal'
 
 const HomeCalendarSection = () => {
@@ -40,10 +41,30 @@ const HomeCalendarSection = () => {
 
   // reservation state
   const [isReserveModalOpen, setIsReserveModalOpen] = useState(false)
+
+  /* Izabrani dani kod višednevnog događaja — isto kao na stranici Kalendar.
+     Polazno je dan sa kojeg je izlagač kliknuo, a kvačicom „više dana" može da
+     doda ostale. */
+  const [selectedDayIds, setSelectedDayIds] = useState([])
   const [electricityOption, setElectricityOption] = useState('none')
   const [marketingOption, setMarketingOption] = useState('none')
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+
+  /* Saglasnost sa opštim uslovima živi ovde, a ne u modalima.
+   *
+   * Modal opcija i modal potvrde su dva odvojena prozora; dok je svaki držao
+   * svoju kvačicu, ona data u opcijama nije stizala do potvrde — a potvrda bez
+   * `setTermsAccepted` nije mogla ni da je primi (dugme je ostajalo zaključano
+   * zauvek). Isto rešenje već stoji na stranici mape. */
+  const [termsAccepted, setTermsAccepted] = useState(false)
+
   const [confirmCosts, setConfirmCosts] = useState({ cotization: 0, electricity: null, marketing: null })
+  // Šta na ovoj prijavi pokriva gratis nastup iz paketa — stiže uz predračun
+  const [coveredByPackage, setCoveredByPackage] = useState([])
+  /* Razlozi zbog kojih upis ne bi prošao — stižu uz predračun. Bez njih je
+     sažetak umeo da pokaže „0 RSD" za događaj kojem cena nije određena, pa je
+     izlagač slao prijavu misleći da je besplatna. */
+  const [quoteBlockers, setQuoteBlockers] = useState([])
   const [isSubmittingReservation, setIsSubmittingReservation] = useState(false)
   const [reservationError, setReservationError] = useState(null)
   const [reservationSuccess, setReservationSuccess] = useState(null)
@@ -154,9 +175,13 @@ const HomeCalendarSection = () => {
     setElectricityOption('none')
     setMarketingOption('none')
     setConfirmCosts({ cotization: 0, electricity: null, marketing: null })
+    setCoveredByPackage([])
+    setQuoteBlockers([])
     setReservationError(null)
     setReservationSuccess(null)
     setIsSubmittingReservation(false)
+    setTermsAccepted(false)
+    setSelectedDayIds([])
   }
 
   const closeAllModals = () => {
@@ -182,28 +207,6 @@ const HomeCalendarSection = () => {
       router.push(`/rezervacija-mesta/${eventId}${dayId ? `?day=${dayId}` : ''}`)
       return true
     } catch { return false }
-  }
-
-  const computeConfirmCosts = (event, electricityOpt, marketingOpt) => {
-    const cotization = Number(event?.downPayment) || 0
-
-    // Cena zavisi od izabrane jačine priključka; „none" znači da struja nije tražena
-    const electricity = electricityPriceFor(event, electricityOpt)
-
-    const rawFb = event?.fbMarketingCoasts
-    const rawIg = event?.ingMarketingCoasts
-    const fb = rawFb != null && rawFb !== '' ? Number(rawFb) : null
-    const ig = rawIg != null && rawIg !== '' ? Number(rawIg) : null
-    // Cena paketa za obe mreže je zasebna i niža od zbira pojedinačnih;
-    // sabiranje ostaje samo za događaje kojima ta cena nije uneta.
-    const rawBoth = event?.fbIngMarketingCoasts
-    const both = rawBoth != null && rawBoth !== '' ? Number(rawBoth) : null
-
-    let marketing = null
-    if (marketingOpt === 'facebook') marketing = fb
-    else if (marketingOpt === 'instagram') marketing = ig
-    else if (marketingOpt === 'instagram_facebook') marketing = both ?? ((fb ?? 0) + (ig ?? 0))
-    return { cotization, electricity, marketing }
   }
 
   // ── event/day click ───────────────────────────────────────────────────────────
@@ -255,12 +258,14 @@ const HomeCalendarSection = () => {
       }
 
       setIsEventModalOpen(false)
+      setSelectedDayIds(det?._day?.id ? [det._day.id]
+        : (Array.isArray(det?.days) && det.days[0]?.id ? [det.days[0].id] : []))
       setIsReserveModalOpen(true)
       startSessionTimer()
     })()
   }
 
-  const submitReservationOptions = () => {
+  const submitReservationOptions = async () => {
     if (marketingOption !== 'none' && user) {
       const hasGallery =
         (Array.isArray(user?.gallery_images) && user.gallery_images.length > 0) ||
@@ -270,13 +275,46 @@ const HomeCalendarSection = () => {
         return
       }
     }
-    setConfirmCosts(computeConfirmCosts(selectedEvent, electricityOption, marketingOption))
+    /*
+     * Sažetak je ranije računat samo ovde, sa `downPayment` bez množenja danima
+     * i bez zona — pa je znao da pokaže 0 RSD za prijavu koja se naplaćuje.
+     * Merodavan iznos traži se sa servera, isto kao na mapi tezgi; domaća
+     * procena ostaje samo ako predračun ne stigne.
+     */
+    // Isti izbor dana koji će i otići uz prijavu — da predračun ne računa druge dane
+    const daniZaPrijavu = selectedDayIds.length
+      ? selectedDayIds
+      : (selectedEvent?._day?.id ? [selectedEvent._day.id] : [])
+    const dana = brojDanaPrijave(selectedEvent, daniZaPrijavu)
+    setConfirmCosts(lokalniTroskovi(selectedEvent, electricityOption, marketingOption, dana))
+    setCoveredByPackage([])
+    setQuoteBlockers([])
     setIsReserveModalOpen(false)
     setIsConfirmModalOpen(true)
+
+    const predracun = await predracunSaServera({
+      eventId: selectedEvent?.id,
+      electricityOption,
+      marketingOption,
+      eventDayIds: daniZaPrijavu,
+    })
+    if (predracun) {
+      setConfirmCosts(predracun.costs)
+      setCoveredByPackage(predracun.covered)
+      setQuoteBlockers(predracun.blockers)
+    }
   }
 
   const confirmReservation = async () => {
     if (!user) return
+
+    /* Druga brava: dugme je već zaključano bez kvačice, ali prijava ne sme da
+       ode ni ako se do slanja dođe nekim putem koji dugme zaobilazi. */
+    if (!termsAccepted) {
+      setReservationError('Morate prihvatiti opšte uslove izlaganja pre slanja prijave.')
+      return
+    }
+
     // selectedEventId je složeni ključ "eventId:dayId" — pravi id je u detaljima
     const eventId = selectedEvent?.id
     if (!eventId) { setReservationError('Nedostaje događaj.'); return }
@@ -296,7 +334,7 @@ const HomeCalendarSection = () => {
         eventId,
         electricityOption,
         marketingOption,
-        eventDayIds: selectedEvent?._day?.id ? [selectedEvent._day.id] : undefined,
+        eventDayIds: selectedDayIds.length ? selectedDayIds : (selectedEvent?._day?.id ? [selectedEvent._day.id] : undefined),
       })
       const contentType = res.headers.get('content-type') || ''
       const data = contentType.includes('application/json') ? await res.json() : null
@@ -324,14 +362,14 @@ const HomeCalendarSection = () => {
             više ništa nije naslovljavao — stajao je tik iznad „Očekivanih
             događaja", koji imaju svoj. Gornji razmak mu ne treba: daje ga
             `pb-24` tabele iznad. */}
-        <div className="w-full" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
+        <div className="w-full" style={{ width: '100%', height: '100%', maxWidth: 'var(--nnb-kolona)' }}>
           <span className="our-team-title">Kalendar događaja</span>
           <Divider className="section-divider" />
         </div>
 
         {/* Jedna instanca — ranije su stajale dve identične, za desktop i mobilni,
             pa se kalendar renderovao dvaput iako je jedna uvek bila sakrivena. */}
-        <div style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
+        <div style={{ width: '100%', height: '100%', maxWidth: 'var(--nnb-kolona)' }}>
           <Calendar view={'month'} events={events} onEventClick={onEventClick} onDayClick={onDayClick} />
         </div>
 
@@ -339,7 +377,7 @@ const HomeCalendarSection = () => {
             dodiruju ivicu ekrana, a zaobljena strana dugmeta ispada van
             vidljivog dela. */}
         {!user && (
-          <div className="pt-12 sm:pt-6 nnb-gutter flex flex-row sm:flex-col justify-between items-center sm:items-start gap-4" style={{ width: '100%', height: '100%', maxWidth: '1400px' }}>
+          <div className="pt-12 sm:pt-6 nnb-gutter flex flex-row sm:flex-col justify-between items-center sm:items-start gap-4" style={{ width: '100%', height: '100%', maxWidth: 'var(--nnb-kolona)' }}>
             {/* Naglašeno, po zahtevu sa kartice „Kalendar". Ranije je ovo bio
                   običan `span` koji se nije mogao kliknuti, a boja se nije ni
                   primenjivala: `text-[darkBlue]` u uglastim zagradama znači
@@ -365,7 +403,7 @@ const HomeCalendarSection = () => {
         )}
 
         {/* Legenda */}
-        <div className="flex items-center gap-6 mt-2 mb-2 px-4 sm:flex-col sm:items-start sm:gap-3" style={{ width: '100%', maxWidth: '1400px' }}>
+        <div className="flex items-center gap-6 mt-2 mb-2 px-4 sm:flex-col sm:items-start sm:gap-3" style={{ width: '100%', maxWidth: 'var(--nnb-kolona)' }}>
           <div className="flex items-center gap-2">
             <Image src={OwlNnb} width={44} height={33} alt="Novosadski noćni bazar" />
             <span style={{ fontSize: '14px', color: '#1B1B1B' }}>Novosadski noćni bazar</span>
@@ -419,6 +457,8 @@ const HomeCalendarSection = () => {
           const eventDetails = eventDetailsById[String(eventId)]
           const navigated = await goToReservationMap(eventDetails)
           if (!navigated) {
+            setSelectedDayIds(eventDetails?._day?.id ? [eventDetails._day.id]
+              : (Array.isArray(eventDetails?.days) && eventDetails.days[0]?.id ? [eventDetails.days[0].id] : []))
             setIsReserveModalOpen(true)
             startSessionTimer()
           }
@@ -426,10 +466,16 @@ const HomeCalendarSection = () => {
       />
 
       <ReservationOptionsModal
+          termsAccepted={termsAccepted}
+          setTermsAccepted={setTermsAccepted}
         isOpen={isReserveModalOpen}
         onClose={() => { setIsReserveModalOpen(false); resetReservationState() }}
         electricityOption={electricityOption}
           electricityOptions={electricityOptionsOf(selectedEvent)}
+        eventDays={Array.isArray(selectedEvent?.days) ? selectedEvent.days : []}
+        selectedDayIds={selectedDayIds}
+        setSelectedDayIds={setSelectedDayIds}
+        allowPerDay={!!selectedEvent?.allowPerDayApplications}
         setElectricityOption={setElectricityOption}
         marketingOption={marketingOption}
         setMarketingOption={setMarketingOption}
@@ -442,16 +488,20 @@ const HomeCalendarSection = () => {
       />
 
       <BoothReservationConfirmModal
+          termsAccepted={termsAccepted}
+          setTermsAccepted={setTermsAccepted}
+          termsPdfUrl={selectedEvent?.termsPdfUrl || selectedEvent?.generatedTermsUrl || null}
         isOpen={isConfirmModalOpen}
         onClose={() => { setIsConfirmModalOpen(false); resetReservationState() }}
         title="Da li želite da pošaljete prijavu?"
         eventName={(selectedEvent?.title || selectedEvent?.name || '').toString()}
         costs={confirmCosts}
+        coveredByPackage={coveredByPackage}
         onConfirm={confirmReservation}
         onCancel={() => { setIsConfirmModalOpen(false); resetReservationState() }}
         isLoading={isSubmittingReservation}
         successMessage={reservationSuccess}
-        errorMessage={reservationError}
+        errorMessage={reservationError || quoteBlockers[0] || null}
         onDismissMessage={() => { setReservationError(null); setReservationSuccess(null) }}
         timeRemaining={sessionSeconds}
       />

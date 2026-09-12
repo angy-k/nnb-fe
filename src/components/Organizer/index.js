@@ -14,24 +14,38 @@ const OrganizerWord = ({
     : <DefaultBio />;
 
   return (
-    <div className='w-full organizer-outer' style={{position: 'relative', width: '100%', height: '100%',  display: 'flex'}}>
-      <div className="w-full section-main-word-background-image-div" style={{width: '100%', height: '1743px',  display: 'block', position: 'relative'}}>
+    <div className='w-full organizer-outer' style={{position: 'relative', width: '100%', display: 'flex', flexDirection: 'column'}}>
+      {/* Visina fotografije je iz dizajna: 1523px. Kartica je 1070px, pa iznad
+          i ispod nje ostaje po oko 226px vazduha. Ranijih 1743px je ostavljalo
+          341px sa svake strane, pa je sekcija delovala razvučeno.
+
+          Ispod 1300px širine visina prelazi na `auto` (vidi global.css) — tamo
+          se tekst prelama u više redova i fiksna mera bi pukla. */}
+      <div className="w-full section-main-word-background-image-div" style={{width: '100%', height: '1523px',  display: 'block', position: 'relative'}}>
         <Image
           src={photoUrl}
           fill={true}
           alt='organizer-main-word-bg'
         />
-        <div className="section-main-word-wrapper items-center" style={{ maxWidth: '1400px', justifySelf: 'center',}}>
+        <div className="section-main-word-wrapper items-center" style={{ maxWidth: 'var(--nnb-kolona)', justifySelf: 'center',}}>
           <div className="section-main-word">
             <div className="section-main-subcomponent">
               <span className="section-main-word-title text-darkBlue">{name}</span>
               <span className="section-main-word-subtitle text-darkBlue">{role}</span>
-              <div className="section-main-word-content text-black" style={{textAlign: 'justify'}}>{bioContent}</div>
+              {/* Tekst je po dizajnu poravnat levo, sa nazubljenom desnom
+                  ivicom. Obostrano poravnanje je razvlačilo razmake među
+                  rečima, što se na uskoj koloni jasno videlo. */}
+              <div className="section-main-word-content text-black">{bioContent}</div>
             </div>
           </div>
         </div>
       </div>
-      <div className="bg-darkBlue organizer-section-quote justify-center" style={{position: 'absolute', bottom: 0, width: '100%'}}>
+      {/* Traka sa citatom stoji ISPOD fotografije, kao zasebna tamna traka —
+          tako je na dizajnu (fotografija se završava na 4529, traka ide
+          4530–4801). Ranije je bila `position: absolute; bottom: 0`, pa je
+          ležala preko donjih 211px fotografije i, čim bi se tekst biografije
+          prelomio u više redova, nalećala na karticu. */}
+      <div className="bg-darkBlue organizer-section-quote justify-center" style={{width: '100%'}}>
         <span className="organizer-section-main-quote text-lightBlue" style={{ whiteSpace: 'pre-wrap' }}>{quote}</span>
         <span className="organizer-section-sub-quote text-[#ffffff]" style={{ whiteSpace: 'pre-wrap' }}>{quoteSub}</span>
       </div>

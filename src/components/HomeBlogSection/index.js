@@ -68,7 +68,7 @@ const HomeBlogSection = () => {
       {/* Bočni odmak na mobilnom, isti kao kod kartica ispod. Naslov i dugme se
           tamo i razdvajaju u dva reda — jedan pored drugog ostaje im po 150px,
           pa se dugme lomi i oba dodiruju ivice. */}
-      <div className="w-full nnb-gutter" style={{ maxWidth: '1400px' }}>
+      <div className="w-full nnb-gutter" style={{ maxWidth: 'var(--nnb-kolona)' }}>
         <div className="flex sm:flex-col sm:items-start items-center justify-between gap-6 sm:gap-3">
           <span className="blog-title">Blog</span>
           <Button
@@ -103,6 +103,7 @@ const HomeBlogSection = () => {
                 creationDate={blog?.creationDate}
                 buttonAction={() => openBlog(blog)}
                 buttonText="Pročitaj više"
+                buttonSmallText
               />
             </div>
           ))}

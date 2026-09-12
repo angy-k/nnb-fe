@@ -155,7 +155,7 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
   }
 
   return (
-    <div className="w-full pt-10 grid gap-14" style={{ maxWidth: '1400px' }}>
+    <div className="w-full pt-10 grid gap-14" style={{ maxWidth: 'var(--nnb-kolona)' }}>
       {/* ── Fotografije ─────────────────────────────────────── */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -312,16 +312,18 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
         >
           {/* Mere sa izvoza: modal je 1440 × 489 na okviru od 1920, dakle iste
               širine kao kolona sadržaja i kao modal za dodavanje videa.
-              Srazmerno koloni sajta od 1400 to je 1400 × 475. Preliv ide od
+              Kolona je sada 1440, pa se mera prepisuje doslovno. Preliv ide od
               plavičaste dole levo ka beloj gore desno. */}
           <div
             style={{
               background: 'linear-gradient(to top right, #d5e8ed 0%, #e9eef2 38%, #ffffff 72%)',
-              borderRadius: '41px',
+              borderRadius: '50px',
               width: '100%',
-              maxWidth: '1400px',
-              minHeight: '475px',
-              padding: '162px 48px 183px',
+              maxWidth: 'var(--nnb-kolona)',
+              minHeight: '489px',
+              // Izvoz: sadržaj 872 × 142 na 159 od vrha — naslov 159–202,
+              // razmak 40, dugmad 242–301, ispod njih 188.
+              padding: '159px 48px 188px',
               position: 'relative',
               boxShadow: '0 16px 60px rgba(0,0,0,0.18)',
               textAlign: 'center',
@@ -332,35 +334,35 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
               type="button"
               onClick={() => setDeleteConfirm(null)}
               style={{
-                position: 'absolute', top: '47px', right: '49px',
+                position: 'absolute', top: '50px', right: '51px',
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: '#261A54', opacity: 0.75, lineHeight: 0, padding: 0,
               }}
               aria-label="Zatvori"
             >
-              <svg width="41" height="41" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
                 <line x1="4" y1="4" x2="20" y2="20" />
                 <line x1="20" y1="4" x2="4" y2="20" />
               </svg>
             </button>
 
             <p style={{
-              fontSize: '31px', fontWeight: '700', color: '#261A54',
-              marginBottom: '39px', lineHeight: '1.2',
+              fontSize: '36px', fontWeight: '700', color: '#261A54',
+              marginBottom: '40px', lineHeight: '1.2',
             }}>
               Da li želite da obrišete fotografiju/video snimak?
             </p>
 
-            <div style={{ display: 'flex', gap: '39px', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '40px', justifyContent: 'center' }}>
               <button
                 type="button"
                 onClick={confirmDelete}
                 disabled={!!deletingId}
                 style={{
-                  height: '57px', minWidth: '233px', padding: '0 40px',
-                  borderRadius: '29px', border: 'none',
+                  height: '59px', padding: '0 80px',
+                  borderRadius: '30.5px', border: 'none',
                   background: '#56C4CF', color: '#ffffff',
-                  fontSize: '16px', fontWeight: '600',
+                  fontSize: '18px', fontWeight: '600',
                   cursor: deletingId ? 'not-allowed' : 'pointer',
                   opacity: deletingId ? 0.6 : 1,
                   transition: 'opacity 0.2s',
@@ -373,10 +375,10 @@ const ProfileGallery = ({ account, editable = false, onGalleryChange }) => {
                 onClick={() => setDeleteConfirm(null)}
                 disabled={!!deletingId}
                 style={{
-                  height: '57px', minWidth: '233px', padding: '0 40px',
-                  borderRadius: '29px', border: 'none',
+                  height: '59px', padding: '0 80px',
+                  borderRadius: '30.5px', border: 'none',
                   background: '#EC4923', color: '#ffffff',
-                  fontSize: '16px', fontWeight: '600',
+                  fontSize: '18px', fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'opacity 0.2s',
                 }}

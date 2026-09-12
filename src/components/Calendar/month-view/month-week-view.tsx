@@ -83,8 +83,7 @@ export const MonthWeekView: React.FC<MonthWeekViewProps> = ({
           // svakih 205px, a vodoravne su na 961, 1080, 1199, 1319, 1438, 1557 i
           // 1677 — dakle red je visok 119px pri praznom mesecu.
           //
-          // Kalendar na sajtu je širok 1400px, što je 0,976 od dizajnovih 1435,
-          // pa red ispada 116px.
+          // Kolona sajta je sada 1440, pa se mera prepisuje doslovno: 119px.
           //
           // Ovo je donja granica, ne gornja: dan sa bedževima i dalje razvlači
           // ceo red, kao i u dizajnu, gde red sa sovama naraste na oko 150px.
@@ -95,7 +94,7 @@ export const MonthWeekView: React.FC<MonthWeekViewProps> = ({
           return (
             <div
               key={"day-label-" + dayKey}
-              className="flex-1 min-w-0 flex flex-col overflow-hidden [&:not(:last-child)]:border-r border-b text-[#B0B0B0] cursor-pointer hover:bg-black/5 transition-colors min-h-[116px] sm:min-h-[64px]"
+              className="flex-1 min-w-0 flex flex-col overflow-hidden [&:not(:last-child)]:border-r border-b text-[#B0B0B0] cursor-pointer hover:bg-black/5 transition-colors min-h-[119px] sm:min-h-[64px]"
               onClick={() => onDayClick?.(day)}
             >
               {/* Po dizajnu: datum u gornjem levom uglu, bedževi pri donjoj desnoj

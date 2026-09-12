@@ -16,11 +16,15 @@ const GalleryWarningModal = ({ isOpen, onClose }) => {
       classNames={{
         backdrop: 'nnb-modal-backdrop',
         wrapper: 'nnb-modal-wrapper items-center justify-center',
-        base: `shadow-2xl w-[calc(100vw-2rem)] max-w-[${OKVIR.sirina}px]`,
+              /* `max-w-[${OKVIR.sirina}px]` ovde ne radi: Tailwind pregleda izvorni kod
+         statički i ne vidi klasu koja se sastavlja tek pri izvršavanju, pa je
+         nikad i ne napravi. Modal je zbog toga bio širok koliko i prozor manje
+         2rem — 1888 na ekranu od 1920, umesto 1440. Mera zato ide kao stil. */
+        base: 'shadow-2xl w-[calc(100vw-2rem)]',
         body: 'p-0',
       }}
     >
-      <ModalContent className="overflow-hidden" style={{ borderRadius: `${OKVIR.radijus}px` }}>
+      <ModalContent className="overflow-hidden" style={{ borderRadius: `${OKVIR.radijus}px`, maxWidth: `${OKVIR.sirina}px`, width: '100%' }}>
         {(modalOnClose) => (
           <ModalBody className="p-0">
             <div
@@ -41,14 +45,15 @@ const GalleryWarningModal = ({ isOpen, onClose }) => {
                 </svg>
               </button>
 
-              {/* Naslov je u dizajnu uz levu ivicu, ne po sredini; kreće 122 od ivice
-                  modala (119 ovde), ink na 157, a podnaslov na 221. */}
-              <div style={{ padding: `${152}px ${119}px ${146}px` }}>
-                <h2 className="text-[#261A54] font-bold" style={{ fontSize: `${OKVIR.naslov}px`, lineHeight: 1.2, marginBottom: `${28}px` }}>
+              {/* Naslov je u dizajnu uz levu ivicu, ne po sredini. Izvoz: okvir
+                  1440 × 401, tekst na (119, 147), naslov 36/49, razmak 18,
+                  podnaslov 22/30 — odatle i donji razmak 157 (401 − 147 − 97). */}
+              <div style={{ padding: `${147}px ${119}px ${157}px` }}>
+                <h2 className="text-[#261A54] font-bold" style={{ fontSize: `${OKVIR.naslov}px`, lineHeight: '49px', marginBottom: `${18}px` }}>
                   Ukoliko želite reklamu morate imati dodate fotografije
                 </h2>
 
-                <p className="text-[#261A54]" style={{ fontSize: '21px', lineHeight: 1.2 }}>
+                <p className="text-[#261A54]" style={{ fontSize: '22px', lineHeight: '30px' }}>
                   To možete uraditi u odeljku{' '}
                   <Link
                     href="/profil#galerija"

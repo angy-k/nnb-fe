@@ -38,10 +38,13 @@ const resolveIconUrl = (iconUrl) => {
 const FeatureItem = ({ section, colors }) => {
   const iconUrl = resolveIconUrl(section.icon_url)
   return (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+  /* Mere su sa izvoza dizajna (okvir 1920): krug 144 × 144, ikonica u njemu 76,
+     razmak od kruga do teksta 45, tekst Open Sans 26 sa redom od 35. Ranije je
+     sve bilo otprilike 0,6× manje — krug 80, ikonica 44, tekst 15. */
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '45px' }}>
     {/* Icon circle */}
     <div style={{
-      width: '80px', height: '80px',
+      width: '144px', height: '144px',
       borderRadius: '50%',
       background: colors.iconBg,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -51,10 +54,10 @@ const FeatureItem = ({ section, colors }) => {
         <img
           src={iconUrl}
           alt={section.title || ''}
-          style={{ width: '44px', height: '44px', objectFit: 'contain' }}
+          style={{ width: '76px', height: '76px', objectFit: 'contain' }}
         />
       ) : (
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="18" height="18" rx="3" stroke={colors.iconColor} strokeWidth="1.5" />
           <path d="M8 12h8M12 8v8" stroke={colors.iconColor} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
@@ -63,8 +66,8 @@ const FeatureItem = ({ section, colors }) => {
     {/* Text */}
     <p style={{
       fontFamily: 'Open Sans, sans-serif',
-      fontSize: '15px',
-      lineHeight: 1.65,
+      fontSize: '26px',
+      lineHeight: '35px',
       color: colors.text,
       margin: 0,
     }}>
@@ -109,10 +112,16 @@ const PackageSection = ({ pkg, index, hasNext }) => {
   const OWL_W = 280
 
   return (
-    <div style={{
+    <div className={`paketi-sekcija${owlOnLeft ? ' paketi-sekcija--sova-levo' : ''}${owlOnRight ? ' paketi-sekcija--sova-desno' : ''}`} style={{
       width: '100%',
       background: colors.bg,
-      padding: '64px 40px 80px',
+      /* Po dizajnu: od vrha trake do naziva paketa 137px, a od poslednjeg reda
+         stavki do dna trake 181px. Ranije 64 i 80.
+
+         Bočni odmak od 40 važi od tableta naviše; na telefonu ga `global.css`
+         spušta na zajedničku meru, jer je paketima inače ostajalo 240 od 320 —
+         uže nego bilo gde drugde na sajtu. */
+      padding: '137px 40px 181px',
       overflow: 'visible',
       position: 'relative',
       /* Sekcija sa sovom mora da bude iznad one koja sledi, jer joj nožice vire
@@ -143,7 +152,7 @@ const PackageSection = ({ pkg, index, hasNext }) => {
           — sama sekcija mora da ostane `visible` da bi nožice sove virile preko
           donje ivice. `z-index: -1` ga drži iznad pozadine, a ispod teksta. */}
       {showOwl && (
-        <div aria-hidden="true" style={{
+        <div aria-hidden="true" className="paketi-sjaj" style={{
           position: 'absolute',
           inset: 0,
           overflow: 'hidden',
@@ -168,37 +177,34 @@ const PackageSection = ({ pkg, index, hasNext }) => {
         </div>
       )}
 
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <div style={{ maxWidth: 'var(--nnb-kolona)', margin: '0 auto' }}>
 
-        {/* Package title */}
-        <h2 className="blog-title" style={{ color: colors.title, marginBottom: '48px' }}>
+        {/* Naziv paketa: u dizajnu MADE GoodTime Script 128px sa redom od
+            92,19%, a ispod njega 108px do prvog kruga. `.blog-title` je 64px,
+            pa se veličina zadaje ovde. */}
+        <h2
+          className="blog-title paketi-naziv"
+          style={{ color: colors.title, marginBottom: '108px' }}
+        >
           {pkg.name}
         </h2>
 
-        {/* Content row — spacer rezerviše prostor za sovu u flex layout-u */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: '48px',
+        {/* Stavke paketa.
+         *
+         * Po dizajnu tri kolone po 345 sa razmakom od 202 daju tačno kolonu od
+         * 1440, a sova stoji preko donjeg ugla sekcije — ne oduzima širinu.
+         * Ranije je sa svake strane stajao odstojnik od 280px koji je mrežu
+         * sužavao na 1112, pa su kolone ispadale preuske za tekst od 26px. */}
+        <div className="paketi-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          columnGap: '202px',
+          rowGap: '107px',
+          alignItems: 'start',
         }}>
-          {/* Spacer levo (rezerviše prostor, sova se prikazuje apsolutno) */}
-          {owlOnLeft && <div className="paketi-owl-spacer" style={{ flexShrink: 0, width: `${OWL_W}px` }} />}
-
-          {/* Features — na desktopu 3 kolone, na mobilnom 1 kolona */}
-          <div className="paketi-grid" style={{
-            flex: 1,
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '48px 40px',
-            alignItems: 'start',
-          }}>
-            {sections.map((section, i) => (
-              <FeatureItem key={i} section={section} colors={colors} />
-            ))}
-          </div>
-
-          {/* Spacer desno */}
-          {owlOnRight && <div className="paketi-owl-spacer" style={{ flexShrink: 0, width: `${OWL_W}px` }} />}
+          {sections.map((section, i) => (
+            <FeatureItem key={i} section={section} colors={colors} />
+          ))}
         </div>
       </div>
 
@@ -258,16 +264,24 @@ const PaketiHero = () => (
     }}>
       <Image src="/logo-light.svg" width={220} height={70} alt="NNB logo" priority />
 
-      <h1 className="page-hero-section-title" style={{ color: '#ffffff', marginTop: '4px' }}>
+      {/* Naslov je u dizajnu 200px, ne 128px koliko nose naslovi ostalih
+          stranica — ovo je jedina stranica sa naslovom preko cele širine hero
+          sekcije. Red je 92,19% od veličine slova, kako stoji u izvozu. */}
+      <h1
+        className="page-hero-section-title paketi-hero-naslov"
+        style={{ color: '#ffffff', marginTop: '4px' }}
+      >
         Paketi
       </h1>
 
+      {/* Uvodna rečenica: Open Sans 26 sa redom od 35, širine do 1226 — po
+          dizajnu se prostire skoro celom kolonom, a ne u uskom stupcu od 620. */}
       <p style={{
         color: '#ffffff',
         fontFamily: 'Open Sans, sans-serif',
-        fontSize: '16px',
-        maxWidth: '620px',
-        lineHeight: 1.75,
+        fontSize: '26px',
+        maxWidth: '1226px',
+        lineHeight: '35px',
         opacity: 0.88,
         marginTop: '8px',
       }}>
